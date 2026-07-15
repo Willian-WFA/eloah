@@ -146,6 +146,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Adicionado painel visual de hub no painel da criança, exibido apenas em cenas com `hub`.
 - O painel mostra `Notas de Sino`, quantidade de caminhos abertos e lista de rotas com estado `Aberto`, `Concluído` ou requisito de bloqueio.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-hub-map-panel-pwa`.
+- Rotas abertas no painel visual de hub agora são botões tocáveis que selecionam o destino da campanha.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-clickable-hub-map-pwa`.
 - Servidor Node passou a escutar explicitamente em `0.0.0.0`, preservando `process.env.PORT`, para ambiente gerenciado como Hostinger.
 - `docs/HOSTINGER_DEPLOY.md` atualizado com campos recomendados do painel, comando de start e alternativa de deploy estático por `public/`.
 - Validação local confirmou `/health` retornando JSON e `/` retornando `200 OK` em porta de teste.

@@ -864,6 +864,29 @@ select {
   font-weight: 850;
 }
 
+.hub-route-list li button {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+  text-align: left;
+}
+
+.hub-route-list .is-open:has(button) {
+  cursor: pointer;
+}
+
+.hub-route-list .is-open:has(button):hover {
+  border-color: rgba(126, 200, 165, 0.85);
+  box-shadow: 0 8px 20px rgba(126, 200, 165, 0.16);
+}
+
 .hub-route-list li strong {
   border-radius: 999px;
   padding: 4px 7px;

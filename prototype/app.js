@@ -750,12 +750,15 @@ function renderHubPanel(scene) {
   }
 
   const notes = Math.round(state.progress.notas_sino || 0);
-  const routes = scene.hub.routes.map((route) => {
+  const routes = scene.hub.routes.map((route, index) => {
     const completed = state.completedScenes.has(route.target);
     const available = isRouteAvailable(route);
     const lockedReason = routeLockReason(route);
     const status = completed ? "Concluído" : available ? "Aberto" : lockedReason;
     const statusClass = completed ? "is-complete" : available ? "is-open" : "is-locked";
+    if (available && !completed) {
+      return `<li class="${statusClass}"><button type="button" data-route-index="${index}"><span>${escapeHtml(route.label)}</span><strong>${escapeHtml(status)}</strong></button></li>`;
+    }
     return `<li class="${statusClass}"><span>${escapeHtml(route.label)}</span><strong>${escapeHtml(status)}</strong></li>`;
   });
 
@@ -770,6 +773,12 @@ function renderHubPanel(scene) {
     </div>
     <ul class="hub-route-list">${routes.join("")}</ul>
   `;
+  els.hubPanel.querySelectorAll("[data-route-index]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const route = scene.hub.routes[Number(button.dataset.routeIndex)];
+      if (route) handlePlayerAction(route.label, "choice");
+    });
+  });
 }
 
 function routeLockReason(route) {
