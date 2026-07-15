@@ -11,6 +11,11 @@ const publicDir = resolve("public");
 const deepSeekApiKey = process.env.DEEPSEEK_API_KEY || "";
 const deepSeekModel = process.env.DEEPSEEK_MODEL || "deepseek-v4-flash";
 const deepSeekApiUrl = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
+const openAiApiKey = process.env.OPENAI_API_KEY || "";
+const ttsProvider = process.env.TTS_PROVIDER || "openai";
+const ttsModel = process.env.TTS_MODEL || "gpt-4o-mini-tts";
+const ttsVoice = process.env.TTS_VOICE || "nova";
+const openAiTtsUrl = process.env.OPENAI_TTS_URL || "https://api.openai.com/v1/audio/speech";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -39,6 +44,12 @@ const server = createServer(async (req, res) => {
       const payload = parseJsonBody(await readBody(req));
       const response = deepSeekApiKey ? await callDeepSeekMaster(payload) : mockMasterResponse(payload);
       sendJson(res, 200, response);
+      return;
+    }
+
+    if (url.pathname === "/api/tts" && req.method === "POST") {
+      const payload = parseJsonBody(await readBody(req));
+      await handleTtsRequest(payload, res);
       return;
     }
 
@@ -118,6 +129,14 @@ function sendText(res, statusCode, text) {
   res.end(text);
 }
 
+function sendAudio(res, contentType, body) {
+  res.writeHead(200, {
+    "Content-Type": contentType,
+    "Cache-Control": "no-store",
+  });
+  res.end(body);
+}
+
 function parseJsonBody(body) {
   if (!body) return {};
   try {
@@ -189,6 +208,79 @@ async function callDeepSeekMaster(payload = {}) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function handleTtsRequest(payload = {}, res) {
+  if (ttsProvider !== "openai" || !openAiApiKey) {
+    sendJson(res, 503, { error: "tts_not_configured" });
+    return;
+  }
+
+  const text = safeText(payload.text || "");
+  if (!text) {
+    sendJson(res, 400, { error: "tts_text_required" });
+    return;
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 18_000);
+
+  try {
+    const response = await fetch(openAiTtsUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${openAiApiKey}`,
+      },
+      body: JSON.stringify({
+        model: ttsModel,
+        voice: safeText(payload.voice || ttsVoice),
+        input: text.slice(0, 1200),
+        instructions: ttsInstructions(payload),
+        response_format: "mp3",
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      sendJson(res, response.status, {
+        error: "tts_provider_error",
+        detail: safeDeepSeekError(data, response.status),
+      });
+      return;
+    }
+
+    const audioBuffer = Buffer.from(await response.arrayBuffer());
+    sendAudio(res, response.headers.get("content-type") || "audio/mpeg", audioBuffer);
+  } catch (error) {
+    sendJson(res, 504, { error: error.name === "AbortError" ? "tts_timeout" : "tts_request_failed" });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function ttsInstructions(payload = {}) {
+  const style = safeText(payload.style || "theatrical");
+  const rate = Number(payload.rate || 0.98);
+  const pace = rate >= 0.95 ? "um pouquinho mais rapido que leitura normal" : "calmo e facil de acompanhar";
+  const profiles = {
+    theatrical:
+      "Use tom teatral, caloroso e expressivo, como um mestre de RPG infantil contando uma cena magica. Reaja com surpresa leve, sorria na voz e mantenha energia divertida.",
+    gentle:
+      "Use tom doce, calmo e acolhedor, como uma historia antes de dormir, mas ainda com curiosidade de aventura.",
+    epic:
+      "Use tom de aventura epica leve, grandioso sem assustar, com entusiasmo e pausas de suspense seguro.",
+    teacher:
+      "Use tom de professor gentil, claro e encorajador, valorizando a tentativa da crianca.",
+  };
+  return [
+    "Fale em portugues do Brasil.",
+    profiles[style] || profiles.theatrical,
+    `Ritmo: ${pace}.`,
+    "A fala e para uma crianca pequena com supervisao familiar.",
+    "Nao soe assustador, robotico, adulto ou sarcastico.",
+  ].join(" ");
 }
 
 function buildMasterMessages(payload = {}) {

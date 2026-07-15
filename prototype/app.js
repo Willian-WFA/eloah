@@ -43,6 +43,9 @@ const state = {
   audioContext: null,
   effectTimer: null,
   masterRequestId: 0,
+  apiTtsAvailable: null,
+  apiNarrationAudio: null,
+  narrationPlaying: false,
 };
 
 const els = {
@@ -1888,16 +1891,16 @@ function speakNarration(text, options = {}) {
   const cleanText = genderedText(text).replace(/\s+/g, " ").trim();
   if (!cleanText) return;
   state.lastNarration = cleanText;
-  if (!state.narrationEnabled || !("speechSynthesis" in window)) return;
+  if (!state.narrationEnabled) return;
 
   if (options.interrupt !== false) {
-    window.speechSynthesis.cancel();
+    stopNarrationPlayback();
     state.narrationQueue = narrationChunks(cleanText);
   } else {
     state.narrationQueue.push(...narrationChunks(cleanText));
   }
 
-  if (!window.speechSynthesis.speaking) {
+  if (!state.narrationPlaying) {
     speakNextNarrationChunk();
   }
 }
@@ -1914,9 +1917,61 @@ function narrationChunks(text) {
     }, []);
 }
 
-function speakNextNarrationChunk() {
-  if (!state.narrationQueue.length || !("speechSynthesis" in window)) return;
+async function speakNextNarrationChunk() {
+  if (!state.narrationQueue.length) {
+    state.narrationPlaying = false;
+    return;
+  }
   const chunk = state.narrationQueue.shift();
+  state.narrationPlaying = true;
+
+  if (state.apiTtsAvailable !== false) {
+    try {
+      await playApiNarrationChunk(chunk);
+      window.setTimeout(speakNextNarrationChunk, chunk.includes("Opção") ? 160 : 130);
+      return;
+    } catch (error) {
+      state.apiTtsAvailable = false;
+      console.info("[RPG Kids] TTS API indisponível, usando voz do navegador", error);
+    }
+  }
+
+  speakBrowserNarrationChunk(chunk);
+}
+
+async function playApiNarrationChunk(chunk) {
+  const response = await fetch("/api/tts", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      text: chunk,
+      style: state.narratorStyle,
+      rate: state.narrationRate,
+    }),
+  });
+
+  if (!response.ok) throw new Error(`tts_${response.status}`);
+  const audioBlob = await response.blob();
+  const audio = new Audio(URL.createObjectURL(audioBlob));
+  state.apiTtsAvailable = true;
+  state.apiNarrationAudio = audio;
+  audio.playbackRate = Math.min(1.08, Math.max(0.92, state.narrationRate + 0.04));
+
+  await new Promise((resolve, reject) => {
+    audio.onended = resolve;
+    audio.onerror = reject;
+    audio.play().catch(reject);
+  });
+
+  URL.revokeObjectURL(audio.src);
+  if (state.apiNarrationAudio === audio) state.apiNarrationAudio = null;
+}
+
+function speakBrowserNarrationChunk(chunk) {
+  if (!("speechSynthesis" in window)) {
+    state.narrationPlaying = false;
+    return;
+  }
   const style = narratorStyleProfile();
   const utterance = new SpeechSynthesisUtterance(chunk);
   utterance.lang = "pt-BR";
@@ -1953,8 +2008,18 @@ function repeatLastNarration() {
 }
 
 function stopNarration() {
+  stopNarrationPlayback();
+}
+
+function stopNarrationPlayback() {
+  state.narrationQueue = [];
+  state.narrationPlaying = false;
+  if (state.apiNarrationAudio) {
+    state.apiNarrationAudio.pause();
+    state.apiNarrationAudio.currentTime = 0;
+    state.apiNarrationAudio = null;
+  }
   if ("speechSynthesis" in window) {
-    state.narrationQueue = [];
     window.speechSynthesis.cancel();
   }
 }

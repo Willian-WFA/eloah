@@ -163,6 +163,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - A IA mestre recebe contexto seguro da aventura/cena, escolhas aprovadas, ação da criança, consequência local, progresso, recompensas e `narrativeLog`; progresso e recompensas continuam decididos pelo motor local.
 - Diário da aventura agora registra falas do `Mestre` vindas da DeepSeek quando `mode=deepseek`; respostas `mock`/erro não substituem o fallback local.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-deepseek-master-flow-pwa`.
+- Adicionado endpoint `/api/tts` para voz via OpenAI TTS (`gpt-4o-mini-tts`) quando `OPENAI_API_KEY` estiver configurada; sem chave ou erro, o frontend volta para `speechSynthesis`.
+- Frontend passou a tentar voz de API por chunk de narração, mantendo fila, pausa, interromper/voltar e fallback para voz do navegador.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-api-tts-pwa`.
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.
 - Modal do dado agora mostra números grandes `1-6` em vez de faces pequenas, fala `Você tirou X` e toca ticks sintéticos durante a rolagem.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-deepseek-dice-voice-pwa`.
