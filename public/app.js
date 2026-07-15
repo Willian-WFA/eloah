@@ -43,9 +43,9 @@ const state = {
   audioContext: null,
   effectTimer: null,
   masterRequestId: 0,
-  apiTtsAvailable: null,
   apiNarrationAudio: null,
   narrationPlaying: false,
+  apiTtsCooldownUntil: 0,
 };
 
 const els = {
@@ -743,7 +743,7 @@ function renderScene() {
   updateTimerUI();
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
-  speakNarration(composeSceneNarration(scene));
+  speakNarration(composeSceneNarration(scene), { quality: "fast" });
 }
 
 function renderHubPanel(scene) {
@@ -1781,7 +1781,7 @@ function showFeedback(message, cue, effect, options = {}) {
   if (effect) runSceneEffect(effect);
   playCue(cue);
   if (options.speak !== false) {
-    speakNarration(feedback, { interrupt: false });
+    speakNarration(feedback, { interrupt: false, quality: options.quality || "auto" });
   }
 }
 
@@ -1841,7 +1841,7 @@ function showDiceResult(result, message, cue, effect) {
       els.diceResultText.textContent = displayMessage;
       if (effect) runSceneEffect(effect);
       playCue(cue);
-      speakNarration(displayMessage);
+      speakNarration(displayMessage, { quality: "premium" });
     }
   }, 90);
 }
@@ -1893,11 +1893,16 @@ function speakNarration(text, options = {}) {
   state.lastNarration = cleanText;
   if (!state.narrationEnabled) return;
 
+  const chunks = narrationChunks(cleanText).map((chunk) => ({
+    text: chunk,
+    quality: options.quality || "auto",
+  }));
+
   if (options.interrupt !== false) {
     stopNarrationPlayback();
-    state.narrationQueue = narrationChunks(cleanText);
+    state.narrationQueue = chunks;
   } else {
-    state.narrationQueue.push(...narrationChunks(cleanText));
+    state.narrationQueue.push(...chunks);
   }
 
   if (!state.narrationPlaying) {
@@ -1922,16 +1927,18 @@ async function speakNextNarrationChunk() {
     state.narrationPlaying = false;
     return;
   }
-  const chunk = state.narrationQueue.shift();
+  const item = state.narrationQueue.shift();
+  const chunk = typeof item === "string" ? item : item.text;
+  const quality = typeof item === "string" ? "auto" : item.quality;
   state.narrationPlaying = true;
 
-  if (state.apiTtsAvailable !== false) {
+  if (shouldUseApiTts(chunk, quality)) {
     try {
       await playApiNarrationChunk(chunk);
       window.setTimeout(speakNextNarrationChunk, chunk.includes("Opção") ? 160 : 130);
       return;
     } catch (error) {
-      state.apiTtsAvailable = false;
+      state.apiTtsCooldownUntil = Date.now() + 8_000;
       console.info("[RPG Kids] TTS API indisponível, usando voz do navegador", error);
     }
   }
@@ -1939,9 +1946,17 @@ async function speakNextNarrationChunk() {
   speakBrowserNarrationChunk(chunk);
 }
 
+function shouldUseApiTts(chunk, quality) {
+  if (quality === "fast") return false;
+  if (Date.now() < state.apiTtsCooldownUntil) return false;
+  if (chunk.includes("Opção")) return false;
+  if (quality === "premium") return true;
+  return chunk.length <= 220 && /Mestre:|Você tirou|Resultado|Seis|sorte|dado|ganhou|brilhou|aventura/i.test(chunk);
+}
+
 async function playApiNarrationChunk(chunk) {
   const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 12_000);
+  const timeout = window.setTimeout(() => controller.abort(), 18_000);
   const response = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

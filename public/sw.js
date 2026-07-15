@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-15-api-tts-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-15-selective-tts-pwa";
 
 const CORE_ASSETS = [
   "./",

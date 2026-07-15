@@ -167,6 +167,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `/api/tts` passou a suportar Gemini TTS com `TTS_PROVIDER=gemini`, `GEMINI_API_KEY`, `gemini-3.1-flash-tts-preview`, voz default `Puck` e retorno WAV convertido a partir de PCM.
 - Frontend passou a tentar voz de API por chunk de narração, mantendo fila, pausa, interromper/voltar e fallback para voz do navegador.
 - Perfil TTS `theatrical` ajustado para se aproximar do preset "The Master Storyteller": contador de historias expressivo, caloroso, com suspense seguro e portugues do Brasil obrigatorio.
+- Fluxo de voz ajustado para reduzir latencia: cenas/opcoes longas usam voz local rapida, enquanto resultado do dado e falas importantes do mestre tentam Gemini TTS; timeout do frontend subiu para 18s e falha gera cooldown curto, nao desativa a API pela sessao inteira.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-selective-tts-pwa`.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-api-tts-pwa`.
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.
 - Modal do dado agora mostra números grandes `1-6` em vez de faces pequenas, fala `Você tirou X` e toca ticks sintéticos durante a rolagem.

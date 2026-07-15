@@ -283,7 +283,7 @@ async function handleGeminiTtsRequest(payload = {}, text, res) {
   }
 
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 28_000);
+  const timeout = setTimeout(() => controller.abort(), 34_000);
 
   try {
     const response = await fetch(geminiTtsUrl, {
