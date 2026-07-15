@@ -1895,10 +1895,12 @@ function speakNarration(text, options = {}) {
   state.lastNarration = cleanText;
   if (!state.narrationEnabled) return;
 
+  const utteranceId = `utt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const chunks = narrationChunks(cleanText).map((chunk, index) => ({
     text: chunk,
     quality: options.quality || "auto",
     audioKey: index === 0 ? options.audioKey : "",
+    utteranceId,
   }));
 
   if (options.interrupt !== false) {
@@ -1934,11 +1936,15 @@ async function speakNextNarrationChunk() {
   const chunk = typeof item === "string" ? item : item.text;
   const quality = typeof item === "string" ? "auto" : item.quality;
   const audioKey = typeof item === "string" ? "" : item.audioKey;
+  const utteranceId = typeof item === "string" ? "" : item.utteranceId;
   state.narrationPlaying = true;
 
   if (audioKey) {
     try {
       await playPrebuiltNarration(audioKey);
+      if (utteranceId) {
+        state.narrationQueue = state.narrationQueue.filter((queued) => queued.utteranceId !== utteranceId);
+      }
       window.setTimeout(speakNextNarrationChunk, chunk.includes("Opção") ? 160 : 130);
       return;
     } catch (error) {
