@@ -1,0 +1,171 @@
+{
+  "id": "aventura-longa-exemplo",
+  "version": "1.0.0",
+  "schema": "rpg-kids.long-branching-adventure.v1",
+  "title": "Aventura Longa Exemplo",
+  "status": "draft",
+  "template": "long_branching_quest_hub",
+  "ageRange": "4-7",
+  "estimatedDurationMinutes": 180,
+  "recommendedSessionMinutes": 30,
+  "minimumSessions": 6,
+  "tags": ["cidade", "quests", "idiomas", "movimento", "aprendizado"],
+  "corePromise": {
+    "centralProblem": "Explique no começo da aventura o que esta errado no mundo.",
+    "mainGoal": "Explique o que a crianca precisa conquistar ate o final.",
+    "finalChallenge": "Desafio final nao assustador, resolvido com itens, aliados, escolhas e aprendizado.",
+    "successDefinition": "O que significa vencer sem tratar a crianca como perdedora em resultados baixos."
+  },
+  "parentReview": {
+    "parentSummary": "Resumo completo para adulto curador.",
+    "safetyNotes": [],
+    "learningNotes": [],
+    "restrictedHumor": {
+      "present": false,
+      "contexts": []
+    }
+  },
+  "sessionPolicy": {
+    "dailyLimitMinutes": 30,
+    "warningMinutesBeforeEnd": 5,
+    "softExtensionMinutes": 3,
+    "checkpointEveryMinutes": 8,
+    "resumeMode": "narrative_log_summary"
+  },
+  "narratorContract": {
+    "style": "mestre_rpg_infantil_teatral",
+    "scenePacing": {
+      "travelBeatSentences": 3,
+      "challengeBeatSentences": 4,
+      "maxSpokenOptions": 3,
+      "alwaysAskWhatDoYouDo": true
+    },
+    "mustDo": [
+      "narrar deslocamentos curtos entre locais",
+      "apresentar NPCs com intencao clara",
+      "dar opcoes concretas e aceitar escolha livre",
+      "reconduzir ideias inesperadas para a linha central",
+      "registrar escolhas importantes no narrativeLog"
+    ],
+    "mustNotDo": [
+      "pular de local sem transicao",
+      "inventar novo chefao fora do escopo",
+      "usar medo intenso",
+      "punir erro de idioma ou movimento",
+      "conceder recompensa sem criterio"
+    ]
+  },
+  "learningDesign": {
+    "domains": ["linguagem", "cognicao", "socioemocional", "motricidade_ampla", "idiomas", "criatividade"],
+    "english": {
+      "maxNewWordsPerQuest": 2,
+      "acceptApproximation": true
+    },
+    "mandarin": {
+      "notation": "pinyin",
+      "maxNewWordsPerQuest": 1,
+      "acceptApproximation": true
+    },
+    "physicalChallenges": {
+      "shortAndOptional": true,
+      "parentSupervision": true,
+      "fallbackAlwaysAvailable": true
+    }
+  },
+  "world": {
+    "hub": {
+      "id": "cidade_hub",
+      "name": "Cidade principal",
+      "description": "Cidade onde o personagem pode voltar, conversar e escolher proxima missao."
+    },
+    "locations": [],
+    "npcs": [],
+    "factionsOrGroups": []
+  },
+  "progression": {
+    "centralTokens": {
+      "required": 5,
+      "label": "Sinos de progresso",
+      "earnedByQuestIds": []
+    },
+    "rewards": {},
+    "avatarLayers": []
+  },
+  "questGraph": {
+    "startNode": "intro",
+    "criticalPath": [],
+    "optionalQuestIds": [],
+    "gates": [
+      {
+        "id": "final_gate",
+        "requires": {
+          "centralTokensAtLeast": 5
+        },
+        "opensNode": "final_act"
+      }
+    ]
+  },
+  "quests": [
+    {
+      "id": "quest_exemplo",
+      "title": "Missao exemplo",
+      "locationId": "cidade_hub",
+      "npcId": "npc_exemplo",
+      "estimatedMinutes": 15,
+      "mainPurpose": "Como esta missao ajuda a linha central.",
+      "learningFocus": ["gentileza", "pensamento_esperto"],
+      "rewardIds": [],
+      "centralTokenReward": 1,
+      "entryConditions": [],
+      "beats": [
+        {
+          "id": "arrival",
+          "type": "travel_or_arrival",
+          "narration": "Cena de chegada com detalhes concretos.",
+          "prompt": "O que voce faz?",
+          "choices": ["Opcao concreta 1", "Opcao concreta 2", "Opcao concreta 3", "Livre escolha"]
+        },
+        {
+          "id": "challenge",
+          "type": "dice_challenge",
+          "narration": "Desafio da missao.",
+          "dice": true,
+          "diceOutcomes": {
+            "low": {
+              "narration": "Complicacao segura e temporaria.",
+              "progressDelta": {}
+            },
+            "middle": {
+              "narration": "Sucesso condicionado com desafio fisico, cognitivo ou de idioma.",
+              "requiredChallengeId": "challenge_exemplo",
+              "progressDelta": {}
+            },
+            "high": {
+              "narration": "Sucesso forte com descoberta/recompensa.",
+              "progressDelta": {},
+              "reward": null
+            }
+          }
+        }
+      ],
+      "branching": {
+        "onComplete": "return_to_hub",
+        "optionalFollowUps": []
+      }
+    }
+  ],
+  "challenges": {
+    "challenge_exemplo": {
+      "type": "movement",
+      "instruction": "Faca um movimento curto e seguro.",
+      "fallback": "Alternativa sentada ou apenas falada.",
+      "parentNote": "Adulto pode adaptar."
+    }
+  },
+  "assets": {
+    "imageStyle": "ilustracao infantil aprovada, clara, colorida, nao assustadora",
+    "sceneImageSlots": [],
+    "soundSlots": [],
+    "effectSlots": []
+  }
+}

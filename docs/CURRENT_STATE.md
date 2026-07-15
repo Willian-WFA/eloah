@@ -3,8 +3,8 @@
 Projeto: RPG Kids
 Atualizado em: 2026-07-15
 Agente/sessao: The Creator / Codex
-Branch: sem repositorio git verificado
-Commit(s): n/a
+Branch: main
+Commit(s): 1e90d0f Initial RPG Kids playable prototype
 PR/Issues: n/a
 
 ## Resumo curto
@@ -122,6 +122,14 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Ajustada fala das opções: a narração enumera apenas opções concretas e não lê `Livre escolha` quando em seguida já informa que a criança pode inventar a própria ação.
 - Adicionadas reações teatrais por resultado exato do dado, de 1 a 6, antes da consequência narrativa.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-dice-humor-help-pwa`.
+- Repositório Git local inicializado em `main`, com remoto `https://github.com/Willian-WFA/eloah.git`.
+- Criado commit local inicial `1e90d0f Initial RPG Kids playable prototype`, incluindo código, docs, PWA, `public/`, `prototype/` e imagens PNG/WebP.
+- Push para GitHub ficou bloqueado por autenticação local inválida do `gh`/HTTPS.
+- README atualizado para explicar conteúdo, imagens, aventura longa e publicação no GitHub.
+- Criado `docs/GITHUB_PUBLISH.md` com passos de autenticação, push, Hostinger e arquivos que devem subir.
+- Criado template `content/templates/long-branching-adventure-template-v1.json` para aventuras longas com hub, grafo de quests, tokens centrais, checkpoints e contrato do narrador.
+- Criada aventura longa em rascunho `content/adventures/cidade-dos-sinos-claros.md`, planejada para pelo menos 3 horas, com cidade-hub, NPCs, quests sequenciais, recompensas, inglês, mandarim, desafios físicos e final cooperativo.
+- Atualizado `docs/STORY_PROTOCOL_V0.md` com seção `Aventura longa ramificada V1`.
 
 ## Decisoes tomadas
 
@@ -175,10 +183,13 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Personalização de nome/personagem, estilo do mestre, avatar e modo só voz são parte do MVP familiar antes da IA real.
 - Relatório de aprendizado para os pais deve continuar descritivo e não clínico.
 - A reação emocional ao dado deve vir antes da consequência da cena, para reforçar a sensação de mestre de RPG sem esconder o resultado.
+- Aventuras longas devem ser estruturadas como hub + quests + linha central, com transições narradas entre locais e sem grandes saltos de acontecimento.
+- Uma aventura de 3 horas deve ser planejada por sessões curtas com retomada, deslocamento, NPC/desafio, dado, consequência e checkpoint.
 
 ## Arquivos alterados
 
 - `README.md`
+- `docs/GITHUB_PUBLISH.md`
 - `.gitignore`
 - `package.json`
 - `server.js`
@@ -207,7 +218,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `docs/CODE_REUSE_INDEX.md`
 - `docs/CURRENT_STATE.md`
 - `content/adventures/portal-das-estrelinhas.md`
+- `content/adventures/cidade-dos-sinos-claros.md`
 - `content/templates/adventure-template-v0.json`
+- `content/templates/long-branching-adventure-template-v1.json`
 - `public/index.html`
 - `public/styles.css`
 - `public/app.js`

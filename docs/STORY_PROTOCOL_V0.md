@@ -246,6 +246,92 @@ content/adventures/<adventure-id>/
 
 No MVP, enquanto houver poucas historias, tambem e aceitavel manter `content/adventures/<adventure-id>.md`. Mas o app deve ser desenhado para migrar para pacotes sem reescrever a biblioteca.
 
+## Aventura longa ramificada V1
+
+Historias de 2-3 horas nao devem usar o mesmo formato mental das aventuras curtas. Uma aventura longa precisa de:
+
+- `hub`: local central para voltar, escolher caminhos, receber resumo e destravar novas rotas;
+- `corePromise`: problema central apresentado na introducao;
+- `questGraph`: grafo de progresso com linha critica, quests opcionais e gates;
+- `quests`: missoes com NPC, local, objetivo, recompensa, aprendizado e beats internos;
+- `beats`: unidades pequenas de narração, deslocamento, pergunta, dado, desafio e conclusao;
+- `centralTokens`: chaves narrativas que levam ao final, por exemplo notas, cristais, selos ou mapas;
+- `resumeRules`: regras de retomada usando `narrativeLog`;
+- `narratorContract`: regras para nao pular trajetos, nao inventar chefe fora do escopo e reconduzir ideias inesperadas.
+
+Use o template:
+
+```text
+content/templates/long-branching-adventure-template-v1.json
+```
+
+Exemplo em desenvolvimento:
+
+```text
+content/adventures/cidade-dos-sinos-claros.md
+```
+
+### Ritmo para 3 horas
+
+Uma aventura longa deve ser planejada por sessoes:
+
+- 6 sessoes de 30 minutos;
+- ou 9 sessoes de 20 minutos;
+- ou 12 sessoes de 15 minutos.
+
+Cada sessao deve conter:
+
+- retomada curta;
+- 1 deslocamento narrado;
+- 1 conversa com NPC ou descoberta;
+- 1 escolha importante;
+- 1 dado/desafio;
+- 1 consequencia ou recompensa;
+- checkpoint claro.
+
+### Sem grandes saltos
+
+O narrador deve conectar cada local com transicoes concretas:
+
+- caminho percorrido;
+- som ou cheiro do ambiente;
+- detalhe visual;
+- reacao de Luma ou de um NPC;
+- pergunta curta antes de entrar no proximo desafio.
+
+Exemplo ruim:
+
+> "Voce sai da praca e chega na torre final."
+
+Exemplo bom:
+
+> "Voce guarda a nota amarela no mapa. Luma aponta para uma rua estreita onde as pedras fazem plim quando alguem pisa. No fim da rua, a torre aparece maior, mas ainda quieta. Antes de seguir, uma fita azul presa no poste aponta para a biblioteca."
+
+### Quests e linha central
+
+Cada quest deve responder:
+
+- quem pede ajuda;
+- o que a crianca entende antes de agir;
+- por que isso importa para o objetivo central;
+- qual recompensa/nota/item pode aparecer;
+- como resultado baixo, medio e alto mudam a experiencia sem travar a historia.
+
+Quests opcionais podem dar item, aliado, dica ou ponto de sorte. A linha central deve exigir um numero pequeno de conquistas claras, nao todas as missoes existentes.
+
+### Aprendizado dentro da quest
+
+Cada quest pode carregar 1 ou 2 focos principais:
+
+- linguagem: explicar, pedir, recontar;
+- cognicao: sequencia, memoria, causa e efeito, classificacao;
+- socioemocional: escuta, gentileza, reparacao, esperar;
+- motricidade: pular, marchar, bater palmas, respirar;
+- idioma: uma palavra em ingles ou mandarim;
+- criatividade: inventar solucao segura.
+
+O narrador nunca deve transformar erro em falha. Aproximacao de idioma, movimento adaptado e ajuda do adulto devem contar como participacao valida.
+
 ## Biblioteca e troca de historia
 
 Requisitos:

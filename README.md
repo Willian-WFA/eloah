@@ -1,6 +1,6 @@
 # RPG Kids
 
-RPG Kids e um app/jogo mobile-first para criancas pequenas jogarem aventuras curtas com um adulto responsavel. A experiencia combina narrador de IA, rolagem simples de dados, historias infantis guiadas e uma biblioteca onde novas aventuras podem ser adicionadas com seguranca.
+RPG Kids e um app/jogo mobile-first para criancas pequenas jogarem aventuras com um adulto responsavel. A experiencia combina narrador de IA, rolagem simples de dados, historias infantis guiadas, voz, imagens preaprovadas, progresso por aprendizado e uma biblioteca onde novas aventuras podem ser adicionadas com seguranca.
 
 ## Visao
 
@@ -25,6 +25,17 @@ O produto deve preservar a criatividade da crianca, mas manter a IA dentro de um
 Existe um prototipo estatico em `prototype/index.html`.
 
 Ele roda direto no navegador e inclui biblioteca por dados de aventura, uma aventura real, uma aventura dummy, sessao mobile, dado D6, progresso, recompensas/avatar placeholder, ids de sons/efeitos com fallback, limite de tempo configuravel, aviso de encerramento e checkpoint em `localStorage`.
+
+## Conteudo e imagens
+
+- Aventuras editaveis ficam em `content/adventures/`.
+- Templates de aventura ficam em `content/templates/`.
+- Aventura longa em desenvolvimento: `content/adventures/cidade-dos-sinos-claros.md`.
+- Template para aventura longa ramificada: `content/templates/long-branching-adventure-template-v1.json`.
+- Imagens aprovadas do prototipo ficam em `prototype/assets/scenes/` e sao copiadas para `public/assets/scenes/` para hospedagem.
+- Icones PWA ficam em `prototype/assets/icons/` e `public/assets/icons/`.
+
+As imagens entram no repositorio junto do codigo para facilitar deploy na Hostinger e teste no celular sem depender de CDN externa.
 
 ## Deploy Hostinger / Node.js
 
@@ -53,15 +64,34 @@ Na Hostinger, configure:
 
 Detalhes em `docs/HOSTINGER_DEPLOY.md`.
 
+## GitHub
+
+Repositorio alvo:
+
+```text
+https://github.com/Willian-WFA/eloah
+```
+
+O primeiro commit local inclui codigo, docs, assets PNG/WebP, PWA e servidor Node. Para publicar, autentique o GitHub CLI e rode:
+
+```bash
+gh auth login -h github.com
+git push -u origin main
+```
+
+Mais detalhes em `docs/GITHUB_PUBLISH.md`.
+
 ## Ordem de leitura
 
 1. `docs/DISCOVERY_NOTES.md`
 2. `docs/MASTER_SPEC.md`
 3. `docs/CHILD_DEVELOPMENT_LEARNING_MAP.md`
 4. `docs/STORY_PROTOCOL_V0.md`
-5. `content/adventures/portal-das-estrelinhas.md`
-6. `prototype/index.html`
-7. `docs/HOSTINGER_DEPLOY.md`
-8. `PROJECT_CONTEXT.md`
-9. `AGENTS.md`
-10. `docs/CURRENT_STATE.md`
+5. `content/adventures/cidade-dos-sinos-claros.md`
+6. `content/adventures/portal-das-estrelinhas.md`
+7. `prototype/index.html`
+8. `docs/HOSTINGER_DEPLOY.md`
+9. `docs/GITHUB_PUBLISH.md`
+10. `PROJECT_CONTEXT.md`
+11. `AGENTS.md`
+12. `docs/CURRENT_STATE.md`
