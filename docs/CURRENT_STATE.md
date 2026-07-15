@@ -169,6 +169,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Perfil TTS `theatrical` ajustado para se aproximar do preset "The Master Storyteller": contador de historias expressivo, caloroso, com suspense seguro e portugues do Brasil obrigatorio.
 - Fluxo de voz ajustado para reduzir latencia: cenas/opcoes longas usam voz local rapida, enquanto resultado do dado e falas importantes do mestre tentam Gemini TTS; timeout do frontend subiu para 18s e falha gera cooldown curto, nao desativa a API pela sessao inteira.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-selective-tts-pwa`.
+- Adicionada camada de audio pre-gerado: o app tenta `assets/audio/manifest.json` antes de Gemini ao vivo/voz local.
+- Criado `npm run generate:audio`, que usa Gemini TTS para gerar WAVs de narracao de cena e resultados de dado por aventura em `public/assets/audio/` e `prototype/assets/audio/`.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-prebuilt-audio-pwa`.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-api-tts-pwa`.
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.
 - Modal do dado agora mostra números grandes `1-6` em vez de faces pequenas, fala `Você tirou X` e toca ticks sintéticos durante a rolagem.

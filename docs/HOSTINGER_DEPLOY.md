@@ -104,6 +104,13 @@ GEMINI_TTS_URL=https://generativelanguage.googleapis.com/v1beta/interactions
 - O backend envia `thinking: { "type": "disabled" }` para manter a resposta direta, teatral e rapida para narracao infantil.
 - Para voz melhor, `/api/tts` usa Gemini TTS quando `TTS_PROVIDER=gemini` e `GEMINI_API_KEY` existe. Tambem ha suporte a OpenAI TTS com `TTS_PROVIDER=openai` e `OPENAI_API_KEY`.
 - Sem chave de TTS ou se a API falhar, o app volta automaticamente para a voz do navegador.
+- Para evitar espera durante o jogo, gere audio aprovado antes do deploy:
+
+```bash
+npm run generate:audio -- --adventure=cidade-dos-sinos-claros
+```
+
+Isso salva WAVs em `public/assets/audio/` e atualiza `public/assets/audio/manifest.json`. O app tenta tocar esse audio primeiro, usa Gemini ao vivo apenas quando nao houver asset e cai para a voz do navegador se necessario.
 - O servidor tambem carrega um arquivo `.env` na raiz quando ele existir, mas as variaveis definidas no painel da Hostinger tem prioridade.
 - Sem `DEEPSEEK_API_KEY`, `/api/master` responde em modo `mock`, mantendo o app funcionando.
 - Voz por microfone depende de permissao do navegador e HTTPS fora de `localhost`.

@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-15-selective-tts-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-15-prebuilt-audio-pwa";
 
 const CORE_ASSETS = [
   "./",
@@ -7,6 +7,7 @@ const CORE_ASSETS = [
   "./app.js",
   "./adventures.js",
   "./manifest.webmanifest",
+  "./assets/audio/manifest.json",
   "./assets/icons/icon.svg",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",

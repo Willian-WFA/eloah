@@ -18,6 +18,7 @@ Usuario obteve uma key do Gemini e quer usar essa key para a voz do narrador.
 - O perfil `theatrical` foi ajustado para imitar a direcao de performance "The Master Storyteller", mas com instrucao obrigatoria de portugues do Brasil e proibicao de falar em ingles.
 - Apos teste real, o Gemini TTS ficou bom em qualidade mas lento. O frontend passou a usar voz local para cenas/opcoes longas e Gemini apenas para falas premium, como resultado do dado e fala importante do mestre.
 - Timeout de TTS no frontend foi aumentado para 18s; falha gera cooldown curto de 8s em vez de desativar a API ate recarregar.
+- Evolucao seguinte: audio previsivel agora pode ser pre-gerado com `npm run generate:audio`. O app consulta `assets/audio/manifest.json` e toca WAV salvo antes de tentar Gemini ao vivo.
 - Suporte OpenAI TTS foi mantido como opcao futura (`TTS_PROVIDER=openai`).
 - O fallback do frontend permanece: se `/api/tts` falhar, volta para `speechSynthesis`.
 

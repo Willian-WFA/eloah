@@ -46,6 +46,8 @@ const state = {
   apiNarrationAudio: null,
   narrationPlaying: false,
   apiTtsCooldownUntil: 0,
+  prebuiltAudioManifest: null,
+  prebuiltAudioAvailable: null,
 };
 
 const els = {
@@ -743,7 +745,7 @@ function renderScene() {
   updateTimerUI();
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
-  speakNarration(composeSceneNarration(scene), { quality: "fast" });
+  speakNarration(composeSceneNarration(scene), { quality: "fast", audioKey: audioKeyForScene(scene, "scene") });
 }
 
 function renderHubPanel(scene) {
@@ -1841,7 +1843,7 @@ function showDiceResult(result, message, cue, effect) {
       els.diceResultText.textContent = displayMessage;
       if (effect) runSceneEffect(effect);
       playCue(cue);
-      speakNarration(displayMessage, { quality: "premium" });
+      speakNarration(displayMessage, { quality: "premium", audioKey: audioKeyForDice(currentScene(), result) });
     }
   }, 90);
 }
@@ -1893,9 +1895,10 @@ function speakNarration(text, options = {}) {
   state.lastNarration = cleanText;
   if (!state.narrationEnabled) return;
 
-  const chunks = narrationChunks(cleanText).map((chunk) => ({
+  const chunks = narrationChunks(cleanText).map((chunk, index) => ({
     text: chunk,
     quality: options.quality || "auto",
+    audioKey: index === 0 ? options.audioKey : "",
   }));
 
   if (options.interrupt !== false) {
@@ -1930,7 +1933,18 @@ async function speakNextNarrationChunk() {
   const item = state.narrationQueue.shift();
   const chunk = typeof item === "string" ? item : item.text;
   const quality = typeof item === "string" ? "auto" : item.quality;
+  const audioKey = typeof item === "string" ? "" : item.audioKey;
   state.narrationPlaying = true;
+
+  if (audioKey) {
+    try {
+      await playPrebuiltNarration(audioKey);
+      window.setTimeout(speakNextNarrationChunk, chunk.includes("Opção") ? 160 : 130);
+      return;
+    } catch (error) {
+      console.info("[RPG Kids] áudio pré-gerado indisponível", audioKey, error);
+    }
+  }
 
   if (shouldUseApiTts(chunk, quality)) {
     try {
@@ -1972,7 +1986,6 @@ async function playApiNarrationChunk(chunk) {
   if (!response.ok) throw new Error(`tts_${response.status}`);
   const audioBlob = await response.blob();
   const audio = new Audio(URL.createObjectURL(audioBlob));
-  state.apiTtsAvailable = true;
   state.apiNarrationAudio = audio;
   audio.playbackRate = Math.min(1.08, Math.max(0.92, state.narrationRate + 0.04));
 
@@ -1984,6 +1997,45 @@ async function playApiNarrationChunk(chunk) {
 
   URL.revokeObjectURL(audio.src);
   if (state.apiNarrationAudio === audio) state.apiNarrationAudio = null;
+}
+
+async function playPrebuiltNarration(audioKey) {
+  const manifest = await loadPrebuiltAudioManifest();
+  const src = manifest[audioKey];
+  if (!src) throw new Error("prebuilt_audio_missing");
+  const audio = new Audio(src);
+  state.apiNarrationAudio = audio;
+  audio.playbackRate = Math.min(1.08, Math.max(0.92, state.narrationRate + 0.04));
+  await new Promise((resolve, reject) => {
+    audio.onended = resolve;
+    audio.onerror = reject;
+    audio.play().catch(reject);
+  });
+  if (state.apiNarrationAudio === audio) state.apiNarrationAudio = null;
+}
+
+async function loadPrebuiltAudioManifest() {
+  if (state.prebuiltAudioManifest) return state.prebuiltAudioManifest;
+  if (state.prebuiltAudioAvailable === false) return {};
+  try {
+    const response = await fetch("assets/audio/manifest.json", { cache: "no-store" });
+    if (!response.ok) throw new Error(`manifest_${response.status}`);
+    state.prebuiltAudioManifest = await response.json();
+    state.prebuiltAudioAvailable = true;
+    return state.prebuiltAudioManifest;
+  } catch {
+    state.prebuiltAudioAvailable = false;
+    return {};
+  }
+}
+
+function audioKeyForScene(scene, kind) {
+  if (!state.adventure || !scene) return "";
+  return `${state.adventure.id}/${scene.id}/${kind}`;
+}
+
+function audioKeyForDice(scene, result) {
+  return audioKeyForScene(scene, `dice-${result}`);
 }
 
 function speakBrowserNarrationChunk(chunk) {

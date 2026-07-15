@@ -1,0 +1,232 @@
+const { mkdir, readFile, writeFile } = require("node:fs/promises");
+const { existsSync } = require("node:fs");
+const { dirname, join, resolve } = require("node:path");
+const vm = require("node:vm");
+
+loadEnvFile();
+
+const provider = process.env.TTS_PROVIDER || "gemini";
+const geminiApiKey = process.env.GEMINI_API_KEY || "";
+const geminiTtsUrl = process.env.GEMINI_TTS_URL || "https://generativelanguage.googleapis.com/v1beta/interactions";
+const ttsModel = process.env.TTS_MODEL || "gemini-3.1-flash-tts-preview";
+const ttsVoice = process.env.TTS_VOICE || "Puck";
+const outDir = resolve("public/assets/audio");
+const prototypeOutDir = resolve("prototype/assets/audio");
+const selectedAdventureId = process.argv.find((arg) => arg.startsWith("--adventure="))?.split("=")[1] || "";
+const limit = Number(process.argv.find((arg) => arg.startsWith("--limit="))?.split("=")[1] || 0);
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
+
+async function main() {
+  if (provider !== "gemini") throw new Error("generate:audio currently supports TTS_PROVIDER=gemini");
+  if (!geminiApiKey) throw new Error("GEMINI_API_KEY is required to generate audio assets");
+
+  const adventures = await loadAdventures();
+  const jobs = buildAudioJobs(adventures).filter((job) => !selectedAdventureId || job.adventureId === selectedAdventureId);
+  const selectedJobs = limit > 0 ? jobs.slice(0, limit) : jobs;
+  const manifest = {};
+
+  await mkdir(outDir, { recursive: true });
+  await mkdir(prototypeOutDir, { recursive: true });
+
+  for (const [index, job] of selectedJobs.entries()) {
+    const relativePath = `${job.key}.wav`;
+    const outputPath = join(outDir, relativePath);
+    const prototypePath = join(prototypeOutDir, relativePath);
+    await mkdir(dirname(outputPath), { recursive: true });
+    await mkdir(dirname(prototypePath), { recursive: true });
+
+    if (!existsSync(outputPath)) {
+      console.log(`[${index + 1}/${selectedJobs.length}] ${job.key}`);
+      const wav = await generateGeminiWav(job.text);
+      await writeFile(outputPath, wav);
+      await writeFile(prototypePath, wav);
+    }
+    manifest[job.key] = `assets/audio/${relativePath}`;
+  }
+
+  await writeManifest(manifest);
+  console.log(`Audio manifest written with ${Object.keys(manifest).length} entries.`);
+}
+
+async function loadAdventures() {
+  const source = await readFile(resolve("public/adventures.js"), "utf8");
+  const sandbox = { window: {} };
+  vm.createContext(sandbox);
+  vm.runInContext(source, sandbox);
+  return sandbox.window.RPG_KIDS_ADVENTURES || [];
+}
+
+function buildAudioJobs(adventures) {
+  const jobs = [];
+  for (const adventure of adventures) {
+    for (const scene of adventure.scenes || []) {
+      jobs.push({
+        key: `${adventure.id}/${scene.id}/scene`,
+        adventureId: adventure.id,
+        text: sceneText(scene),
+      });
+
+      if (scene.diceOutcomes) {
+        const bandByRoll = { 1: "low", 2: "low", 3: "low", 4: "middle", 5: "high", 6: "high" };
+        for (let result = 1; result <= 6; result += 1) {
+          const outcome = scene.diceOutcomes[bandByRoll[result]];
+          jobs.push({
+            key: `${adventure.id}/${scene.id}/dice-${result}`,
+            adventureId: adventure.id,
+            text: `Você tirou ${result}. ${diceResultReaction(result)} ${outcome?.narration || defaultDiceNarration(result, bandByRoll[result])}`,
+          });
+        }
+      }
+    }
+  }
+  return jobs.filter((job) => job.text);
+}
+
+function sceneText(scene) {
+  const choices = scene.hub?.routes?.length
+    ? scene.hub.routes.map((route) => route.label)
+    : scene.choices || [];
+  const spokenChoices = choices
+    .filter((choice) => !String(choice).toLowerCase().includes("livre"))
+    .map((choice, index) => `Opção ${index + 1}: ${choice}.`)
+    .join(" ");
+  return [
+    scene.narration,
+    scene.prompt || "O que você faz?",
+    spokenChoices ? `Escute suas opções de aventura. ${spokenChoices}` : "",
+    choices.some((choice) => String(choice).toLowerCase().includes("livre"))
+      ? "Você também pode inventar sua própria ação e falar para mim."
+      : "",
+    scene.dice ? "Depois da sua escolha, o dado conta a sorte." : "",
+  ].filter(Boolean).join(" ");
+}
+
+async function generateGeminiWav(text) {
+  const response = await fetch(geminiTtsUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": geminiApiKey,
+    },
+    body: JSON.stringify({
+      model: ttsModel,
+      input: geminiTtsInput(text),
+      response_format: { type: "audio" },
+      generation_config: {
+        speech_config: [{ voice: ttsVoice }],
+      },
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(`Gemini TTS failed ${response.status}: ${JSON.stringify(data).slice(0, 300)}`);
+  }
+
+  const audioData = findGeminiAudioData(data);
+  if (!audioData) throw new Error("Gemini TTS response did not include audio data");
+  return wavFromPcm(Buffer.from(audioData, "base64"));
+}
+
+function geminiTtsInput(text) {
+  return [
+    "Fale em portugues do Brasil.",
+    "Use estilo de grande contador de historias: caloroso, teatral, encantado, com suspense seguro, surpresa leve e alegria.",
+    "Fale como um mestre de RPG infantil. Nunca fale em ingles.",
+    "A fala e para uma crianca pequena com supervisao familiar.",
+    `Leia exatamente esta fala do narrador:\n"${String(text).slice(0, 1200)}"`,
+  ].join("\n");
+}
+
+function diceResultReaction(result) {
+  const reactions = {
+    1: "Ih... o dado caiu no cantinho do azar.",
+    2: "Ah não... a sorte tropeçou um pouquinho.",
+    3: "Quase deu certo. Faltou só um brilho.",
+    4: "Ufa. Por pouco a cena não complicou tudo, mas a sorte sorriu para você.",
+    5: "Muito bem. Você teve sorte agora.",
+    6: "Seis! Sorte máxima. O dado fez festa na mesa.",
+  };
+  return reactions[result] || "";
+}
+
+function defaultDiceNarration(result, band) {
+  if (band === "low") return `Resultado ${result}: algo complica o caminho, mas a aventura continua.`;
+  if (band === "middle") return `Resultado ${result}: você consegue, mas precisa cumprir um desafio curto.`;
+  return `Resultado ${result}: sucesso brilhante!`;
+}
+
+async function writeManifest(generatedManifest) {
+  const existing = await readJson(join(outDir, "manifest.json"));
+  const manifest = { ...existing, ...generatedManifest };
+  const json = `${JSON.stringify(manifest, null, 2)}\n`;
+  await writeFile(join(outDir, "manifest.json"), json);
+  await mkdir(prototypeOutDir, { recursive: true });
+  await writeFile(join(prototypeOutDir, "manifest.json"), json);
+}
+
+async function readJson(path) {
+  try {
+    return JSON.parse(await readFile(path, "utf8"));
+  } catch {
+    return {};
+  }
+}
+
+function findGeminiAudioData(value) {
+  if (!value || typeof value !== "object") return "";
+  if (typeof value.data === "string" && value.data.length > 100) return value.data;
+  if (value.output_audio?.data) return value.output_audio.data;
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const found = findGeminiAudioData(item);
+      if (found) return found;
+    }
+  }
+  for (const nested of Object.values(value)) {
+    if (nested && typeof nested === "object") {
+      const found = findGeminiAudioData(nested);
+      if (found) return found;
+    }
+  }
+  return "";
+}
+
+function wavFromPcm(pcmBuffer, sampleRate = 24000, channels = 1, bitsPerSample = 16) {
+  const byteRate = sampleRate * channels * bitsPerSample / 8;
+  const blockAlign = channels * bitsPerSample / 8;
+  const header = Buffer.alloc(44);
+  header.write("RIFF", 0);
+  header.writeUInt32LE(36 + pcmBuffer.length, 4);
+  header.write("WAVE", 8);
+  header.write("fmt ", 12);
+  header.writeUInt32LE(16, 16);
+  header.writeUInt16LE(1, 20);
+  header.writeUInt16LE(channels, 22);
+  header.writeUInt32LE(sampleRate, 24);
+  header.writeUInt32LE(byteRate, 28);
+  header.writeUInt16LE(blockAlign, 32);
+  header.writeUInt16LE(bitsPerSample, 34);
+  header.write("data", 36);
+  header.writeUInt32LE(pcmBuffer.length, 40);
+  return Buffer.concat([header, pcmBuffer]);
+}
+
+function loadEnvFile() {
+  const envPath = resolve(".env");
+  if (!existsSync(envPath)) return;
+  const lines = require("node:fs").readFileSync(envPath, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex <= 0) continue;
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const rawValue = trimmed.slice(separatorIndex + 1).trim();
+    if (!process.env[key]) process.env[key] = rawValue.replace(/^["']|["']$/g, "");
+  }
+}
