@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-15
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 1e90d0f Initial RPG Kids playable prototype
+Commit(s): 1e90d0f Initial RPG Kids playable prototype; b5dbf27 Document GitHub publish and draft long adventure
 PR/Issues: n/a
 
 ## Resumo curto
@@ -130,6 +130,11 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Criado template `content/templates/long-branching-adventure-template-v1.json` para aventuras longas com hub, grafo de quests, tokens centrais, checkpoints e contrato do narrador.
 - Criada aventura longa em rascunho `content/adventures/cidade-dos-sinos-claros.md`, planejada para pelo menos 3 horas, com cidade-hub, NPCs, quests sequenciais, recompensas, inglês, mandarim, desafios físicos e final cooperativo.
 - Atualizado `docs/STORY_PROTOCOL_V0.md` com seção `Aventura longa ramificada V1`.
+- Convertida a campanha `A Cidade dos Sinos Claros` para primeira versão jogável no catálogo do protótipo.
+- A versão jogável tem 10 cenas lineares com sensação de hub: portão, praça, padaria, biblioteca, jardim, ponte, oficina, bosque, colina e torre final.
+- A campanha jogável inclui 5 Notas de Sino como progresso, NPCs com quests, recompensas de avatar, palavras em inglês/mandarim, desafios físicos adaptáveis e final cooperativo com o Grande Silêncio Macio.
+- O painel dos pais passou a reconhecer `long_branching_quest_hub` como `Campanha`, e o medidor `notas_sino` ganhou rótulo legível.
+- `prototype/` foi sincronizado para `public/` e o cache do service worker foi atualizado para `rpg-kids-v2026-07-15-long-bell-city-pwa`.
 
 ## Decisoes tomadas
 
@@ -185,6 +190,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - A reação emocional ao dado deve vir antes da consequência da cena, para reforçar a sensação de mestre de RPG sem esconder o resultado.
 - Aventuras longas devem ser estruturadas como hub + quests + linha central, com transições narradas entre locais e sem grandes saltos de acontecimento.
 - Uma aventura de 3 horas deve ser planejada por sessões curtas com retomada, deslocamento, NPC/desafio, dado, consequência e checkpoint.
+- A primeira versão jogável da campanha pode ser linear para validar ritmo, voz e conteúdo; o hub ramificado real entra como próxima melhoria de motor.
 
 ## Arquivos alterados
 
@@ -207,6 +213,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `public/assets/icons/icon-512.png`
 - `public/manifest.webmanifest`
 - `public/sw.js`
+- `prototype/sw.js`
 - `PROJECT_CONTEXT.md`
 - `AGENTS.md`
 - `docs/DISCOVERY_NOTES.md`

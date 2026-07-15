@@ -326,6 +326,7 @@ function labelForFlag(flag) {
     humor_restrito: "Humor restrito",
     movimento: "Movimento",
     idiomas: "Idiomas",
+    campanha: "Campanha longa",
     sem_alertas: "Sem alertas",
   };
   return labels[flag] || flag.replaceAll("_", " ");
@@ -563,6 +564,7 @@ function generateDraftAdventure() {
 function labelForTemplate(template) {
   const labels = {
     quest: "Jornada",
+    long_branching_quest_hub: "Campanha",
     rescue: "Resgate",
     mystery: "Mistério",
     exploration: "Exploração",
@@ -573,11 +575,13 @@ function labelForTemplate(template) {
 }
 
 function coverIcon(adventure) {
+  if (adventure.id.includes("sinos")) return "♪";
   if (adventure.id.includes("caverna")) return "⌂";
   return "✦";
 }
 
 function coverGradient(adventure) {
+  if (adventure.id.includes("sinos")) return "linear-gradient(135deg,#ffd66b,#80bfff)";
   if (adventure.id.includes("caverna")) return "linear-gradient(135deg,#b8a07a,#ffd66b)";
   return "linear-gradient(135deg,#80bfff,#ff8fb3)";
 }
@@ -1408,6 +1412,7 @@ function labelFor(key) {
     criatividade: "criatividade",
     pensamento_esperto: "pensar",
     cooperacao: "cooperação",
+    notas_sino: "notas de sino",
   };
   return labels[key] || key.replace("_", " ");
 }
