@@ -1891,6 +1891,34 @@ function cuePattern(cue) {
       { frequency: 220, duration: 0.16, volume: 0.025, type: "triangle" },
     ];
   }
+  if (cue.includes("bell")) {
+    return [
+      { frequency: 660, duration: 0.12, volume: 0.028, type: "sine" },
+      { frequency: 990, duration: 0.16, volume: 0.022, type: "sine" },
+      { frequency: 1320, duration: 0.18, volume: 0.018, type: "sine" },
+    ];
+  }
+  if (cue.includes("workshop") || cue.includes("hammer") || cue.includes("tap")) {
+    return [
+      { frequency: 310, duration: 0.05, volume: 0.028, type: "triangle" },
+      { frequency: 410, duration: 0.05, volume: 0.024, type: "triangle" },
+      { frequency: 520, duration: 0.07, volume: 0.022, type: "sine" },
+    ];
+  }
+  if (cue.includes("bridge")) {
+    return [
+      { frequency: 360, duration: 0.08, volume: 0.022, type: "triangle" },
+      { frequency: 300, duration: 0.08, volume: 0.02, type: "triangle" },
+      { frequency: 420, duration: 0.1, volume: 0.022, type: "sine" },
+    ];
+  }
+  if (cue.includes("wind_soft")) {
+    return [
+      { frequency: 260, duration: 0.18, volume: 0.018, type: "sine" },
+      { frequency: 390, duration: 0.16, volume: 0.018, type: "triangle" },
+      { frequency: 520, duration: 0.2, volume: 0.016, type: "sine" },
+    ];
+  }
   if (cue.includes("wave") || cue.includes("sea") || cue.includes("whale")) {
     return [
       { frequency: 260, duration: 0.18, volume: 0.026, type: "sine" },
