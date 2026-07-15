@@ -1,1 +1,6 @@
-{}
+{
+  "portal-das-estrelinhas/entrada_floresta/scene": "assets/audio/portal-das-estrelinhas/entrada_floresta/scene.wav",
+  "portal-das-estrelinhas/ponte_dos_cristais/dice-1": "assets/audio/portal-das-estrelinhas/ponte_dos_cristais/dice-1.wav",
+  "portal-das-estrelinhas/ponte_dos_cristais/dice-2": "assets/audio/portal-das-estrelinhas/ponte_dos_cristais/dice-2.wav",
+  "portal-das-estrelinhas/ponte_dos_cristais/scene": "assets/audio/portal-das-estrelinhas/ponte_dos_cristais/scene.wav"
+}

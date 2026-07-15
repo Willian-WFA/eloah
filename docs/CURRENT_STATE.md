@@ -171,6 +171,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-selective-tts-pwa`.
 - Adicionada camada de audio pre-gerado: o app tenta `assets/audio/manifest.json` antes de Gemini ao vivo/voz local.
 - Criado `npm run generate:audio`, que usa Gemini TTS para gerar WAVs de narracao de cena e resultados de dado por aventura em `public/assets/audio/` e `prototype/assets/audio/`.
+- Gerados os primeiros 4 WAVs de teste para `portal-das-estrelinhas`; a geracao completa das historias pequenas parou por quota Gemini `429`, mas o script agora salva manifest incremental e permite retomar depois.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-prebuilt-audio-pwa`.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-api-tts-pwa`.
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.

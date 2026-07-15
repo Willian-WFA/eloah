@@ -14,6 +14,8 @@ const outDir = resolve("public/assets/audio");
 const prototypeOutDir = resolve("prototype/assets/audio");
 const selectedAdventureId = process.argv.find((arg) => arg.startsWith("--adventure="))?.split("=")[1] || "";
 const limit = Number(process.argv.find((arg) => arg.startsWith("--limit="))?.split("=")[1] || 0);
+const continueOnError = process.argv.includes("--continue-on-error");
+const delayMs = Number(process.argv.find((arg) => arg.startsWith("--delay-ms="))?.split("=")[1] || 2500);
 
 main().catch((error) => {
   console.error(error);
@@ -27,7 +29,7 @@ async function main() {
   const adventures = await loadAdventures();
   const jobs = buildAudioJobs(adventures).filter((job) => !selectedAdventureId || job.adventureId === selectedAdventureId);
   const selectedJobs = limit > 0 ? jobs.slice(0, limit) : jobs;
-  const manifest = {};
+  const manifest = await readJson(join(outDir, "manifest.json"));
 
   await mkdir(outDir, { recursive: true });
   await mkdir(prototypeOutDir, { recursive: true });
@@ -41,11 +43,20 @@ async function main() {
 
     if (!existsSync(outputPath)) {
       console.log(`[${index + 1}/${selectedJobs.length}] ${job.key}`);
-      const wav = await generateGeminiWav(job.text);
-      await writeFile(outputPath, wav);
-      await writeFile(prototypePath, wav);
+      try {
+        const wav = await generateGeminiWavWithRetry(job.text);
+        await writeFile(outputPath, wav);
+        await writeFile(prototypePath, wav);
+        if (delayMs > 0) await wait(delayMs);
+      } catch (error) {
+        await writeManifest(manifest);
+        if (!continueOnError) throw error;
+        console.error(`[skip] ${job.key}: ${error.message}`);
+        continue;
+      }
     }
     manifest[job.key] = `assets/audio/${relativePath}`;
+    await writeManifest(manifest);
   }
 
   await writeManifest(manifest);
@@ -130,6 +141,28 @@ async function generateGeminiWav(text) {
   const audioData = findGeminiAudioData(data);
   if (!audioData) throw new Error("Gemini TTS response did not include audio data");
   return wavFromPcm(Buffer.from(audioData, "base64"));
+}
+
+async function generateGeminiWavWithRetry(text) {
+  const attempts = [0, 20_000, 60_000];
+  let lastError;
+  for (const delay of attempts) {
+    if (delay) {
+      console.log(`Rate limit/backoff: waiting ${Math.round(delay / 1000)}s before retry...`);
+      await wait(delay);
+    }
+    try {
+      return await generateGeminiWav(text);
+    } catch (error) {
+      lastError = error;
+      if (!/429|quota|rate/i.test(error.message)) throw error;
+    }
+  }
+  throw lastError;
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function geminiTtsInput(text) {

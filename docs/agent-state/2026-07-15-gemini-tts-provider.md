@@ -19,6 +19,8 @@ Usuario obteve uma key do Gemini e quer usar essa key para a voz do narrador.
 - Apos teste real, o Gemini TTS ficou bom em qualidade mas lento. O frontend passou a usar voz local para cenas/opcoes longas e Gemini apenas para falas premium, como resultado do dado e fala importante do mestre.
 - Timeout de TTS no frontend foi aumentado para 18s; falha gera cooldown curto de 8s em vez de desativar a API ate recarregar.
 - Evolucao seguinte: audio previsivel agora pode ser pre-gerado com `npm run generate:audio`. O app consulta `assets/audio/manifest.json` e toca WAV salvo antes de tentar Gemini ao vivo.
+- Primeiro lote local gerou 4 WAVs para `portal-das-estrelinhas` antes de a Gemini retornar `429 quota exceeded`; os arquivos foram mantidos e o manifest foi sincronizado.
+- `scripts/generate-audio.js` agora grava manifest incremental, pula WAVs existentes, faz backoff em 429 e pode continuar com `--continue-on-error`.
 - Suporte OpenAI TTS foi mantido como opcao futura (`TTS_PROVIDER=openai`).
 - O fallback do frontend permanece: se `/api/tts` falhar, volta para `speechSynthesis`.
 
