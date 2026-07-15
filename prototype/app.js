@@ -1570,8 +1570,44 @@ function buildResumeSummary(checkpoint = state) {
   const progressText = strongest ? `O ponto mais forte foi ${labelFor(strongest)}.` : "A aventura ainda está começando.";
   const logText = usefulLog.length ? ` Antes disso: ${usefulLog.join(" ")}` : "";
   const rewardText = rewardLabels.length ? ` Itens guardados: ${rewardLabels.join(", ")}.` : "";
+  const campaignText = buildHubCampaignResume(adventure, checkpoint);
 
-  return `Retomada: você está em ${scene?.title || "uma cena mágica"} de ${adventure?.title || "uma aventura"}. ${progressText}${rewardText}${logText} O mestre vai continuar daqui.`;
+  return `Retomada: você está em ${scene?.title || "uma cena mágica"} de ${adventure?.title || "uma aventura"}. ${progressText}${rewardText}${campaignText}${logText} O mestre vai continuar daqui.`;
+}
+
+function buildHubCampaignResume(adventure, checkpoint = state) {
+  const hub = adventure?.scenes?.find((scene) => scene.hub?.routes?.length);
+  if (!hub) return "";
+
+  const progress = checkpoint.progress || state.progress || {};
+  const completedScenes = new Set(checkpoint.completedScenes || [...state.completedScenes]);
+  const rewards = checkpoint.rewards || state.rewards || [];
+  const notes = progress.notas_sino || 0;
+  const completedTitles = adventure.scenes
+    .filter((scene) => completedScenes.has(scene.id) && scene.id !== hub.id && !scene.hub)
+    .map((scene) => scene.title)
+    .slice(-3);
+  const openRoutes = hub.hub.routes
+    .filter((route) => routeAvailableForSnapshot(route, { progress, completedScenes, rewards }))
+    .map((route) => route.label)
+    .slice(0, 3);
+
+  const notesText = notes ? ` Você juntou ${Math.round(notes)} Nota${notes === 1 ? "" : "s"} de Sino.` : "";
+  const completedText = completedTitles.length ? ` Últimas ajudas: ${completedTitles.join(", ")}.` : "";
+  const routesText = openRoutes.length ? ` Caminhos abertos: ${openRoutes.join(", ")}.` : "";
+  return `${notesText}${completedText}${routesText}`;
+}
+
+function routeAvailableForSnapshot(route, snapshot) {
+  if (route.requiresProgress) {
+    const progressOk = Object.entries(route.requiresProgress).every(([key, value]) => (snapshot.progress[key] || 0) >= value);
+    if (!progressOk) return false;
+  }
+  if (route.requiresRewards?.some((rewardId) => !snapshot.rewards.includes(rewardId))) return false;
+  if (route.requiresCompleted?.some((sceneId) => !snapshot.completedScenes.has(sceneId))) return false;
+  if (route.hideWhenCompleted && snapshot.completedScenes.has(route.target)) return false;
+  if (route.hideWhenRewarded && snapshot.rewards.includes(route.hideWhenRewarded)) return false;
+  return true;
 }
 
 function showFeedback(message, cue, effect, options = {}) {

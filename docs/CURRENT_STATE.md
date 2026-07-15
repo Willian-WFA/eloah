@@ -141,6 +141,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Todas as quests principais da campanha voltam para a praça, permitindo campanha com retorno ao centro em vez de linha reta.
 - Resultado baixo em quests centrais pode conceder recompensas `nota_*`, mantendo complicação narrativa sem travar a linha central.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-bell-city-hub-pwa`.
+- O resumo de retomada agora reconhece campanhas com hub: informa Notas de Sino, últimas quests/ajudas concluídas e caminhos abertos.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-campaign-resume-pwa`.
 
 ## Decisoes tomadas
 
