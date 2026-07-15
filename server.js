@@ -1,6 +1,6 @@
-import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
-import { extname, join, normalize, resolve } from "node:path";
+const { createServer } = require("node:http");
+const { readFile } = require("node:fs/promises");
+const { extname, join, normalize, resolve } = require("node:path");
 
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || "0.0.0.0";

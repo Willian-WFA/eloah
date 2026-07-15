@@ -153,6 +153,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Servidor Node passou a escutar explicitamente em `0.0.0.0`, preservando `process.env.PORT`, para ambiente gerenciado como Hostinger.
 - `docs/HOSTINGER_DEPLOY.md` atualizado com campos recomendados do painel, comando de start e alternativa de deploy estático por `public/`.
 - Validação local confirmou `/health` retornando JSON e `/` retornando `200 OK` em porta de teste.
+- Corrigido erro de runtime da Hostinger `ERR_REQUIRE_ESM` em `.builds/config/preload-timestamp.js`: removido `"type": "module"` do `package.json` e convertido `server.js` para CommonJS.
+- Validação local após a correção confirmou `/health` retornando JSON e `/` retornando `200 OK`.
 
 ## Decisoes tomadas
 
@@ -210,6 +212,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Uma aventura de 3 horas deve ser planejada por sessões curtas com retomada, deslocamento, NPC/desafio, dado, consequência e checkpoint.
 - A primeira versão jogável da campanha pode ser linear para validar ritmo, voz e conteúdo; o hub ramificado real entra como próxima melhoria de motor.
 - O hub ramificado inicial deve continuar simples: rotas condicionais, sem mapa visual complexo, até validarmos voz, checkpoint e entendimento da criança.
+- Para Hostinger, manter `server.js` em CommonJS enquanto o runtime usar preload CommonJS; evitar recolocar `"type": "module"` no `package.json`.
 
 ## Arquivos alterados
 

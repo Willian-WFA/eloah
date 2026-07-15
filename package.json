@@ -2,7 +2,6 @@
   "name": "rpg-kids",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "start": "node server.js",
     "sync:public": "cp prototype/index.html prototype/styles.css prototype/app.js prototype/adventures.js prototype/manifest.webmanifest prototype/sw.js public/ && mkdir -p public/assets/icons && cp -a prototype/assets/icons/. public/assets/icons/",
