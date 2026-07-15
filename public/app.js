@@ -403,7 +403,10 @@ function renderFullStory(adventure) {
 }
 
 function renderFullScene(scene, adventure) {
-  const choices = scene.choices?.length ? `<p><strong>Escolhas:</strong> ${scene.choices.join(" · ")}</p>` : "";
+  const reviewChoices = scene.hub?.routes?.length
+    ? [...scene.hub.routes.map((route) => route.label), "Livre escolha"]
+    : scene.choices || [];
+  const choices = reviewChoices.length ? `<p><strong>Escolhas:</strong> ${reviewChoices.join(" · ")}</p>` : "";
   const movement = scene.movement
     ? `<p><strong>Desafio físico:</strong> ${scene.movement.instruction} Alternativa: ${scene.movement.fallback}</p>`
     : "";
@@ -647,6 +650,43 @@ function currentScene() {
   return state.adventure.scenes[state.sceneIndex];
 }
 
+function sceneChoices(scene) {
+  if (scene.hub?.routes?.length) {
+    const routes = scene.hub.routes.filter((route) => isRouteAvailable(route));
+    const labels = routes.map((route) => route.label);
+    return labels.length ? [...labels, "Livre escolha"] : scene.hub.emptyChoices || ["Eu peço ajuda para Luma", "Eu olho o mapa", "Livre escolha"];
+  }
+  return scene.choices || [];
+}
+
+function isRouteAvailable(route) {
+  if (route.requiresProgress) {
+    const progressOk = Object.entries(route.requiresProgress).every(([key, value]) => (state.progress[key] || 0) >= value);
+    if (!progressOk) return false;
+  }
+  if (route.requiresRewards?.some((rewardId) => !state.rewards.includes(rewardId))) return false;
+  if (route.requiresCompleted?.some((sceneId) => !state.completedScenes.has(sceneId))) return false;
+  if (route.hideWhenCompleted && state.completedScenes.has(route.target)) return false;
+  if (route.hideWhenRewarded && state.rewards.includes(route.hideWhenRewarded)) return false;
+  return true;
+}
+
+function resolveSceneNext(scene) {
+  if (scene.hub?.routes?.length) {
+    const route = scene.hub.routes.find((item) => routeMatchesChoice(item, state.selectedChoice) && isRouteAvailable(item));
+    return route?.target || scene.next;
+  }
+  return scene.choiceRoutes?.[state.selectedChoice] || scene.next;
+}
+
+function routeMatchesChoice(route, choice) {
+  if (route.label === choice) return true;
+  const action = normalizeActionText(choice || "");
+  const label = normalizeActionText(route.label || "");
+  const signals = route.signals || label.split(" ").filter((part) => part.length > 3);
+  return signals.map(normalizeActionText).some((signal) => action.includes(signal));
+}
+
 function renderScene() {
   const scene = currentScene();
   if (!scene) {
@@ -665,7 +705,7 @@ function renderScene() {
   els.feedbackPanel.hidden = true;
   renderChildTerms();
 
-  (scene.choices || []).forEach((choice, index) => {
+  sceneChoices(scene).forEach((choice, index) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "choice-button";
@@ -688,7 +728,7 @@ function renderScene() {
   els.movementButton.hidden = !scene.movement;
   els.skipButton.hidden = false;
   renderSceneControls();
-  els.nextButton.textContent = scene.next ? "Avançar" : "Finalizar";
+  els.nextButton.textContent = scene.hub ? "Seguir caminho" : scene.next ? "Avançar" : "Finalizar";
 
   renderProgress();
   renderAvatar();
@@ -822,7 +862,7 @@ function genderedText(value) {
 function composeSceneNarration(scene) {
   const terms = childTerms();
   const name = childCallName();
-  const choices = (scene.choices || []).filter(Boolean);
+  const choices = sceneChoices(scene).filter(Boolean);
   const spokenChoices = choices.filter((choice) => !choice.toLowerCase().includes("livre"));
   const optionText = spokenChoices.length
     ? `Escute suas opções de aventura. ${choices
@@ -1244,7 +1284,11 @@ function rollDice() {
     showFeedback(`${outcome?.narration || "Resultado 4: existe um desafio para abrir o caminho."} ${scene.movement.instruction}`, scene.sound?.middle, scene.effects?.diceMedium);
   } else if (band === "low") {
     addNarratorEntry("dice", `Dado ${result}: ${outcome?.narration || "algo complicou, mas a aventura continuou."}`);
-    applySceneProgress(scene, 1, { progressDelta: outcomeProgress, rewardId: outcomeReward, grantReward: false });
+    applySceneProgress(scene, 1, {
+      progressDelta: outcomeProgress,
+      rewardId: outcomeReward,
+      grantReward: String(outcomeReward || "").startsWith("nota_"),
+    });
   } else {
     addNarratorEntry("dice", `Dado ${result}: ${outcome?.narration || "sucesso brilhante."}`);
     applySceneProgress(scene, 1, { progressDelta: outcomeProgress, rewardId: outcomeReward });
@@ -1308,12 +1352,13 @@ function nextScene() {
   if (!scene.dice) {
     applySceneProgress(scene);
   }
-  if (!scene.next) {
+  const nextSceneId = resolveSceneNext(scene);
+  if (!nextSceneId) {
     finishAdventure(false);
     return;
   }
 
-  const nextIndex = state.adventure.scenes.findIndex((item) => item.id === scene.next);
+  const nextIndex = state.adventure.scenes.findIndex((item) => item.id === nextSceneId);
   state.sceneIndex = nextIndex >= 0 ? nextIndex : state.sceneIndex + 1;
   state.selectedChoice = null;
   renderScene();

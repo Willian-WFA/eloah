@@ -135,6 +135,12 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - A campanha jogável inclui 5 Notas de Sino como progresso, NPCs com quests, recompensas de avatar, palavras em inglês/mandarim, desafios físicos adaptáveis e final cooperativo com o Grande Silêncio Macio.
 - O painel dos pais passou a reconhecer `long_branching_quest_hub` como `Campanha`, e o medidor `notas_sino` ganhou rótulo legível.
 - `prototype/` foi sincronizado para `public/` e o cache do service worker foi atualizado para `rpg-kids-v2026-07-15-long-bell-city-pwa`.
+- O motor passou a suportar cenas `hub` com rotas condicionais por progresso, recompensas e cenas completas, preservando o fluxo linear das aventuras antigas.
+- A Praça do Relógio Parado virou hub real: a criança pode escolher quests disponíveis, quests completas somem, novas rotas abrem com 2 e 3 Notas de Sino, e a torre abre com 5 Notas.
+- A fala livre no hub agora pode direcionar rotas por sinais, por exemplo "quero ir para a biblioteca" ou "vamos para a ponte".
+- Todas as quests principais da campanha voltam para a praça, permitindo campanha com retorno ao centro em vez de linha reta.
+- Resultado baixo em quests centrais pode conceder recompensas `nota_*`, mantendo complicação narrativa sem travar a linha central.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-bell-city-hub-pwa`.
 
 ## Decisoes tomadas
 
@@ -191,6 +197,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Aventuras longas devem ser estruturadas como hub + quests + linha central, com transições narradas entre locais e sem grandes saltos de acontecimento.
 - Uma aventura de 3 horas deve ser planejada por sessões curtas com retomada, deslocamento, NPC/desafio, dado, consequência e checkpoint.
 - A primeira versão jogável da campanha pode ser linear para validar ritmo, voz e conteúdo; o hub ramificado real entra como próxima melhoria de motor.
+- O hub ramificado inicial deve continuar simples: rotas condicionais, sem mapa visual complexo, até validarmos voz, checkpoint e entendimento da criança.
 
 ## Arquivos alterados
 

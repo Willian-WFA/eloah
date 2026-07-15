@@ -1306,6 +1306,19 @@ window.RPG_KIDS_ADVENTURES = [
           "A praça é redonda. No centro, a torre do Relógio-Coração tem janelas em forma de sino. Na fonte existem cinco espaços vazios. Luma aponta para três ruas: a Rua dos Biscoitos Redondos, a Biblioteca dos Guarda-Chuvas e o Jardim da Girafa Pequena. Ela explica que cada ajuda pode acordar uma Nota de Sino.",
         prompt: "Para onde você quer olhar primeiro?",
         choices: ["Rua dos Biscoitos Redondos", "Biblioteca dos Guarda-Chuvas", "Jardim da Girafa Pequena", "Livre escolha"],
+        hub: {
+          routes: [
+            { label: "Rua dos Biscoitos Redondos", target: "sinos_tico_biscoitos", signals: ["biscoito", "padaria", "tico"], hideWhenCompleted: true },
+            { label: "Biblioteca dos Guarda-Chuvas", target: "sinos_vira_pagina", signals: ["biblioteca", "livro", "guarda chuva", "vira pagina"], hideWhenCompleted: true },
+            { label: "Jardim da Girafa Pequena", target: "sinos_pipoca_jardim", signals: ["jardim", "girafa", "pipoca", "flores"], hideWhenCompleted: true },
+            { label: "Ponte dos Panos Coloridos", target: "sinos_ponte_nara", signals: ["ponte", "panos", "nara"], requiresProgress: { notas_sino: 2 }, hideWhenCompleted: true },
+            { label: "Oficina do Martelo Macio", target: "sinos_bolim_oficina", signals: ["oficina", "martelo", "bolim", "sino sem plim"], requiresProgress: { notas_sino: 2 }, hideWhenCompleted: true },
+            { label: "Bosque dos Passos Baixinhos", target: "sinos_bento_bosque", signals: ["bosque", "bento", "cartas", "coelho"], requiresProgress: { notas_sino: 3 }, hideWhenCompleted: true },
+            { label: "Colina do Vento Devagar", target: "sinos_iara_vento", signals: ["colina", "vento", "iara", "fita"], requiresProgress: { notas_sino: 3 }, hideWhenCompleted: true },
+            { label: "Subir a Torre do Relógio-Coração", target: "sinos_torre_final", signals: ["torre", "relogio", "relógio", "final", "silencio", "silêncio"], requiresProgress: { notas_sino: 5 } },
+          ],
+          emptyChoices: ["Eu olho as Notas de Sino", "Eu peço uma dica para Luma", "Livre escolha"],
+        },
         learningCriteria: "A cena organiza objetivo, escolhas e memória de missão central.",
         actionRubric: [
           { progress: "pensamento_esperto", signals: ["biscoito", "biblioteca", "jardim", "mapa", "rua"], short: "Você escolheu um caminho no mapa.", message: "Critério da cena: escolher rota e lembrar o objetivo. Progresso: pensar +1." },
@@ -1344,7 +1357,7 @@ window.RPG_KIDS_ADVENTURES = [
         reward: "nota_amarela",
         sound: { enter: "warm_chime", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "bell_wave", high: "bright_chime", reward: "bell_wave" },
         effects: { enter: "warm_glow", diceLow: "soft_plop", diceMedium: "bell_wave", diceHigh: "gold_glow", reward: "item_pop_glow" },
-        next: "sinos_vira_pagina",
+        next: "sinos_praca_relogio",
       },
       {
         id: "sinos_vira_pagina",
@@ -1374,7 +1387,7 @@ window.RPG_KIDS_ADVENTURES = [
         reward: "livro_pistas",
         sound: { enter: "library_soft_hum", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "warm_chime", high: "bright_chime", reward: "item_pop_glow" },
         effects: { enter: "book_float", diceLow: "soft_plop", diceMedium: "warm_glow", diceHigh: "gold_glow", reward: "item_pop_glow" },
-        next: "sinos_pipoca_jardim",
+        next: "sinos_praca_relogio",
       },
       {
         id: "sinos_pipoca_jardim",
@@ -1397,7 +1410,7 @@ window.RPG_KIDS_ADVENTURES = [
         ],
         dice: true,
         diceOutcomes: {
-          low: { narration: "O banquinho faz crec, mas não quebra. Pipoca entende que pedir ajuda antes de subir é uma ideia esperta.", progressDelta: { gentileza: 1 }, reward: null },
+          low: { narration: "O banquinho faz crec, mas não quebra. Pipoca entende que pedir ajuda antes de subir é uma ideia esperta, e uma Nota Prateada acende fraquinha na fonte.", progressDelta: { gentileza: 1, notas_sino: 1 }, reward: "nota_prateada" },
           middle: { narration: "A flor só abaixa se ouvir hua, que significa flor. Tente falar hua e faça a Árvore Calma.", progressDelta: { palavras_novas: 1, movimento: 1, notas_sino: 1 }, reward: "nota_prateada" },
           high: { narration: "Você inventa um jeito cuidadoso, as flores formam uma escadinha de pétalas e Pipoca sorri. A Nota Prateada aparece.", progressDelta: { criatividade: 1, gentileza: 1, notas_sino: 1 }, reward: "capa_luminha" },
         },
@@ -1405,7 +1418,7 @@ window.RPG_KIDS_ADVENTURES = [
         reward: "capa_luminha",
         sound: { enter: "garden_tick_soft", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "warm_chime", high: "bright_chime", reward: "item_pop_glow" },
         effects: { enter: "leaf_swirl", diceLow: "soft_plop", diceMedium: "warm_glow", diceHigh: "gold_glow", reward: "item_pop_glow" },
-        next: "sinos_ponte_nara",
+        next: "sinos_praca_relogio",
       },
       {
         id: "sinos_ponte_nara",
@@ -1423,7 +1436,7 @@ window.RPG_KIDS_ADVENTURES = [
         movement: { label: "Marcha dos Panos", instruction: "Marche contando até 6.", fallback: "Bata 6 palmas devagar." },
         dice: true,
         diceOutcomes: {
-          low: { narration: "A ponte balança e senta no chão como um tapete cansado. Nara ajuda você a esperar o tecido respirar.", progressDelta: { coragem: 1 }, reward: null },
+          low: { narration: "A ponte balança e senta no chão como um tapete cansado. Nara ajuda você a esperar o tecido respirar, e a Nota Vermelha aparece porque tentar com calma também conta.", progressDelta: { coragem: 1, notas_sino: 1 }, reward: "nota_vermelha" },
           middle: { narration: "A ponte pede um jump, um pulo pequeno, para acordar o pano azul. Depois marche contando até 6.", progressDelta: { movimento: 1, palavras_novas: 1, notas_sino: 1 }, reward: "nota_vermelha" },
           high: { narration: "Você encontra o ritmo perfeito, a ponte vira um caminho macio e as Botas Plim-Plim aparecem com a Nota Vermelha.", progressDelta: { movimento: 1, coragem: 1, notas_sino: 1 }, reward: "botas_plim" },
         },
@@ -1431,7 +1444,7 @@ window.RPG_KIDS_ADVENTURES = [
         reward: "botas_plim",
         sound: { enter: "bridge_soft_wave", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "warm_chime", high: "bright_chime", reward: "item_pop_glow" },
         effects: { enter: "water_shimmer", diceLow: "soft_plop", diceMedium: "warm_glow", diceHigh: "gold_glow", reward: "item_pop_glow" },
-        next: "sinos_bolim_oficina",
+        next: "sinos_praca_relogio",
       },
       {
         id: "sinos_bolim_oficina",
@@ -1453,15 +1466,15 @@ window.RPG_KIDS_ADVENTURES = [
         ],
         dice: true,
         diceOutcomes: {
-          low: { narration: "A ferramenta errada faz o sino se esconder em uma caixa. Você pede desculpa e tenta de novo com mais cuidado.", progressDelta: { gentileza: 1 }, reward: null },
-          middle: { narration: "A caixa só abre com open, que significa abrir. Quando você tenta, o sino responde com um plim bem pequenininho.", progressDelta: { palavras_novas: 1, pensamento_esperto: 1 }, reward: "martelo_macio" },
-          high: { narration: "Você escuta o plim escondido, toca no ponto certo e o sino acorda feliz. Bolim entrega o Martelo Macio.", progressDelta: { pensamento_esperto: 1, criatividade: 1 }, reward: "martelo_macio" },
+          low: { narration: "A ferramenta errada faz o sino se esconder em uma caixa. Você pede desculpa e tenta de novo com mais cuidado. O sino respeita sua tentativa e solta uma Nota Amarela baixinha.", progressDelta: { gentileza: 1, notas_sino: 1 }, reward: "nota_amarela" },
+          middle: { narration: "A caixa só abre com open, que significa abrir. Quando você tenta, o sino responde com um plim bem pequenininho.", progressDelta: { palavras_novas: 1, pensamento_esperto: 1, notas_sino: 1 }, reward: "martelo_macio" },
+          high: { narration: "Você escuta o plim escondido, toca no ponto certo e o sino acorda feliz. Bolim entrega o Martelo Macio.", progressDelta: { pensamento_esperto: 1, criatividade: 1, notas_sino: 1 }, reward: "martelo_macio" },
         },
         progressDelta: { pensamento_esperto: 1 },
         reward: "martelo_macio",
         sound: { enter: "workshop_soft_tap", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "bell_wave", high: "bright_chime", reward: "item_pop_glow" },
         effects: { enter: "warm_glow", diceLow: "soft_plop", diceMedium: "bell_wave", diceHigh: "gold_glow", reward: "item_pop_glow" },
-        next: "sinos_bento_bosque",
+        next: "sinos_praca_relogio",
       },
       {
         id: "sinos_bento_bosque",
@@ -1483,7 +1496,7 @@ window.RPG_KIDS_ADVENTURES = [
         ],
         dice: true,
         diceOutcomes: {
-          low: { narration: "Uma carta voa para um arbusto baixo. Bento fica nervoso, mas você ajuda a procurar de novo e encontra a primeira pista.", progressDelta: { gentileza: 1 }, reward: null },
+          low: { narration: "Uma carta voa para um arbusto baixo. Bento fica nervoso, mas você ajuda a procurar de novo e encontra a primeira pista. A Nota Verde aparece porque você não desistiu dele.", progressDelta: { gentileza: 1, notas_sino: 1 }, reward: "nota_verde" },
           middle: { narration: "Bento pede para agradecer a árvore com thank you. Quando você tenta, uma carta cai devagar no caminho.", progressDelta: { palavras_novas: 1, gentileza: 1, notas_sino: 1 }, reward: "nota_verde" },
           high: { narration: "Você encontra duas cartas de uma vez e Bento dá pulinhos redondos de alegria. A Nota Verde brilha forte.", progressDelta: { pensamento_esperto: 1, gentileza: 1, notas_sino: 1 }, reward: "nota_verde" },
         },
@@ -1491,7 +1504,7 @@ window.RPG_KIDS_ADVENTURES = [
         reward: "nota_verde",
         sound: { enter: "forest_soft_chime", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "warm_chime", high: "bright_chime", reward: "bell_wave" },
         effects: { enter: "leaf_swirl", diceLow: "soft_plop", diceMedium: "warm_glow", diceHigh: "gold_glow", reward: "item_pop_glow" },
-        next: "sinos_iara_vento",
+        next: "sinos_praca_relogio",
       },
       {
         id: "sinos_iara_vento",
@@ -1509,7 +1522,7 @@ window.RPG_KIDS_ADVENTURES = [
         movement: { label: "Respiração do Vento", instruction: "Respire fundo 3 vezes com calma.", fallback: "Sopre de leve na mão 3 vezes." },
         dice: true,
         diceOutcomes: {
-          low: { narration: "O vento chega bagunçado e enrola a fita no poste. Iara sorri e ensina: vento devagar gosta de tentativa devagar.", progressDelta: { coragem: 1 }, reward: null },
+          low: { narration: "O vento chega bagunçado e enrola a fita no poste. Iara sorri e ensina: vento devagar gosta de tentativa devagar. Uma Nota Azul aparece bem suave.", progressDelta: { coragem: 1, notas_sino: 1 }, reward: "nota_azul" },
           middle: { narration: "Repita feng, que significa vento, e faça três respirações calmas para a fita apontar para a torre.", progressDelta: { palavras_novas: 1, movimento: 1, notas_sino: 1 }, reward: "fita_vento" },
           high: { narration: "A fita voa em círculo bonito, mostra uma janela secreta da torre e entrega a Nota Azul.", progressDelta: { coragem: 1, movimento: 1, notas_sino: 1 }, reward: "fita_vento" },
         },
@@ -1517,7 +1530,7 @@ window.RPG_KIDS_ADVENTURES = [
         reward: "fita_vento",
         sound: { enter: "wind_soft_chime", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "warm_chime", high: "bright_chime", reward: "item_pop_glow" },
         effects: { enter: "leaf_swirl", diceLow: "soft_plop", diceMedium: "warm_glow", diceHigh: "gold_glow", reward: "item_pop_glow" },
-        next: "sinos_torre_final",
+        next: "sinos_praca_relogio",
       },
       {
         id: "sinos_torre_final",
