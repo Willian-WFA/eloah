@@ -61,11 +61,13 @@
 | `DEEPSEEK_API_KEY` | Chave usada pelo backend para chamar a DeepSeek API. | yes |
 | `DEEPSEEK_MODEL` | Modelo configuravel usado pela IA mestre. Default recomendado: `deepseek-v4-flash`. | yes |
 | `DEEPSEEK_API_URL` | Endpoint de chat. Default recomendado: `https://api.deepseek.com/chat/completions`. | yes |
-| `OPENAI_API_KEY` | Chave usada pelo backend para gerar audio via `/api/tts`. | no |
-| `TTS_PROVIDER` | Provider de voz. Default: `openai`. | no |
-| `TTS_MODEL` | Modelo de voz. Default: `gpt-4o-mini-tts`. | no |
-| `TTS_VOICE` | Voz do narrador. Default inicial: `nova`. | no |
+| `GEMINI_API_KEY` | Chave usada pelo backend para gerar audio via Gemini TTS em `/api/tts`. | no |
+| `OPENAI_API_KEY` | Chave opcional para gerar audio via OpenAI TTS em `/api/tts`. | no |
+| `TTS_PROVIDER` | Provider de voz. Default recomendado: `gemini`. | no |
+| `TTS_MODEL` | Modelo de voz. Default Gemini: `gemini-3.1-flash-tts-preview`. | no |
+| `TTS_VOICE` | Voz do narrador. Default Gemini: `Puck`. | no |
 | `OPENAI_TTS_URL` | Endpoint de audio. Default: `https://api.openai.com/v1/audio/speech`. | no |
+| `GEMINI_TTS_URL` | Endpoint de audio Gemini. Default: `https://generativelanguage.googleapis.com/v1beta/interactions`. | no |
 | `LLM_COST_PRICING_CONFIG` | Fonte configuravel de preco por modelo para estimativa de custo. | no |
 
 ## Testing

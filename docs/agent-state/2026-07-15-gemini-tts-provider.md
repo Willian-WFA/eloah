@@ -1,0 +1,36 @@
+# 2026-07-15 - Gemini TTS provider
+
+## Pedido
+
+Usuario obteve uma key do Gemini e quer usar essa key para a voz do narrador.
+
+## Implementado
+
+- `/api/tts` passou a aceitar `TTS_PROVIDER=gemini`.
+- Variaveis adicionadas/documentadas:
+  - `GEMINI_API_KEY`
+  - `TTS_PROVIDER=gemini`
+  - `TTS_MODEL=gemini-3.1-flash-tts-preview`
+  - `TTS_VOICE=Puck`
+  - `GEMINI_TTS_URL=https://generativelanguage.googleapis.com/v1beta/interactions`
+- O backend chama Gemini TTS via REST e procura o audio base64 na resposta.
+- O audio PCM retornado pelo Gemini e encapsulado em WAV (`audio/wav`) antes de ir ao navegador.
+- Suporte OpenAI TTS foi mantido como opcao futura (`TTS_PROVIDER=openai`).
+- O fallback do frontend permanece: se `/api/tts` falhar, volta para `speechSynthesis`.
+
+## Fontes
+
+- Documentacao oficial Gemini Speech generation: `https://ai.google.dev/gemini-api/docs/speech-generation`
+
+## Proximo passo
+
+Configurar na Hostinger:
+
+```text
+GEMINI_API_KEY=<sua-chave-gemini>
+TTS_PROVIDER=gemini
+TTS_MODEL=gemini-3.1-flash-tts-preview
+TTS_VOICE=Puck
+```
+
+Depois reiniciar/redeployar e testar `/api/tts`.
