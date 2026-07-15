@@ -1,0 +1,26 @@
+{
+  "name": "RPG Kids",
+  "short_name": "RPG Kids",
+  "description": "Aventuras infantis narradas para jogar em familia.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fff6d8",
+  "theme_color": "#6c5ce7",
+  "categories": ["games", "education", "kids"],
+  "icons": [
+    {
+      "src": "assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

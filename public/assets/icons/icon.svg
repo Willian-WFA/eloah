@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RPG Kids">
+  <rect width="512" height="512" rx="112" fill="#6c5ce7"/>
+  <circle cx="256" cy="256" r="164" fill="#fff6d8"/>
+  <path fill="#ffcc66" d="M256 96l34 83 89 7-68 58 21 87-76-46-76 46 21-87-68-58 89-7z"/>
+  <circle cx="205" cy="244" r="18" fill="#2d2438"/>
+  <circle cx="307" cy="244" r="18" fill="#2d2438"/>
+  <path d="M203 314c35 31 71 31 106 0" fill="none" stroke="#2d2438" stroke-width="22" stroke-linecap="round"/>
+  <path fill="#7ec8a5" d="M157 396c19-45 57-71 99-71s80 26 99 71z"/>
+</svg>

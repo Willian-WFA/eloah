@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#6c5ce7" />
+    <meta name="description" content="Aventuras infantis narradas para jogar em familia." />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="RPG Kids" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./assets/icons/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./assets/icons/icon-192.png" />
+    <title>RPG Kids</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="libraryView" class="view is-active" aria-labelledby="libraryTitle">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">RPG Kids</p>
+            <h1 id="libraryTitle">Painel dos pais</h1>
+          </div>
+          <button id="resumeButton" class="ghost-button" type="button" hidden>Continuar</button>
+        </header>
+
+        <div class="adult-panel" aria-label="Configurações da sessão">
+          <label>
+            Tempo de hoje (30 min grátis)
+            <select id="timeLimitSelect">
+              <option value="30" selected>30 min</option>
+              <option value="45">45 min · 1 crédito</option>
+              <option value="60">60 min · 2 créditos</option>
+            </select>
+          </label>
+          <div class="credit-pill" aria-live="polite">
+            Créditos: <strong id="creditBalance">2</strong>
+          </div>
+          <label>
+            Tratamento da criança
+            <select id="childGenderSelect">
+              <option value="girl" selected>Menina · aventureira</option>
+              <option value="boy">Menino · aventureiro</option>
+            </select>
+          </label>
+          <label>
+            Nome na aventura
+            <input id="childNameInput" type="text" autocomplete="off" maxlength="24" placeholder="Nome ou apelido" />
+          </label>
+          <label>
+            Estilo do mestre
+            <select id="narratorStyleSelect">
+              <option value="theatrical" selected>Teatral e engraçado</option>
+              <option value="gentle">Calmo e doce</option>
+              <option value="epic">Épico leve</option>
+              <option value="teacher">Professor gentil</option>
+            </select>
+          </label>
+          <label>
+            Cor do avatar
+            <select id="avatarColorSelect">
+              <option value="violet" selected>Violeta mágico</option>
+              <option value="mint">Verde folha</option>
+              <option value="sun">Amarelo estrela</option>
+              <option value="rose">Rosa aventura</option>
+              <option value="sky">Azul céu</option>
+            </select>
+          </label>
+          <label>
+            Companheiro
+            <select id="avatarCompanionSelect">
+              <option value="spark" selected>Fagulha</option>
+              <option value="cloud">Nuvinha</option>
+              <option value="bell">Sininho</option>
+              <option value="leaf">Folhinha</option>
+            </select>
+          </label>
+          <label class="toggle-line">
+            <input id="soundToggle" type="checkbox" checked />
+            Sons e efeitos
+          </label>
+          <label class="toggle-line">
+            <input id="voiceOnlyToggle" type="checkbox" />
+            Modo só voz
+          </label>
+          <label class="toggle-line">
+            <input id="narrationToggle" type="checkbox" checked />
+            Voz do narrador
+          </label>
+          <label>
+            Ritmo da narração
+            <select id="narrationRateSelect">
+              <option value="0.78">Bem calmo</option>
+              <option value="0.9" selected>Calmo</option>
+              <option value="1">Normal</option>
+            </select>
+          </label>
+          <div class="toggle-help-row">
+            <label class="toggle-line">
+              <input id="removeRestrictedHumorToggle" type="checkbox" checked />
+              Remover humor restrito
+            </label>
+            <button class="help-bubble-trigger" type="button" aria-describedby="restrictedHumorHelp" aria-label="O que é humor restrito?">?</button>
+            <span id="restrictedHumorHelp" class="help-bubble" role="tooltip">
+              Humor restrito é conteúdo que só aparece com revisão dos pais, como piadas leves de pum, cocô ou xixi. O padrão é remover.
+            </span>
+          </div>
+          <label class="toggle-line is-disabled">
+            <input id="paidExtensionToggle" type="checkbox" disabled />
+            Extensão extra no futuro
+          </label>
+          <button id="generateDraftButton" class="secondary-button" type="button">Gerar rascunho com IA</button>
+        </div>
+
+        <section class="parent-review" aria-labelledby="reviewTitle">
+          <div class="review-header">
+            <div>
+              <p class="eyebrow">Revisão</p>
+              <h2 id="reviewTitle">História selecionada</h2>
+            </div>
+            <span id="reviewStatus" class="review-status">Aguardando</span>
+          </div>
+          <p id="reviewSummary" class="review-summary">Escolha uma aventura para ver resumo, permissões e pontos de atenção.</p>
+          <div class="review-actions">
+            <button id="readFullStoryButton" class="ghost-button" type="button" disabled>Ler história inteira</button>
+            <button id="buySummaryButton" class="secondary-button" type="button" disabled>Gerar resumo · 1 crédito</button>
+          </div>
+          <div id="fullStoryPanel" class="review-contexts" hidden></div>
+          <dl id="reviewMeta" class="review-meta"></dl>
+          <div id="reviewFlags" class="review-flags"></div>
+          <div id="reviewContexts" class="review-contexts"></div>
+          <div id="reviewSettings" class="review-settings"></div>
+          <div class="permission-list">
+            <label class="toggle-line">
+              <input id="approveStoryCheckbox" type="checkbox" />
+              Aprovo esta história
+            </label>
+            <label class="toggle-line" id="restrictedConsentLine">
+              <input id="restrictedHumorCheckbox" type="checkbox" />
+              Consinto humor restrito nesta história
+            </label>
+          </div>
+          <button id="startChildPanelButton" class="primary-button" type="button" disabled>Iniciar painel da criança</button>
+        </section>
+
+        <div id="adventureGrid" class="adventure-grid"></div>
+      </section>
+
+      <section id="sessionView" class="view" aria-labelledby="sessionTitle">
+        <header class="session-topbar">
+          <button id="backButton" class="icon-button" type="button" aria-label="Voltar para o painel dos pais">‹</button>
+          <div>
+            <p id="sessionKicker" class="eyebrow">Painel da criança</p>
+            <h1 id="sessionTitle">Cena</h1>
+          </div>
+          <div class="timer-pill" aria-live="polite">
+            <span id="timerText">30:00</span>
+          </div>
+        </header>
+        <div class="narration-controls" aria-label="Controles de narração">
+          <button id="repeatNarrationButton" class="ghost-button" type="button">Ouvir de novo</button>
+          <button id="stopNarrationButton" class="ghost-button" type="button">Pausar voz</button>
+        </div>
+
+        <section class="scene-stage" aria-label="Cena atual">
+          <div id="sceneArt" class="scene-art"></div>
+          <div class="scene-copy">
+            <p id="sceneNarration"></p>
+            <p id="scenePrompt" class="prompt"></p>
+            <p id="roundHint" class="round-hint" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <section id="feedbackPanel" class="feedback-panel" hidden>
+          <p id="feedbackText"></p>
+        </section>
+
+        <section class="narrator-journal" aria-labelledby="journalTitle">
+          <div class="journal-header">
+            <p class="eyebrow">Mestre</p>
+            <h2 id="journalTitle">Diário da aventura</h2>
+          </div>
+          <ol id="narratorLog" class="narrator-log" aria-live="polite"></ol>
+        </section>
+
+        <section class="free-action-panel" aria-label="Escolha livre">
+          <label id="freeActionLabel" for="freeActionInput">Diga o que sua heroína faz</label>
+          <div class="free-action-row">
+            <input id="freeActionInput" type="text" autocomplete="off" placeholder="Fale ou escreva o que você faz" />
+            <button id="voiceActionButton" class="primary-button voice-main-button" type="button">Falar ação</button>
+          </div>
+          <button id="sendFreeActionButton" class="ghost-button" type="button">Usar ação escrita</button>
+          <p id="actionInsightText" class="action-insight" aria-live="polite"></p>
+        </section>
+
+        <section id="choicePanel" class="choice-panel" aria-label="Opções sugeridas"></section>
+
+        <section class="tool-row" aria-label="Ferramentas da cena">
+          <button id="diceButton" class="primary-button dice-trigger" type="button" aria-label="Rolar dado D6">⚂ Rolar D6</button>
+          <button id="luckButton" class="secondary-button luck-button" type="button">Usar sorte</button>
+          <button id="movementButton" class="secondary-button" type="button">Desafio</button>
+          <button id="skipButton" class="ghost-button" type="button">Pular</button>
+        </section>
+
+        <section class="progress-layout">
+          <div class="progress-card">
+            <h2>Progresso</h2>
+            <div id="progressMeters" class="meters"></div>
+          </div>
+          <div class="avatar-card">
+            <h2 id="avatarTitle">Heroína</h2>
+            <div id="avatarPreview" class="avatar-preview"></div>
+            <ul id="rewardList" class="reward-list"></ul>
+          </div>
+        </section>
+
+        <footer class="session-footer">
+          <button id="checkpointButton" class="ghost-button" type="button">Guardar aventura</button>
+          <button id="nextButton" class="primary-button" type="button">Avançar</button>
+        </footer>
+      </section>
+
+      <section id="endingView" class="view" aria-labelledby="endingTitle">
+        <div class="ending-card">
+          <p class="eyebrow">Fim de hoje</p>
+          <h1 id="endingTitle">Aventura guardada</h1>
+          <p id="endingSummary"></p>
+          <div id="endingRewards" class="reward-badges"></div>
+          <div id="learningReport" class="learning-report"></div>
+          <button id="endingLibraryButton" class="primary-button" type="button">Voltar para o painel dos pais</button>
+        </div>
+      </section>
+
+      <div id="diceModal" class="dice-modal" role="dialog" aria-modal="true" aria-labelledby="diceModalTitle" hidden>
+        <div class="dice-card">
+          <p class="eyebrow">Desafio de sorte</p>
+          <h2 id="diceModalTitle">Rolando o dado...</h2>
+          <div id="diceCube" class="dice-cube" aria-live="polite">⚂</div>
+          <p id="diceResultText">O dado está girando.</p>
+          <button id="diceCloseButton" class="primary-button" type="button">Continuar</button>
+        </div>
+      </div>
+    </main>
+
+    <script src="./adventures.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

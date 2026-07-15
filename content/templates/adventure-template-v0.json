@@ -1,0 +1,145 @@
+{
+  "id": "minha-aventura",
+  "version": "0.1.0",
+  "title": "Minha Aventura",
+  "status": "draft",
+  "template": "quest",
+  "assetPack": "meu-pacote-v0",
+  "ageRange": "4-6",
+  "duration": "15-25 min",
+  "tags": ["familia", "movimento", "idiomas"],
+  "contentReview": {
+    "flags": ["movimento"],
+    "requiresParentConsent": false,
+    "flaggedContexts": [],
+    "parentSummary": "Resumo adulto da historia, sem revelar so o final, mas com pontos de atencao."
+  },
+  "sessionPolicy": {
+    "warningMinutesBeforeEnd": 5,
+    "softExtensionMinutes": 3
+  },
+  "narration": {
+    "enabledByDefault": true,
+    "provider": "browser_speech_synthesis",
+    "language": "pt-BR",
+    "rate": 0.9,
+    "events": ["scene", "prompt", "dice_result", "movement", "checkpoint", "ending"]
+  },
+  "humorProfile": {
+    "style": ["silly", "absurd_characters"],
+    "restrictedPottyHumor": false,
+    "frequency": "rare"
+  },
+  "luck": {
+    "startingPoints": 1,
+    "maxPoints": 3
+  },
+  "actionEvaluation": {
+    "mode": "local_rubric_then_ai",
+    "maxProgressPerScene": 1,
+    "fallbackProgress": "coragem",
+    "rubric": {
+      "gentileza": ["ajudar", "perguntar", "agradecer", "cuidar"],
+      "pensamento_esperto": ["observar", "procurar pista", "preparar ferramenta", "investigar"],
+      "movimento": ["pular", "marchar", "dançar", "bater palmas"],
+      "palavras_novas": ["usar palavra em outro idioma", "pedir significado", "repetir palavra"],
+      "criatividade": ["inventar", "transformar objeto", "imaginar solução nova"]
+    }
+  },
+  "progress": {
+    "coragem": 0,
+    "gentileza": 0,
+    "movimento": 0,
+    "palavras_novas": 0,
+    "criatividade": 0,
+    "pensamento_esperto": 0,
+    "cooperacao": 0
+  },
+  "rewards": {
+    "item_exemplo": {
+      "label": "Item Exemplo",
+      "layer": "Capa",
+      "progress": "gentileza",
+      "cue": "item_pop_glow"
+    }
+  },
+  "scenes": [
+    {
+      "id": "entrada",
+      "title": "Entrada",
+      "asset": "entrada_soft",
+      "color": "#80bfff",
+      "image": {
+        "type": "approved_placeholder",
+        "assetId": "entrada_soft",
+        "icon": "✦",
+        "alt": "Descricao curta da imagem aprovada para responsaveis e acessibilidade."
+      },
+      "theme": {
+        "palette": ["#80bfff", "#fff2a8"],
+        "template": "soft_adventure"
+      },
+      "narration": "Narracao inicial da cena.",
+      "prompt": "O que voce faz?",
+      "choices": ["Opcao 1", "Opcao 2", "Opcao 3", "Livre escolha"],
+      "learningCriteria": "Explique por que esta cena concede progresso.",
+      "movement": {
+        "label": "Desafio curto",
+        "instruction": "Faca um movimento simples.",
+        "fallback": "Alternativa sem movimento fisico."
+      },
+      "language": {
+        "language": "en",
+        "word": "star",
+        "phrase": "Hello, star!",
+        "meaning": "Ola, estrela!"
+      },
+      "dice": true,
+      "diceOutcomes": {
+        "low": {
+          "narration": "Complicacao leve, segura e temporaria.",
+          "progressDelta": {
+            "coragem": 1
+          },
+          "reward": null
+        },
+        "middle": {
+          "narration": "Sucesso condicionado com desafio curto.",
+          "progressDelta": {
+            "coragem": 1,
+            "movimento": 1
+          },
+          "reward": null
+        },
+        "high": {
+          "narration": "Sucesso forte com descoberta, beleza ou recompensa.",
+          "progressDelta": {
+            "coragem": 1,
+            "pensamento_esperto": 1
+          },
+          "reward": "item_exemplo"
+        }
+      },
+      "progressDelta": {
+        "coragem": 1
+      },
+      "reward": "item_exemplo",
+      "sound": {
+        "enter": "scene_soft_enter",
+        "diceRoll": "dice_soft_roll",
+        "low": "gentle_plop",
+        "middle": "warm_chime",
+        "high": "bright_chime",
+        "reward": "item_pop_glow"
+      },
+      "effects": {
+        "enter": "fade_sparkle",
+        "diceLow": "soft_plop",
+        "diceMedium": "warm_glow",
+        "diceHigh": "gold_glow",
+        "reward": "item_pop_glow"
+      },
+      "next": null
+    }
+  ]
+}
