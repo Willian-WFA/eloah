@@ -3,6 +3,7 @@ import { readFile } from "node:fs/promises";
 import { extname, join, normalize, resolve } from "node:path";
 
 const port = Number(process.env.PORT || 3000);
+const host = process.env.HOST || "0.0.0.0";
 const publicDir = resolve("public");
 
 const mimeTypes = {
@@ -56,8 +57,8 @@ const server = createServer(async (req, res) => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`RPG Kids rodando em http://localhost:${port}`);
+server.listen(port, host, () => {
+  console.log(`RPG Kids rodando em http://${host}:${port}`);
 });
 
 async function serveStatic(pathname, res) {

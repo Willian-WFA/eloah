@@ -22,6 +22,39 @@ rpg-kids/
 - Arquivo inicial: `server.js`.
 - Comando de start: `npm start`.
 - Porta: usar a variavel `PORT` fornecida pela Hostinger. O servidor ja usa `process.env.PORT`.
+- Host: o servidor escuta em `0.0.0.0` por padrao, adequado para runtime gerenciado.
+
+Campos recomendados quando o painel pedir compilacao e saida:
+
+```text
+Comando de construcao: Nenhum
+Gerenciador de pacotes: npm
+Diretorio de saida: public
+Arquivo de entrada: server.js
+```
+
+Se houver campo separado para comando de inicializacao:
+
+```text
+npm start
+```
+
+## Alternativa estatica
+
+A versao atual do jogo tambem funciona como site estatico porque todo o gameplay do MVP esta em `public/`.
+
+Se o runtime Node continuar retornando `503`, publique como estatico usando:
+
+```text
+Framework: Other
+Branch: main
+Node: 18.x
+Root directory: ./
+Build command: npm run check
+Output directory: public
+```
+
+Nesse modo, `/health` nao vai responder com JSON do Node, mas o jogo deve abrir normalmente em `/`.
 
 Antes de enviar uma nova versao, rode:
 
