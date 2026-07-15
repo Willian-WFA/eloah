@@ -84,6 +84,14 @@ Isso copia a versao de desenvolvimento em `prototype/` para `public/`.
 
 - O projeto nao usa `"type": "module"` no `package.json` porque o runtime da Hostinger injeta scripts CommonJS de preload. Com `"type": "module"`, o deploy pode falhar com `ERR_REQUIRE_ESM` em `.builds/config/preload-timestamp.js`.
 - A chave da DeepSeek nao deve ir para `public/`.
-- Quando a IA real entrar, use variavel de ambiente no painel da Hostinger, por exemplo `DEEPSEEK_API_KEY`.
+- Para ligar a IA mestre real, configure variaveis de ambiente no painel da Hostinger:
+
+```text
+DEEPSEEK_API_KEY=coloque-a-chave-no-painel
+DEEPSEEK_MODEL=deepseek-chat
+DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions
+```
+
+- Sem `DEEPSEEK_API_KEY`, `/api/master` responde em modo `mock`, mantendo o app funcionando.
 - O frontend atual ainda roda sem backend real; o Node esta preparado para servir o app e receber futuros endpoints.
 - Voz por microfone depende de permissao do navegador e HTTPS fora de `localhost`.

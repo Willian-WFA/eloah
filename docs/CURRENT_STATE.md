@@ -155,6 +155,11 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Validação local confirmou `/health` retornando JSON e `/` retornando `200 OK` em porta de teste.
 - Corrigido erro de runtime da Hostinger `ERR_REQUIRE_ESM` em `.builds/config/preload-timestamp.js`: removido `"type": "module"` do `package.json` e convertido `server.js` para CommonJS.
 - Validação local após a correção confirmou `/health` retornando JSON e `/` retornando `200 OK`.
+- Adicionado backend DeepSeek em `/api/master`, usando `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` e `DEEPSEEK_API_URL`; sem chave, o endpoint responde em modo `mock`.
+- Criado `.env.example` com variáveis esperadas da DeepSeek.
+- Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.
+- Modal do dado agora mostra números grandes `1-6` em vez de faces pequenas, fala `Você tirou X` e toca ticks sintéticos durante a rolagem.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-deepseek-dice-voice-pwa`.
 
 ## Decisoes tomadas
 
@@ -213,6 +218,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - A primeira versão jogável da campanha pode ser linear para validar ritmo, voz e conteúdo; o hub ramificado real entra como próxima melhoria de motor.
 - O hub ramificado inicial deve continuar simples: rotas condicionais, sem mapa visual complexo, até validarmos voz, checkpoint e entendimento da criança.
 - Para Hostinger, manter `server.js` em CommonJS enquanto o runtime usar preload CommonJS; evitar recolocar `"type": "module"` no `package.json`.
+- Chave da DeepSeek deve ficar apenas em variável de ambiente da Hostinger; nunca em `public/`, código frontend ou commit.
 
 ## Arquivos alterados
 

@@ -1368,14 +1368,16 @@ select {
 .dice-cube {
   display: grid;
   place-items: center;
-  width: 128px;
-  height: 128px;
+  width: 154px;
+  height: 154px;
   margin: 16px auto;
   border-radius: 26px;
   background: linear-gradient(135deg, #fff, #f2ecff);
   color: var(--brand-strong);
-  font-size: 5rem;
+  font-size: 6.9rem;
+  font-weight: 1000;
   line-height: 1;
+  font-variant-numeric: tabular-nums;
   box-shadow:
     inset 0 -10px 22px rgba(108, 92, 231, 0.12),
     0 0 0 8px rgba(108, 92, 231, 0.08),
@@ -1384,6 +1386,7 @@ select {
 
 .dice-cube.is-rolling {
   animation: diceSpin 0.54s linear infinite;
+  filter: saturate(1.1);
 }
 
 .dice-cube[data-result="high"] {

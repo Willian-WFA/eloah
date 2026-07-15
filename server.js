@@ -5,6 +5,9 @@ const { extname, join, normalize, resolve } = require("node:path");
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || "0.0.0.0";
 const publicDir = resolve("public");
+const deepSeekApiKey = process.env.DEEPSEEK_API_KEY || "";
+const deepSeekModel = process.env.DEEPSEEK_MODEL || "deepseek-chat";
+const deepSeekApiUrl = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
 
 const mimeTypes = {
   ".html": "text/html; charset=utf-8",
@@ -30,18 +33,9 @@ const server = createServer(async (req, res) => {
     }
 
     if (url.pathname === "/api/master" && req.method === "POST") {
-      await readBody(req);
-      sendJson(res, 200, {
-        mode: "mock",
-        narration:
-          "O mestre ouviu sua ideia e guardou no diário da aventura. A integração real com DeepSeek entra depois.",
-        tokenUsage: {
-          provider: "mock",
-          inputTokens: 0,
-          outputTokens: 0,
-          estimatedCost: 0,
-        },
-      });
+      const payload = parseJsonBody(await readBody(req));
+      const response = deepSeekApiKey ? await callDeepSeekMaster(payload) : mockMasterResponse(payload);
+      sendJson(res, 200, response);
       return;
     }
 
@@ -97,6 +91,130 @@ function sendJson(res, statusCode, payload) {
 function sendText(res, statusCode, text) {
   res.writeHead(statusCode, { "Content-Type": "text/plain; charset=utf-8" });
   res.end(text);
+}
+
+function parseJsonBody(body) {
+  if (!body) return {};
+  try {
+    return JSON.parse(body);
+  } catch {
+    return {};
+  }
+}
+
+function mockMasterResponse(payload = {}) {
+  const action = safeText(payload.action || payload.choice || "a ideia da criança");
+  return {
+    mode: "mock",
+    narration: `O mestre ouviu ${action} e guardou no diário da aventura. A integração real com DeepSeek entra quando a chave estiver configurada.`,
+    tokenUsage: {
+      provider: "mock",
+      model: "mock",
+      inputTokens: 0,
+      outputTokens: 0,
+      totalTokens: 0,
+      estimatedCost: 0,
+    },
+  };
+}
+
+async function callDeepSeekMaster(payload = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 18_000);
+
+  try {
+    const response = await fetch(deepSeekApiUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${deepSeekApiKey}`,
+      },
+      body: JSON.stringify({
+        model: deepSeekModel,
+        temperature: 0.75,
+        max_tokens: 260,
+        messages: buildMasterMessages(payload),
+      }),
+      signal: controller.signal,
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      return {
+        mode: "deepseek_error",
+        narration: "O mestre perdeu a voz por um instante. Vamos seguir com uma resposta segura do app.",
+        error: safeDeepSeekError(data, response.status),
+        tokenUsage: tokenUsage("deepseek", deepSeekModel, data.usage),
+      };
+    }
+
+    return {
+      mode: "deepseek",
+      narration: safeText(data.choices?.[0]?.message?.content || "O mestre pensou um pouco e pediu para continuar a aventura com calma."),
+      tokenUsage: tokenUsage("deepseek", deepSeekModel, data.usage),
+    };
+  } catch (error) {
+    return {
+      mode: "deepseek_error",
+      narration: "O mestre tropeçou na nuvem da internet. Vamos continuar com uma resposta segura do app.",
+      error: error.name === "AbortError" ? "timeout" : "request_failed",
+      tokenUsage: tokenUsage("deepseek", deepSeekModel),
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function buildMasterMessages(payload = {}) {
+  const adventureTitle = safeText(payload.adventureTitle || "uma aventura infantil");
+  const sceneTitle = safeText(payload.sceneTitle || "a cena atual");
+  const sceneNarration = safeText(payload.sceneNarration || "");
+  const action = safeText(payload.action || payload.choice || "");
+  const diceResult = payload.diceResult ? `Resultado do dado: ${payload.diceResult}.` : "";
+  const narrativeLog = Array.isArray(payload.narrativeLog)
+    ? payload.narrativeLog.slice(-6).map((entry) => safeText(entry.text || entry)).join(" ")
+    : "";
+
+  return [
+    {
+      role: "system",
+      content:
+        "Você é um mestre de RPG infantil em português do Brasil. Narre de forma teatral, segura, afetuosa e curta. Não use conteúdo adulto, medo intenso, violência gráfica, humilhação, compras ou coleta de dados pessoais. Acolha ideias inesperadas e reconduza para a cena aprovada. Responda em 2 a 5 frases, com uma pergunta ou próximo passo claro.",
+    },
+    {
+      role: "user",
+      content: [
+        `Aventura: ${adventureTitle}.`,
+        `Cena: ${sceneTitle}.`,
+        sceneNarration ? `Contexto da cena: ${sceneNarration}` : "",
+        action ? `Ação da criança: ${action}.` : "",
+        diceResult,
+        narrativeLog ? `Diário recente: ${narrativeLog}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+  ];
+}
+
+function tokenUsage(provider, model, usage = {}) {
+  return {
+    provider,
+    model,
+    inputTokens: usage.prompt_tokens || 0,
+    outputTokens: usage.completion_tokens || 0,
+    totalTokens: usage.total_tokens || 0,
+    estimatedCost: 0,
+  };
+}
+
+function safeDeepSeekError(data, status) {
+  const message = data?.error?.message || data?.message || `http_${status}`;
+  return safeText(message).slice(0, 180);
+}
+
+function safeText(value) {
+  return String(value || "").replace(/\s+/g, " ").trim().slice(0, 1200);
 }
 
 function readBody(req) {

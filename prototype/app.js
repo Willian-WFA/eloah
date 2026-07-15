@@ -32,7 +32,7 @@ const state = {
   timer: null,
   soundEnabled: true,
   narrationEnabled: true,
-  narrationRate: 0.9,
+  narrationRate: 0.98,
   childGender: "girl",
   childName: "",
   narratorStyle: "theatrical",
@@ -376,6 +376,7 @@ function renderReviewSettings(adventure) {
 
 function labelForNarrationRate(rate) {
   if (rate < 0.85) return "bem calmo";
+  if (rate >= 0.95 && rate < 1) return "teatral";
   if (rate < 1) return "calmo";
   return "normal";
 }
@@ -866,24 +867,32 @@ function narratorStyleProfile() {
       diceLead: "Agora vamos deixar o dado contar a sorte, devagarinho.",
       impossible: "Essa ideia é enorme. Vou guardar a magia dela e trazer para um caminho seguro.",
       silence: "Tudo bem pensar um pouquinho. Você pode falar uma ideia simples, como olhar, perguntar ou pedir ajuda.",
+      voiceRateOffset: -0.08,
+      voicePitch: 1.02,
     },
     theatrical: {
       actionLead: "Anotado no livro invisível do mestre.",
       diceLead: "Agora, mão no dado. Vamos descobrir se a sorte sorriu para você.",
       impossible: "Uau, que ideia gigante. O mundo balançou, mas o mestre transforma isso em uma tentativa segura.",
       silence: "O mestre faz suspense... e espera sua ideia. Pode falar qualquer ação pequena.",
+      voiceRateOffset: 0.06,
+      voicePitch: 1.12,
     },
     epic: {
       actionLead: "Seu gesto ecoa pela jornada.",
       diceLead: "Que o dado revele o destino desta cena.",
       impossible: "Essa vontade é poderosa demais para este momento. Vamos usar uma versão heroica e segura dela.",
       silence: "Toda grande jornada tem uma pausa. Quando estiver pronta ou pronto, diga o próximo passo.",
+      voiceRateOffset: 0.02,
+      voicePitch: 1.08,
     },
     teacher: {
       actionLead: "Boa escolha. Vamos entender o que ela treina.",
       diceLead: "Agora o dado mostra a consequência da escolha.",
       impossible: "Essa ação saiu da rota da cena. Vamos adaptar para uma versão possível e segura.",
       silence: "Você pode escolher uma ação curta: observar, perguntar, tentar, ajudar ou usar um item.",
+      voiceRateOffset: 0,
+      voicePitch: 1.04,
     },
   };
   return profiles[state.narratorStyle] || profiles.theatrical;
@@ -1701,22 +1710,26 @@ function renderSceneControls() {
 
 function showDiceResult(result, message, cue, effect) {
   const reaction = diceResultReaction(result);
-  const displayMessage = genderedText(`${reaction} ${message}`.trim());
-  const faces = ["⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+  const displayMessage = genderedText(`Você tirou ${result}. ${reaction} ${message}`.trim());
+  const faces = ["1", "2", "3", "4", "5", "6"];
   els.diceModal.hidden = false;
   els.diceCube.dataset.result = "";
   els.diceCube.classList.add("is-rolling");
   els.diceModalTitle.textContent = "Rolando o dado...";
-  els.diceResultText.textContent = "O dado está girando.";
+  els.diceResultText.textContent = "Escute o dado girando.";
 
   let ticks = 0;
   const rollAnimation = setInterval(() => {
-    els.diceCube.textContent = faces[Math.floor(Math.random() * faces.length)];
+    const face = faces[Math.floor(Math.random() * faces.length)];
+    els.diceCube.textContent = face;
+    els.diceCube.setAttribute("aria-label", `Dado girando, passou pelo número ${face}`);
+    if (ticks % 2 === 0) playCue("dice_tick_roll");
     ticks += 1;
-    if (ticks >= 10) {
+    if (ticks >= 14) {
       clearInterval(rollAnimation);
       els.diceCube.classList.remove("is-rolling");
       els.diceCube.textContent = faces[result - 1];
+      els.diceCube.setAttribute("aria-label", `Resultado do dado: ${result}`);
       els.diceCube.dataset.result = diceBand(result);
       els.diceModalTitle.textContent = `Resultado ${result}`;
       els.diceResultText.textContent = displayMessage;
@@ -1801,15 +1814,16 @@ function narrationChunks(text) {
 function speakNextNarrationChunk() {
   if (!state.narrationQueue.length || !("speechSynthesis" in window)) return;
   const chunk = state.narrationQueue.shift();
+  const style = narratorStyleProfile();
   const utterance = new SpeechSynthesisUtterance(chunk);
   utterance.lang = "pt-BR";
-  utterance.rate = Math.min(state.narrationRate, 0.92);
-  utterance.pitch = chunk.includes("Opção") ? 1.1 : 1.03;
+  utterance.rate = Math.min(1.12, Math.max(0.78, state.narrationRate + (style.voiceRateOffset || 0)));
+  utterance.pitch = chunk.includes("Opção") ? Math.min(1.2, (style.voicePitch || 1.05) + 0.04) : style.voicePitch || 1.05;
   utterance.volume = 0.95;
   const voice = preferredNarrationVoice();
   if (voice) utterance.voice = voice;
   utterance.onend = () => {
-    const pause = chunk.includes("Opção") ? 260 : 220;
+    const pause = chunk.includes("Opção") ? 190 : 160;
     window.setTimeout(speakNextNarrationChunk, pause);
   };
   window.speechSynthesis.speak(utterance);
@@ -1868,6 +1882,12 @@ function playSyntheticCue(audio, cue) {
 }
 
 function cuePattern(cue) {
+  if (cue.includes("dice_tick")) {
+    return [
+      { frequency: 210, duration: 0.035, volume: 0.026, type: "triangle" },
+      { frequency: 155, duration: 0.04, volume: 0.02, type: "triangle" },
+    ];
+  }
   if (cue.includes("dice")) {
     return [
       { frequency: 180, duration: 0.06, volume: 0.035, type: "triangle" },
