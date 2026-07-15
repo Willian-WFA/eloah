@@ -333,7 +333,7 @@ function ttsInstructions(payload = {}) {
   const pace = rate >= 0.95 ? "um pouquinho mais rapido que leitura normal" : "calmo e facil de acompanhar";
   const profiles = {
     theatrical:
-      "Use tom teatral, caloroso e expressivo, como um mestre de RPG infantil contando uma cena magica. Reaja com surpresa leve, sorria na voz e mantenha energia divertida.",
+      "Use um estilo de grande contador de historias, parecido com um mestre narrador teatral: voz calorosa, expressiva, encantada e confiante. Crie suspense seguro, varie a energia entre surpresa, misterio leve e alegria, sorria na voz e conte como se a crianca estivesse sentada diante de uma aventura magica. Nunca fale em ingles.",
     gentle:
       "Use tom doce, calmo e acolhedor, como uma historia antes de dormir, mas ainda com curiosidade de aventura.",
     epic:

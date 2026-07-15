@@ -15,6 +15,7 @@ Usuario obteve uma key do Gemini e quer usar essa key para a voz do narrador.
   - `GEMINI_TTS_URL=https://generativelanguage.googleapis.com/v1beta/interactions`
 - O backend chama Gemini TTS via REST e procura o audio base64 na resposta.
 - O audio PCM retornado pelo Gemini e encapsulado em WAV (`audio/wav`) antes de ir ao navegador.
+- O perfil `theatrical` foi ajustado para imitar a direcao de performance "The Master Storyteller", mas com instrucao obrigatoria de portugues do Brasil e proibicao de falar em ingles.
 - Suporte OpenAI TTS foi mantido como opcao futura (`TTS_PROVIDER=openai`).
 - O fallback do frontend permanece: se `/api/tts` falhar, volta para `speechSynthesis`.
 
