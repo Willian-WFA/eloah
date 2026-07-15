@@ -18,6 +18,7 @@ Usuario informou que adicionou a key na Hostinger, mas nao tinha certeza do mode
 - `docs/HOSTINGER_DEPLOY.md` atualizado com as variaveis corretas para Hostinger.
 - `PROJECT_CONTEXT.md` documenta `DEEPSEEK_API_URL` e o modelo recomendado.
 - `docs/CURRENT_STATE.md` registra a decisao.
+- `server.js` carrega `.env` local quando existir, sem sobrescrever variaveis ja definidas no ambiente.
 
 ## Proximo passo
 

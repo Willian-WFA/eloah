@@ -158,6 +158,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Adicionado backend DeepSeek em `/api/master`, usando `DEEPSEEK_API_KEY`, `DEEPSEEK_MODEL` e `DEEPSEEK_API_URL`; sem chave, o endpoint responde em modo `mock`.
 - Criado `.env.example` com variáveis esperadas da DeepSeek.
 - Configuracao DeepSeek alinhada com a documentacao oficial: `DEEPSEEK_MODEL=deepseek-v4-flash`, `DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions` e `thinking` desativado para resposta direta.
+- Servidor passou a carregar `.env` local na raiz, sem dependencia externa, preservando prioridade das variaveis de ambiente da Hostinger.
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.
 - Modal do dado agora mostra números grandes `1-6` em vez de faces pequenas, fala `Você tirou X` e toca ticks sintéticos durante a rolagem.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-deepseek-dice-voice-pwa`.

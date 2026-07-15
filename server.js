@@ -1,6 +1,9 @@
 const { createServer } = require("node:http");
 const { readFile } = require("node:fs/promises");
+const { existsSync, readFileSync } = require("node:fs");
 const { extname, join, normalize, resolve } = require("node:path");
+
+loadEnvFile();
 
 const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || "0.0.0.0";
@@ -54,6 +57,28 @@ const server = createServer(async (req, res) => {
 server.listen(port, host, () => {
   console.log(`RPG Kids rodando em http://${host}:${port}`);
 });
+
+function loadEnvFile() {
+  const envPath = resolve(".env");
+  if (!existsSync(envPath)) return;
+
+  const lines = readFileSync(envPath, "utf8").split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+
+    const separatorIndex = trimmed.indexOf("=");
+    if (separatorIndex <= 0) continue;
+
+    const key = trimmed.slice(0, separatorIndex).trim();
+    const rawValue = trimmed.slice(separatorIndex + 1).trim();
+    const value = rawValue.replace(/^["']|["']$/g, "");
+
+    if (!process.env[key]) {
+      process.env[key] = value;
+    }
+  }
+}
 
 async function serveStatic(pathname, res) {
   const requestedPath = pathname === "/" ? "/index.html" : decodeURIComponent(pathname);

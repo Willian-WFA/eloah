@@ -95,6 +95,7 @@ DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions
 - A documentacao oficial da DeepSeek usa `https://api.deepseek.com` como base OpenAI e `https://api.deepseek.com/chat/completions` como endpoint de chat.
 - O modelo recomendado para o MVP e `deepseek-v4-flash`, que corresponde ao caminho rapido e economico. Evite `deepseek-chat`: a DeepSeek marcou esse nome para deprecacao em `2026-07-24 15:59 UTC`.
 - O backend envia `thinking: { "type": "disabled" }` para manter a resposta direta, teatral e rapida para narracao infantil.
+- O servidor tambem carrega um arquivo `.env` na raiz quando ele existir, mas as variaveis definidas no painel da Hostinger tem prioridade.
 - Sem `DEEPSEEK_API_KEY`, `/api/master` responde em modo `mock`, mantendo o app funcionando.
 - O frontend atual ainda roda sem backend real; o Node esta preparado para servir o app e receber futuros endpoints.
 - Voz por microfone depende de permissao do navegador e HTTPS fora de `localhost`.
