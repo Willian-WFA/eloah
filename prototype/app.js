@@ -1940,15 +1940,19 @@ async function speakNextNarrationChunk() {
 }
 
 async function playApiNarrationChunk(chunk) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 12_000);
   const response = await fetch("/api/tts", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: controller.signal,
     body: JSON.stringify({
       text: chunk,
       style: state.narratorStyle,
       rate: state.narrationRate,
     }),
   });
+  window.clearTimeout(timeout);
 
   if (!response.ok) throw new Error(`tts_${response.status}`);
   const audioBlob = await response.blob();
