@@ -805,6 +805,90 @@ select {
   margin-top: 14px;
 }
 
+.hub-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 253, 248, 0.9);
+  box-shadow: var(--shadow);
+  margin-top: 14px;
+  padding: 12px;
+}
+
+.hub-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hub-header .eyebrow,
+.hub-header h2 {
+  margin: 0;
+}
+
+.hub-header h2 {
+  font-size: 1rem;
+}
+
+.hub-badge {
+  border-radius: 999px;
+  background: #2d2438;
+  color: #fff;
+  padding: 6px 9px;
+  font-size: 0.75rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.hub-route-list {
+  display: grid;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.hub-route-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 8px 10px;
+  color: var(--ink);
+  font-size: 0.84rem;
+  font-weight: 850;
+}
+
+.hub-route-list li strong {
+  border-radius: 999px;
+  padding: 4px 7px;
+  font-size: 0.68rem;
+}
+
+.hub-route-list .is-open strong {
+  background: rgba(126, 200, 165, 0.24);
+  color: #28634f;
+}
+
+.hub-route-list .is-complete {
+  opacity: 0.72;
+}
+
+.hub-route-list .is-complete strong {
+  background: rgba(255, 214, 107, 0.28);
+  color: #725515;
+}
+
+.hub-route-list .is-locked strong {
+  background: rgba(45, 36, 56, 0.1);
+  color: var(--muted);
+}
+
 #sessionView.is-voice-only .choice-panel {
   display: none;
 }

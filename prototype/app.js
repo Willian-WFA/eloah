@@ -89,6 +89,7 @@ const els = {
   sceneNarration: document.querySelector("#sceneNarration"),
   scenePrompt: document.querySelector("#scenePrompt"),
   roundHint: document.querySelector("#roundHint"),
+  hubPanel: document.querySelector("#hubPanel"),
   feedbackPanel: document.querySelector("#feedbackPanel"),
   feedbackText: document.querySelector("#feedbackText"),
   narratorLog: document.querySelector("#narratorLog"),
@@ -704,6 +705,7 @@ function renderScene() {
   els.actionInsightText.textContent = "";
   els.feedbackPanel.hidden = true;
   renderChildTerms();
+  renderHubPanel(scene);
 
   sceneChoices(scene).forEach((choice, index) => {
     const button = document.createElement("button");
@@ -737,6 +739,44 @@ function renderScene() {
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
   speakNarration(composeSceneNarration(scene));
+}
+
+function renderHubPanel(scene) {
+  if (!els.hubPanel) return;
+  if (!scene.hub?.routes?.length) {
+    els.hubPanel.hidden = true;
+    els.hubPanel.innerHTML = "";
+    return;
+  }
+
+  const notes = Math.round(state.progress.notas_sino || 0);
+  const routes = scene.hub.routes.map((route) => {
+    const completed = state.completedScenes.has(route.target);
+    const available = isRouteAvailable(route);
+    const lockedReason = routeLockReason(route);
+    const status = completed ? "Concluído" : available ? "Aberto" : lockedReason;
+    const statusClass = completed ? "is-complete" : available ? "is-open" : "is-locked";
+    return `<li class="${statusClass}"><span>${escapeHtml(route.label)}</span><strong>${escapeHtml(status)}</strong></li>`;
+  });
+
+  els.hubPanel.hidden = false;
+  els.hubPanel.innerHTML = `
+    <div class="hub-header">
+      <div>
+        <p class="eyebrow">Mapa da cidade</p>
+        <h2>Notas de Sino: ${notes}/5</h2>
+      </div>
+      <span class="hub-badge">${sceneChoices(scene).filter((choice) => !choice.toLowerCase().includes("livre")).length} caminhos</span>
+    </div>
+    <ul class="hub-route-list">${routes.join("")}</ul>
+  `;
+}
+
+function routeLockReason(route) {
+  if (route.requiresProgress?.notas_sino) return `${route.requiresProgress.notas_sino} notas`;
+  if (route.requiresRewards?.length) return "item";
+  if (route.requiresCompleted?.length) return "quest";
+  return "Bloqueado";
 }
 
 function addNarratorEntry(kind, text) {

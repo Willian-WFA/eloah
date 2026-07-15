@@ -143,6 +143,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-bell-city-hub-pwa`.
 - O resumo de retomada agora reconhece campanhas com hub: informa Notas de Sino, últimas quests/ajudas concluídas e caminhos abertos.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-campaign-resume-pwa`.
+- Adicionado painel visual de hub no painel da criança, exibido apenas em cenas com `hub`.
+- O painel mostra `Notas de Sino`, quantidade de caminhos abertos e lista de rotas com estado `Aberto`, `Concluído` ou requisito de bloqueio.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-hub-map-panel-pwa`.
 
 ## Decisoes tomadas
 
