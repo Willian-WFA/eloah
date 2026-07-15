@@ -42,6 +42,7 @@ const state = {
   lastNarration: "",
   audioContext: null,
   effectTimer: null,
+  masterRequestId: 0,
 };
 
 const els = {
@@ -984,6 +985,15 @@ function handlePlayerAction(actionText, source) {
   showFeedback(`${origin}: ${action}. ${reaction} ${insight.short}${diceHint}`, insight.cue, insight.effect);
   rememberAction(scene, action);
   renderSceneControls();
+
+  if (!scene.dice) {
+    requestMasterNarration({
+      trigger: "action",
+      action,
+      insight,
+      localConsequence: `${reaction} ${insight.short}`,
+    });
+  }
 }
 
 function rememberAction(scene, action) {
@@ -1331,6 +1341,16 @@ function rollDice() {
   const effect = scene.effects?.[`dice${capitalize(band)}`] || scene.effects?.diceResult;
   const luckText = spentLuck ? ` Sorte mágica: ${rolls.join(" e ")}. Vale ${result}.` : "";
   const message = `${outcome?.narration || defaultDiceNarration(result, band)}${luckText}`;
+  const aiContext = {
+    trigger: "dice",
+    action: state.selectedChoice,
+    diceResult: result,
+    diceBand: band,
+    diceOutcomeText: outcome?.narration || defaultDiceNarration(result, band),
+    localConsequence: message,
+    spentLuck,
+    rolls,
+  };
 
   state.useLuck = false;
   showDiceResult(result, message, cue, effect);
@@ -1353,6 +1373,89 @@ function rollDice() {
   }
 
   renderSceneControls();
+  window.setTimeout(() => requestMasterNarration(aiContext), 1450);
+}
+
+async function requestMasterNarration(context = {}) {
+  const scene = currentScene();
+  if (!scene || !state.adventure) return;
+
+  const requestId = state.masterRequestId + 1;
+  state.masterRequestId = requestId;
+  const requestedSceneId = scene.id;
+
+  try {
+    const response = await fetch("/api/master", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(buildMasterPayload(scene, context)),
+    });
+    const data = await response.json().catch(() => ({}));
+    const narration = String(data.narration || "").trim();
+
+    if (requestId !== state.masterRequestId || currentScene()?.id !== requestedSceneId) return;
+    if (!response.ok || data.mode !== "deepseek" || !narration) {
+      if (data.mode && data.mode !== "mock") console.info("[RPG Kids] Mestre IA indisponível", data.error || data.mode);
+      return;
+    }
+
+    addNarratorEntry("master", `Mestre: ${narration}`);
+    showFeedback(narration, masterCueForContext(context), masterEffectForContext(context));
+    if (data.tokenUsage) console.info("[RPG Kids] Uso DeepSeek", data.tokenUsage);
+  } catch (error) {
+    console.info("[RPG Kids] Mestre IA não respondeu", error);
+  }
+}
+
+function buildMasterPayload(scene, context = {}) {
+  const choices = sceneChoices(scene).filter((choice) => !choice.toLowerCase().includes("livre"));
+  const rewardLabels = state.rewards.map((id) => state.adventure.rewards?.[id]?.label || id);
+  const progressLabels = Object.fromEntries(
+    Object.entries(state.progress || {}).map(([key, value]) => [labelFor(key), Math.round(value)]),
+  );
+
+  return {
+    trigger: context.trigger || "action",
+    adventureTitle: state.adventure.title,
+    adventureGoal: state.adventure.goal || state.adventure.summary || state.adventure.contentReview?.parentSummary || "",
+    sceneId: scene.id,
+    sceneTitle: scene.title,
+    sceneNarration: genderedText(scene.narration),
+    scenePrompt: genderedText(scene.prompt || "O que você faz?"),
+    choices,
+    action: context.action || state.selectedChoice || "",
+    actionInsight: context.insight?.short || state.lastActionInsight || "",
+    localConsequence: context.localConsequence || "",
+    diceResult: context.diceResult || null,
+    diceBand: context.diceBand || "",
+    diceOutcomeText: context.diceOutcomeText || "",
+    movementInstruction: scene.movement?.instruction || "",
+    learningCriteria: scene.learningCriteria || "",
+    childProfile: {
+      callName: childCallName(),
+      gender: state.childGender,
+      heroTerm: childTerms().hero,
+      adventurerTerm: childTerms().adventurer,
+      narratorStyle: state.narratorStyle,
+    },
+    progress: progressLabels,
+    rewards: rewardLabels,
+    narrativeLog: state.narrativeLog.slice(-6),
+  };
+}
+
+function masterCueForContext(context = {}) {
+  if (context.diceBand === "high") return "bright_chime";
+  if (context.diceBand === "middle") return "warm_chime";
+  if (context.diceBand === "low") return "gentle_plop";
+  return "warm_chime";
+}
+
+function masterEffectForContext(context = {}) {
+  if (context.diceBand === "high") return "gold_glow";
+  if (context.diceBand === "middle") return "warm_glow";
+  if (context.diceBand === "low") return "soft_plop";
+  return "warm_glow";
 }
 
 function completeMovement() {
@@ -1981,6 +2084,7 @@ function runSceneEffect(effect) {
 
 function goLibrary() {
   clearInterval(state.timer);
+  state.masterRequestId += 1;
   stopNarration();
   renderLibrary();
   renderParentReview();

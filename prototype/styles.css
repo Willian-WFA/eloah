@@ -795,6 +795,11 @@ select {
   border-left-color: var(--rose);
 }
 
+.narrator-log li[data-kind="master"] {
+  border-left-color: #4d8475;
+  background: rgba(255, 255, 255, 0.78);
+}
+
 .choice-panel,
 .free-action-panel,
 .tool-row,

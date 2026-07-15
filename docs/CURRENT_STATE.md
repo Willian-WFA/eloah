@@ -159,6 +159,10 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Criado `.env.example` com variáveis esperadas da DeepSeek.
 - Configuracao DeepSeek alinhada com a documentacao oficial: `DEEPSEEK_MODEL=deepseek-v4-flash`, `DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions` e `thinking` desativado para resposta direta.
 - Servidor passou a carregar `.env` local na raiz, sem dependencia externa, preservando prioridade das variaveis de ambiente da Hostinger.
+- Frontend passou a chamar `/api/master` no fluxo real do jogo: depois de ações em cenas sem dado e depois do resultado do dado em cenas de sorte.
+- A IA mestre recebe contexto seguro da aventura/cena, escolhas aprovadas, ação da criança, consequência local, progresso, recompensas e `narrativeLog`; progresso e recompensas continuam decididos pelo motor local.
+- Diário da aventura agora registra falas do `Mestre` vindas da DeepSeek quando `mode=deepseek`; respostas `mock`/erro não substituem o fallback local.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-deepseek-master-flow-pwa`.
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.
 - Modal do dado agora mostra números grandes `1-6` em vez de faces pequenas, fala `Você tirou X` e toca ticks sintéticos durante a rolagem.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-deepseek-dice-voice-pwa`.
