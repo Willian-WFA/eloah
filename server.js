@@ -6,7 +6,7 @@ const port = Number(process.env.PORT || 3000);
 const host = process.env.HOST || "0.0.0.0";
 const publicDir = resolve("public");
 const deepSeekApiKey = process.env.DEEPSEEK_API_KEY || "";
-const deepSeekModel = process.env.DEEPSEEK_MODEL || "deepseek-chat";
+const deepSeekModel = process.env.DEEPSEEK_MODEL || "deepseek-v4-flash";
 const deepSeekApiUrl = process.env.DEEPSEEK_API_URL || "https://api.deepseek.com/chat/completions";
 
 const mimeTypes = {
@@ -133,6 +133,7 @@ async function callDeepSeekMaster(payload = {}) {
         model: deepSeekModel,
         temperature: 0.75,
         max_tokens: 260,
+        thinking: { type: "disabled" },
         messages: buildMasterMessages(payload),
       }),
       signal: controller.signal,

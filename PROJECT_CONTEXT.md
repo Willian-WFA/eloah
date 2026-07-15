@@ -59,7 +59,8 @@
 | Variable | Purpose | Required |
 | --- | --- | --- |
 | `DEEPSEEK_API_KEY` | Chave usada pelo backend para chamar a DeepSeek API. | yes |
-| `DEEPSEEK_MODEL` | Modelo configuravel usado pela IA mestre. | yes |
+| `DEEPSEEK_MODEL` | Modelo configuravel usado pela IA mestre. Default recomendado: `deepseek-v4-flash`. | yes |
+| `DEEPSEEK_API_URL` | Endpoint de chat. Default recomendado: `https://api.deepseek.com/chat/completions`. | yes |
 | `LLM_COST_PRICING_CONFIG` | Fonte configuravel de preco por modelo para estimativa de custo. | no |
 
 ## Testing
