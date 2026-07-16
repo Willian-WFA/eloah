@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 357ab85 Regenerate remaining bell city narration; 4b2cfc3 Fix bell city hub and dice flow; proximo commit corrige textos de rotas apos QA no navegador
+Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA
 PR/Issues: n/a
 
 ## Resumo curto
