@@ -1754,7 +1754,11 @@ function scheduleChoiceIdlePrompts(scene) {
       if (els.choiceModal.hidden || currentScene()?.id !== sceneId || state.selectedChoice) return;
       const text = prompts[index] || prompts[0];
       playCue(index === 0 ? "soft_step" : "warm_chime");
-      speakNarration(text, { interrupt: false, quality: "premium" });
+      speakNarration(text, {
+        interrupt: false,
+        quality: "premium",
+        audioKey: idlePromptAudioKey(scene, index),
+      });
     }, delay);
     state.choiceIdleTimers.push(timer);
   });
@@ -1791,6 +1795,23 @@ function idlePromptsForScene(scene) {
     "A aventura fica quietinha esperando sua decisão.",
     "Quando quiser continuar, toque em uma das opções.",
   ];
+}
+
+function idlePromptAudioKey(scene, index) {
+  if (scene?.hub?.routes?.length) {
+    const counts = hubRouteCounts(scene);
+    const firstVisit = scene.id === "sinos_praca_relogio" && (state.progress.notas_sino || 0) === 0;
+    if (firstVisit) return uiAudioKey("idle", `hub-first-${index + 1}`);
+    if (counts.remaining <= 3) {
+      if (index === 0 && counts.remaining === 3) return uiAudioKey("idle", "hub-three-1");
+      if (index === 0 && counts.remaining === 2) return uiAudioKey("idle", "hub-two-1");
+      if (index === 0 && counts.remaining === 1) return uiAudioKey("idle", "hub-one-1");
+      return uiAudioKey("idle", "hub-few-2");
+    }
+    return uiAudioKey("idle", `hub-many-${index + 1}`);
+  }
+  if (scene?.dice) return uiAudioKey("idle", `dice-${index + 1}`);
+  return uiAudioKey("idle", `default-${index + 1}`);
 }
 
 function closeChoiceModal() {
@@ -2140,6 +2161,7 @@ function openMovementModal() {
   speakNarration(`${scene.movement.label}. ${scene.movement.instruction}. Quando terminar, toque em Pronto.`, {
     interrupt: true,
     quality: "premium",
+    audioKey: audioKeyForScene(scene, "movement"),
   });
   startMovementCountdown(20);
 }
@@ -2176,7 +2198,11 @@ function askMovementComplete() {
   els.movementReadyButton.textContent = "Sim";
   els.movementFallbackButton.hidden = false;
   els.movementFallbackButton.textContent = "Não";
-  speakNarration("Você já cumpriu o desafio?", { interrupt: true, quality: "premium" });
+  speakNarration("Você já cumpriu o desafio?", {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(currentScene(), "movement-question"),
+  });
   if (state.microphoneConsent) {
     state.movementListenTimer = window.setTimeout(listenForMovementConfirmation, 600);
   }
@@ -2243,7 +2269,11 @@ function extendMovementChallenge() {
   els.movementFallbackButton.hidden = true;
   els.movementReadyButton.disabled = true;
   els.movementInstructionText.textContent = fallback;
-  speakNarration(`${fallback} Mais dez segundos e eu pergunto de novo.`, { interrupt: true, quality: "premium" });
+  speakNarration(`${fallback} Mais dez segundos e eu pergunto de novo.`, {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "movement-fallback"),
+  });
   startMovementCountdown(10);
 }
 
@@ -2451,7 +2481,11 @@ function finishAdventure(timebox) {
     playCue("book_close_soft");
   } else {
     playCelebrationCues();
-    speakNarration(celebrationText, { quality: "premium", interrupt: true });
+    speakNarration(celebrationText, {
+      quality: "premium",
+      interrupt: true,
+      audioKey: adventureAudioKey("celebration"),
+    });
   }
 }
 
@@ -2572,8 +2606,12 @@ function showFeedback(message, cue, effect, options = {}) {
   els.feedbackPanel.hidden = false;
   if (effect) runSceneEffect(effect);
   playCue(cue);
-  if (options.speak !== false) {
-    speakNarration(feedback, { interrupt: options.interrupt ?? true, quality: options.quality || "auto" });
+  if (options.speak === true || options.audioKey) {
+    speakNarration(feedback, {
+      interrupt: options.interrupt ?? true,
+      quality: options.quality || (options.audioKey ? "premium" : "auto"),
+      audioKey: options.audioKey || "",
+    });
   }
 }
 
@@ -2831,8 +2869,17 @@ async function speakNextNarrationChunk() {
       return;
     } catch (error) {
       state.apiTtsCooldownUntil = Date.now() + 8_000;
-      console.info("[RPG Kids] TTS API indisponível, usando voz do navegador", error);
+      console.info("[RPG Kids] TTS API indisponível", error);
     }
+  }
+
+  if (quality === "premium") {
+    console.info("[RPG Kids] narração premium sem áudio pronto; voz do navegador bloqueada", {
+      audioKey,
+      preview: chunk.slice(0, 90),
+    });
+    window.setTimeout(speakNextNarrationChunk, chunk.includes("Opção") ? 160 : 130);
+    return;
   }
 
   speakBrowserNarrationChunk(chunk, runId);
@@ -2920,6 +2967,11 @@ function audioKeyForDice(scene, result) {
 
 function uiAudioKey(name, kind) {
   return `ui/${name}/${kind}`;
+}
+
+function adventureAudioKey(kind) {
+  if (!state.adventure) return "";
+  return `${state.adventure.id}/__adventure/${kind}`;
 }
 
 function speakBrowserNarrationChunk(chunk, runId = state.narrationRunId) {

@@ -12,18 +12,19 @@ const ttsModel = process.env.TTS_MODEL || "gemini-3.1-flash-tts-preview";
 const ttsVoice = process.env.TTS_VOICE || "Puck";
 const outDir = resolve("public/assets/audio");
 const prototypeOutDir = resolve("prototype/assets/audio");
-const selectedAdventureId = process.argv.find((arg) => arg.startsWith("--adventure="))?.split("=")[1] || "";
-const limit = Number(process.argv.find((arg) => arg.startsWith("--limit="))?.split("=")[1] || 0);
+const selectedAdventureId = lastArgValue("--adventure") || "";
+const limit = Number(lastArgValue("--limit") || 0);
 const continueOnError = process.argv.includes("--continue-on-error");
 const force = process.argv.includes("--force");
-const selectedKind = process.argv.find((arg) => arg.startsWith("--kind="))?.split("=")[1] || "";
-const selectedSceneIds = new Set((process.argv.find((arg) => arg.startsWith("--scene="))?.split("=")[1] || "")
+const missingOnly = process.argv.includes("--missing-only");
+const selectedKind = lastArgValue("--kind") || "";
+const selectedSceneIds = new Set((lastArgValue("--scene") || "")
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean));
-const customKey = process.argv.find((arg) => arg.startsWith("--key="))?.slice("--key=".length) || "";
-const customText = process.argv.find((arg) => arg.startsWith("--text="))?.slice("--text=".length) || "";
-const delayMs = Number(process.argv.find((arg) => arg.startsWith("--delay-ms="))?.split("=")[1] || 2500);
+const customKey = lastArgValue("--key") || "";
+const customText = lastArgValue("--text") || "";
+const delayMs = Number(lastArgValue("--delay-ms") || 2500);
 
 main().catch((error) => {
   console.error(error);
@@ -41,8 +42,11 @@ async function main() {
       (!selectedKind || job.kind === selectedKind) &&
       (!selectedSceneIds.size || selectedSceneIds.has(job.sceneId))
     ));
-  const selectedJobs = limit > 0 ? jobs.slice(0, limit) : jobs;
   const manifest = await readJson(join(outDir, "manifest.json"));
+  const limitedJobs = limit > 0 ? jobs.slice(0, limit) : jobs;
+  const selectedJobs = missingOnly
+    ? limitedJobs.filter((job) => !manifest[job.key] || !existsSync(join(outDir, `${job.key}.wav`)))
+    : limitedJobs;
 
   await mkdir(outDir, { recursive: true });
   await mkdir(prototypeOutDir, { recursive: true });
@@ -109,9 +113,43 @@ function buildAudioJobs(adventures) {
           });
         }
       }
+
+      if (scene.movement) {
+        jobs.push({
+          key: `${adventure.id}/${scene.id}/movement`,
+          adventureId: adventure.id,
+          sceneId: scene.id,
+          kind: "movement",
+          text: `${scene.movement.label || "Desafio físico"}. ${scene.movement.instruction}. Quando terminar, toque em Pronto.`,
+        });
+        jobs.push({
+          key: `${adventure.id}/${scene.id}/movement-question`,
+          adventureId: adventure.id,
+          sceneId: scene.id,
+          kind: "movement",
+          text: "Você já cumpriu o desafio?",
+        });
+        if (scene.movement.fallback) {
+          jobs.push({
+            key: `${adventure.id}/${scene.id}/movement-fallback`,
+            adventureId: adventure.id,
+            sceneId: scene.id,
+            kind: "movement",
+            text: `${scene.movement.fallback} Mais dez segundos e eu pergunto de novo.`,
+          });
+        }
+      }
     }
+
+    jobs.push({
+      key: `${adventure.id}/__adventure/celebration`,
+      adventureId: adventure.id,
+      sceneId: "__adventure",
+      kind: "ui",
+      text: endingCelebrationText(adventure),
+    });
   }
-  return jobs.filter((job) => job.text);
+  return [...jobs, ...buildUiAudioJobs()].filter((job) => job.text);
 }
 
 function buildCustomAudioJobs() {
@@ -126,18 +164,57 @@ function buildCustomAudioJobs() {
 }
 
 function sceneText(scene) {
+  const narration = sceneSpokenText(scene);
   const choices = scene.hub?.routes?.length
-    ? scene.hub.routes.map((route) => route.label)
+    ? scene.hub.routes.slice(0, 3).map((route) => route.label)
     : scene.choices || [];
   const spokenChoices = choices
     .filter((choice) => !String(choice).toLowerCase().includes("livre"))
     .map((choice, index) => `Opção ${index + 1}: ${choice}.`)
     .join(" ");
   return [
-    scene.narration,
+    narration,
     scene.prompt || "O que você faz?",
     spokenChoices ? `Escute suas opções de aventura. ${spokenChoices}` : "",
   ].filter(Boolean).join(" ");
+}
+
+function sceneSpokenText(scene) {
+  if (scene.id === "sinos_praca_relogio") {
+    return "Você chegou à Praça do Relógio. O Relógio-Coração parou, e a fonte espera cinco Notas de Sino. Luma abre o mapa e mostra três caminhos.";
+  }
+  return scene.narration;
+}
+
+function endingCelebrationText(adventure) {
+  if (adventure.id === "cidade-dos-sinos-claros") {
+    return "Parabéns! As Notas de Sino tocaram juntas no Relógio-Coração. A cidade voltou a respirar música, e Luma guardou sua coragem no mapa da aventura.";
+  }
+  return `Parabéns! Você terminou ${adventure.title}. A aventura ficou guardada com suas escolhas, seus aprendizados e suas recompensas.`;
+}
+
+function buildUiAudioJobs() {
+  return [
+    ["ui/idle/hub-first-1", "Repare na fonte: cada espaço vazio espera uma Nota de Sino acordar."],
+    ["ui/idle/hub-first-2", "A torre tem janelas em forma de sino. Ela parece quietinha, como se estivesse esperando ajuda."],
+    ["ui/idle/hub-three-1", "Agora restam três caminhos brilhando no mapa."],
+    ["ui/idle/hub-two-1", "Agora só restam dois caminhos para investigar."],
+    ["ui/idle/hub-one-1", "Chegamos ao último local antes da torre. Só resta um caminho."],
+    ["ui/idle/hub-few-2", "Luma aponta para o mapa: escolha um caminho que ainda está brilhando."],
+    ["ui/idle/hub-many-1", "Luma segura o mapa bem quietinha. A cidade é grande, mas o mestre mostra três caminhos por vez."],
+    ["ui/idle/hub-many-2", "A praça espera sem pressa. Cada caminho visitado pode acordar uma Nota de Sino."],
+    ["ui/idle/dice-1", "O mestre espera sua escolha. Toque em uma opção quando estiver pronta."],
+    ["ui/idle/dice-2", "A cena está parada só para você decidir. Opção um, dois ou três."],
+    ["ui/idle/default-1", "A aventura fica quietinha esperando sua decisão."],
+    ["ui/idle/default-2", "Quando quiser continuar, toque em uma das opções."],
+    ["ui/jogue-um-dado/prompt", "Jogue um dado."],
+  ].map(([key, text]) => ({
+    key,
+    adventureId: "__ui",
+    sceneId: "__ui",
+    kind: "ui",
+    text,
+  }));
 }
 
 async function generateGeminiWav(text) {
@@ -286,4 +363,10 @@ function loadEnvFile() {
     const rawValue = trimmed.slice(separatorIndex + 1).trim();
     if (!process.env[key]) process.env[key] = rawValue.replace(/^["']|["']$/g, "");
   }
+}
+
+function lastArgValue(name) {
+  const prefix = `${name}=`;
+  const matches = process.argv.filter((arg) => arg.startsWith(prefix));
+  return matches.length ? matches[matches.length - 1].slice(prefix.length) : "";
 }

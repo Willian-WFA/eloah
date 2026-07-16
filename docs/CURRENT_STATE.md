@@ -497,12 +497,17 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Chrome headless/CDP confirmou mapa da Praça com 8 pontos, 3 abertos e 5 bloqueados no início; tocar em `Rua dos Biscoitos Redondos` fechou o mapa, confirmou a escolha e liberou a seta.
 - Validação após correção do fluxo do mapa/voz executada com `npm run check`, `node --check prototype/app.js` e `cmp` entre `public/` e `prototype/`.
 - Chrome headless/CDP confirmou que a fala inicial da Praça virou um único bloco, `Opção` com `quality=premium` usa API TTS, o mapa abre automaticamente, tocar na rota entra direto em `Tico e a Ordem dos Biscoitos`, e escolher uma opção da cena abre o modal do dado.
+- Gerados novos WAVs pré-prontos com Gemini para aventuras menores, desafios físicos, celebrações e parte das falas de apoio que ainda caíam na voz do navegador.
+- O app agora bloqueia fallback para `speechSynthesis` quando a fala está em modo `premium`; se faltar WAV/API, a voz do navegador não assume a narração.
+- Feedbacks dinâmicos de tela deixaram de falar por padrão, reduzindo risco de voz duplicada ou voz local fora do padrão aprovado.
+- Criado `scripts/check-audio-coverage.js` e `npm run generate:audio:missing` para validar e retomar somente áudios faltantes.
+- Validação de sintaxe passou em `public/app.js`, `prototype/app.js`, `scripts/generate-audio.js` e `scripts/check-audio-coverage.js`; `public/` e `prototype/` estão sincronizados para app, service worker e manifesto.
+- Cobertura atual de áudio completa: 221 chaves esperadas, 221 entradas no manifesto e 0 áudios faltantes. Todas as cenas, dados, desafios físicos, celebrações e falas ociosas de UI têm WAV pré-gerado em `public/` e `prototype/`.
 
 ## O que falta fazer
 
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
-- Gerar ou pregerar áudio Gemini específico para encerramento final da `A Cidade dos Sinos Claros`, se a fala dinâmica do browser/API ainda não ficar teatral o suficiente.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
 - No celular, testar instalação PWA via `Adicionar à tela inicial`, abertura em modo standalone e permissão de microfone em HTTPS.
 - Gerar imagens bitmap para as aventuras antigas (`Portal das Estrelinhas` e `Caverna dos Bichinhos`) se o estilo das novas for aprovado.
@@ -548,7 +553,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - O prototipo ainda nao foi validado visualmente no browser com inspeção humana ou Playwright.
 - O modal do dado, sorte e avatar visual ainda precisam de validacao visual no browser/celular.
 - Ainda é necessário testar no celular real a correção de travamento pós-dado e a ausência de áudio sobreposto, porque autoplay/latência variam por navegador.
+- A cobertura local de áudio está completa, mas ainda é necessário testar no celular se autoplay/cache/service worker não impedem algum WAV de tocar.
 
 ## Proximo prompt recomendado
 
-Atue como The Creator no projeto RPG Kids. Abra/teste a versão publicada e local em `http://localhost:3000`, foque na campanha `A Cidade dos Sinos Claros`, valide no celular o loop fechado de opções, microfone, dado, desafio físico, hub com rotas restantes, diário no card da heroína, cenas com WAV pregerado e encerramento com parabéns. Se o fluxo estiver estável, o próximo passo é criar áudio pregerado especial para o final da aventura e refinar o conteúdo pedagógico.
+Atue como The Creator no projeto RPG Kids. Publique a versão atual na Hostinger e valide no celular a campanha `A Cidade dos Sinos Claros` com foco em ausência de voz do navegador, fluxo fechado de opções, microfone, dado, desafio físico, mapa da praça, cache do PWA e encerramento com parabéns. A cobertura local de áudio pré-gerado está completa (`Missing audio keys: 0`).
