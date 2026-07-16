@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-15-portal-audio-images-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-15-bell-city-audio-images-pwa";
 
 const CORE_ASSETS = [
   "./",
@@ -16,6 +16,16 @@ const CORE_ASSETS = [
   "./assets/scenes/tiny_bell_town.webp",
   "./assets/scenes/sleepy_star_portal.webp",
   "./assets/scenes/star_party_soft.webp",
+  "./assets/scenes/bell_city_gate.webp",
+  "./assets/scenes/bell_clock_square.webp",
+  "./assets/scenes/round_cookie_street.webp",
+  "./assets/scenes/umbrella_library.webp",
+  "./assets/scenes/short_giraffe_garden.webp",
+  "./assets/scenes/cloth_bridge.webp",
+  "./assets/scenes/soft_hammer_workshop.webp",
+  "./assets/scenes/small_steps_forest.webp",
+  "./assets/scenes/slow_wind_hill.webp",
+  "./assets/scenes/soft_silence_tower.webp",
   "./assets/scenes/cloud_harbor_soft.webp",
   "./assets/scenes/storm_spoon_deck.webp",
   "./assets/scenes/tea_whale_gate.webp",

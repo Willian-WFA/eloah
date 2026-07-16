@@ -1277,7 +1277,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "O Portão Baixinho",
         asset: "bell_city_gate",
         color: "#80bfff",
-        image: { type: "approved_placeholder", assetId: "bell_city_gate", icon: "♪", alt: "Portão azul e baixinho na entrada de uma cidade silenciosa de sinos." },
+        image: { type: "approved_bitmap_asset", assetId: "bell_city_gate", src: "assets/scenes/bell_city_gate.webp", icon: "♪", alt: "Portão azul e baixinho na entrada de uma cidade silenciosa de sinos." },
         theme: { palette: ["#80bfff", "#fff2a8"], template: "bell_city" },
         narration:
           "Você chega por uma estrada de pedrinhas lisas. No fim dela existe um portão azul, baixinho, feito para aventureiros que gostam de olhar detalhes. Do outro lado, a Cidade dos Sinos Claros deveria tocar plim, plom, plim, mas hoje está quieta. Luma aparece com um mapa dobrado e diz: o Relógio-Coração parou. Para acordar o festival, precisamos encontrar cinco Notas de Sino ajudando moradores da cidade.",
@@ -1305,7 +1305,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "A Praça do Relógio Parado",
         asset: "bell_clock_square",
         color: "#ffd66b",
-        image: { type: "approved_placeholder", assetId: "bell_clock_square", icon: "◷", alt: "Praça redonda com torre de relógio em forma de sino." },
+        image: { type: "approved_bitmap_asset", assetId: "bell_clock_square", src: "assets/scenes/bell_clock_square.webp", icon: "◷", alt: "Praça redonda com torre de relógio em forma de sino." },
         theme: { palette: ["#ffd66b", "#8bd7ff"], template: "bell_square" },
         narration:
           "A praça é redonda. No centro, a torre do Relógio-Coração tem janelas em forma de sino. Na fonte existem cinco espaços vazios. Luma aponta para três ruas: a Rua dos Biscoitos Redondos, a Biblioteca dos Guarda-Chuvas e o Jardim da Girafa Pequena. Ela explica que cada ajuda pode acordar uma Nota de Sino.",
@@ -1339,7 +1339,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "Tico e a Ordem dos Biscoitos",
         asset: "round_cookie_street",
         color: "#ffb86b",
-        image: { type: "approved_placeholder", assetId: "round_cookie_street", icon: "●", alt: "Padaria redonda com bandejas de biscoitos de estrela, lua e sino." },
+        image: { type: "approved_bitmap_asset", assetId: "round_cookie_street", src: "assets/scenes/round_cookie_street.webp", icon: "●", alt: "Padaria redonda com bandejas de biscoitos de estrela, lua e sino." },
         theme: { palette: ["#ffb86b", "#fff2a8"], template: "bakery" },
         narration:
           "A rua cheira a massa quente. Cada janela tem um paninho colorido, e cada paninho balança como se cumprimentasse. Tico, o padeiro baixinho, olha três bandejas: estrela, lua e sino. Ele diz que a ordem do festival escorregou do pensamento.",
@@ -1369,7 +1369,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "A Biblioteca dos Guarda-Chuvas",
         asset: "umbrella_library",
         color: "#b8a07a",
-        image: { type: "approved_placeholder", assetId: "umbrella_library", icon: "▤", alt: "Biblioteca silenciosa com guarda-chuvas abertos sobre livros." },
+        image: { type: "approved_bitmap_asset", assetId: "umbrella_library", src: "assets/scenes/umbrella_library.webp", icon: "▤", alt: "Biblioteca silenciosa com guarda-chuvas abertos sobre livros." },
         theme: { palette: ["#b8a07a", "#d8a7c8"], template: "library" },
         narration:
           "Depois da padaria, Luma leva você por uma rua silenciosa. As pedras parecem pedir passos pequenos. Na biblioteca, guarda-chuvas ficam abertos mesmo sem chuva. Dona Vira-Página cochicha que três livros fugiram para baixo dos guarda-chuvas porque estão espirrando poeira.",
@@ -1399,7 +1399,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "Pipoca e as Flores Altas",
         asset: "short_giraffe_garden",
         color: "#8bd48b",
-        image: { type: "approved_placeholder", assetId: "short_giraffe_garden", icon: "♧", alt: "Jardim com flores relógio e uma girafa de pescoço curto em um banquinho." },
+        image: { type: "approved_bitmap_asset", assetId: "short_giraffe_garden", src: "assets/scenes/short_giraffe_garden.webp", icon: "♧", alt: "Jardim com flores relógio e uma girafa de pescoço curto em um banquinho." },
         theme: { palette: ["#8bd48b", "#ffd66b"], template: "garden" },
         narration:
           "O jardim tem flores que abrem e fecham como relógios. No meio delas está Pipoca, uma girafa de pescoço curto usando um banquinho amarelo. Ela quer ver se as flores altas estão tristes, mas não quer puxar nenhuma flor e machucar o jardim.",
@@ -1430,7 +1430,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "Nara e a Ponte dos Panos",
         asset: "cloth_bridge",
         color: "#ff8fb3",
-        image: { type: "approved_placeholder", assetId: "cloth_bridge", icon: "≋", alt: "Ponte mole feita de panos coloridos sobre riacho claro." },
+        image: { type: "approved_bitmap_asset", assetId: "cloth_bridge", src: "assets/scenes/cloth_bridge.webp", icon: "≋", alt: "Ponte mole feita de panos coloridos sobre riacho claro." },
         theme: { palette: ["#ff8fb3", "#80bfff"], template: "bridge" },
         narration:
           "Quando três notas brilham na fonte, duas orelhas aparecem atrás de uma placa. Nara, guardiã com orelhas de cachorro, diz que ouviu a cidade chamando. Ela leva você até uma ponte de panos coloridos que treme quando alguém pisa sem ritmo.",
@@ -1456,7 +1456,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "O Sino Sem Plim",
         asset: "soft_hammer_workshop",
         color: "#b8a07a",
-        image: { type: "approved_placeholder", assetId: "soft_hammer_workshop", icon: "⚒", alt: "Oficina com ferramentas delicadas e um sino pequeno sem som." },
+        image: { type: "approved_bitmap_asset", assetId: "soft_hammer_workshop", src: "assets/scenes/soft_hammer_workshop.webp", icon: "⚒", alt: "Oficina com ferramentas delicadas e um sino pequeno sem som." },
         theme: { palette: ["#b8a07a", "#fff2a8"], template: "workshop" },
         narration:
           "A oficina de Mestre Bolim fica numa rua que faz toc-toc em vez de eco. Um sino pequeno perdeu o plim. Bolim avisa: se bater forte, ele fica mais quieto; se escutar primeiro, talvez conte onde o som ficou.",
@@ -1486,7 +1486,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "Bento e as Cartas do Bosque",
         asset: "small_steps_forest",
         color: "#7ec8a5",
-        image: { type: "approved_placeholder", assetId: "small_steps_forest", icon: "✉", alt: "Bosque calmo com cartas pequenas escondidas perto de pedra, flor e riacho." },
+        image: { type: "approved_bitmap_asset", assetId: "small_steps_forest", src: "assets/scenes/small_steps_forest.webp", icon: "✉", alt: "Bosque calmo com cartas pequenas escondidas perto de pedra, flor e riacho." },
         theme: { palette: ["#7ec8a5", "#8bd7ff"], template: "forest" },
         narration:
           "Luma aponta para um caminho fora da cidade. Ele não parece perigoso; parece quieto. As folhas fazem fuf quando alguém pisa com pressa e fii quando alguém pisa devagar. Bento, o coelho barrigudo carteiro, perdeu três cartas pequenas.",
@@ -1516,7 +1516,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "Iara e o Vento Devagar",
         asset: "slow_wind_hill",
         color: "#80bfff",
-        image: { type: "approved_placeholder", assetId: "slow_wind_hill", icon: "〰", alt: "Colina com fitas coloridas e catavento que gira devagar." },
+        image: { type: "approved_bitmap_asset", assetId: "slow_wind_hill", src: "assets/scenes/slow_wind_hill.webp", icon: "〰", alt: "Colina com fitas coloridas e catavento que gira devagar." },
         theme: { palette: ["#80bfff", "#d8a7c8"], template: "wind_hill" },
         narration:
           "A colina fica depois de uma escada de grama. No alto, fitas coloridas estão presas em postes. Elas não balançam forte; elas esperam. Iara precisa mandar uma fita até a torre, mas o vento só leva mensagens quando alguém respira calmo.",
@@ -1542,7 +1542,7 @@ window.RPG_KIDS_ADVENTURES = [
         title: "O Grande Silêncio Macio",
         asset: "soft_silence_tower",
         color: "#c6a7ff",
-        image: { type: "approved_placeholder", assetId: "soft_silence_tower", icon: "◌", alt: "Sala alta da torre com almofadas e potinhos guardando sons brilhantes." },
+        image: { type: "approved_bitmap_asset", assetId: "soft_silence_tower", src: "assets/scenes/soft_silence_tower.webp", icon: "◌", alt: "Sala alta da torre com almofadas e potinhos guardando sons brilhantes." },
         theme: { palette: ["#c6a7ff", "#fff2a8"], template: "tower" },
         narration:
           "As Notas de Sino brilham na fonte e a água sobe formando degraus pequenos. No alto da torre, a sala não está quebrada: está cheia de almofadas. No meio delas existe uma nuvem redonda, cinza clara, segurando potinhos de sons: plim, tac, risadinha, vento, livro fechando e pão saindo do forno. Ela diz: eu sou o Grande Silêncio Macio. Guardei os sons porque achei que ninguém queria mais ficar quietinho comigo.",

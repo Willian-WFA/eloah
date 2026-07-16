@@ -175,6 +175,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Gerados todos os 23 WAVs previsiveis de `portal-das-estrelinhas` com Gemini TTS local: narracao das 5 cenas e resultados de dado das cenas com sorte.
 - Geradas 5 imagens bitmap aprovadas para `portal-das-estrelinhas` e ligadas às cenas: floresta, ponte de cristais, cidade dos sinos, portal adormecido e festa final.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-portal-audio-images-pwa`.
+- Gerados todos os 64 WAVs previsiveis de `cidade-dos-sinos-claros` com Gemini TTS local: narracao das 10 cenas e resultados de dado das 9 cenas com sorte.
+- Geradas 10 imagens bitmap aprovadas para `cidade-dos-sinos-claros` e ligadas às cenas da campanha.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-bell-city-audio-images-pwa`.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-prebuilt-audio-pwa`.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-api-tts-pwa`.
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.

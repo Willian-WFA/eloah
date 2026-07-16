@@ -23,6 +23,7 @@ Usuario obteve uma key do Gemini e quer usar essa key para a voz do narrador.
 - `scripts/generate-audio.js` agora grava manifest incremental, pula WAVs existentes, faz backoff em 429 e pode continuar com `--continue-on-error`.
 - Retomada com `--delay-ms=12000 --continue-on-error` completou `portal-das-estrelinhas`: 23 WAVs previsiveis, incluindo narracao das 5 cenas e resultados de dado.
 - Geradas 5 imagens bitmap para `portal-das-estrelinhas`: `forest_gate_soft`, `crystal_bridge_soft`, `tiny_bell_town`, `sleepy_star_portal` e `star_party_soft`; as cenas agora apontam para `.webp`.
+- Campanha grande `cidade-dos-sinos-claros` completada com `--delay-ms=15000 --continue-on-error`: 64 WAVs previsiveis e 10 imagens bitmap novas ligadas as cenas.
 - Suporte OpenAI TTS foi mantido como opcao futura (`TTS_PROVIDER=openai`).
 - O fallback do frontend permanece: se `/api/tts` falhar, volta para `speechSynthesis`.
 
