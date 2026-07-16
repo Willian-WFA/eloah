@@ -219,7 +219,10 @@ function clearCheckpoint() {
 
 function loadParentState() {
   const raw = localStorage.getItem(STORAGE_KEYS.parentState);
-  if (!raw) return;
+  if (!raw) {
+    state.setupStep = "profile";
+    return;
+  }
   try {
     const saved = JSON.parse(raw);
     state.credits = saved.credits ?? state.credits;
@@ -236,7 +239,7 @@ function loadParentState() {
     state.narrationVolume = saved.narrationVolume ?? state.narrationVolume;
     if (els.volumeSelect) els.volumeSelect.value = String(state.narrationVolume);
     state.profileCompleted = saved.profileCompleted ?? Boolean(saved.childName);
-    state.setupStep = saved.setupStep || (state.profileCompleted ? "setup" : "profile");
+    state.setupStep = state.profileCompleted ? saved.setupStep || "setup" : "profile";
     if (saved.timeLimitMinutes) {
       els.timeLimitSelect.value = String(saved.timeLimitMinutes);
       updateTimeButtons(saved.timeLimitMinutes);
@@ -412,6 +415,10 @@ function updateParentApproval() {
   const consentOk = !needsConsent || els.restrictedHumorCheckbox.checked || els.removeRestrictedHumorToggle.checked;
   const extensionOk = state.credits >= extensionCreditCost(Number(els.timeLimitSelect.value));
   els.startChildPanelButton.disabled = !(els.approveStoryCheckbox.checked && consentOk && extensionOk);
+  if (els.storyApprovePlayButton) {
+    els.storyApprovePlayButton.disabled = !consentOk || !extensionOk;
+    els.storyApprovePlayButton.textContent = extensionOk ? "Aprovar e jogar" : "Créditos insuficientes";
+  }
 }
 
 function labelForFlag(flag) {
@@ -541,10 +548,11 @@ function closeProfileModal() {
 }
 
 function saveProfileFromModal() {
-  state.childName = els.childNameInput.value.trim();
   state.childGender = els.childGenderSelect.value;
+  state.childName = els.childNameInput.value.trim() || defaultChildName();
+  els.childNameInput.value = state.childName;
   state.childAge = els.childAgeSelect.value;
-  state.profileCompleted = Boolean(state.childName);
+  state.profileCompleted = true;
   state.setupStep = "setup";
   updateChildProfile({ saveOnly: true });
   closeProfileModal();
@@ -554,14 +562,17 @@ function saveProfileFromModal() {
 
 function showApprovalStep() {
   if (!state.profileCompleted) {
-    openProfileModal();
-    return;
+    saveProfileFromModal();
   }
   state.setupStep = "approval";
   renderParentFlow();
   renderLibrary();
   renderParentReview();
   updateCreditUI();
+}
+
+function defaultChildName() {
+  return state.childGender === "boy" ? "Aventureiro" : "Aventureira";
 }
 
 function showSetupStep() {
@@ -2688,7 +2699,3 @@ renderLibrary();
 renderParentReview();
 renderParentFlow();
 updateCreditUI();
-  if (state.selectedChoice) {
-    showFeedback("Opção já escolhida. Continue a aventura.", "warm_chime", null, { speak: false });
-    return;
-  }

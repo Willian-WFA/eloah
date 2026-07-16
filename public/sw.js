@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-16-story-flow-cleanup-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-16-parent-flow-unlock-pwa";
 
 const CORE_ASSETS = [
   "./",

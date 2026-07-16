@@ -1,10 +1,10 @@
 # Current State
 
 Projeto: RPG Kids
-Atualizado em: 2026-07-15
+Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 1e90d0f Initial RPG Kids playable prototype; b5dbf27 Document GitHub publish and draft long adventure
+Commit(s): b5aa66b Refine story selection and gameplay flow; proximo commit desta sessao corrige travamento do painel dos pais
 PR/Issues: n/a
 
 ## Resumo curto
@@ -204,6 +204,11 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - A seleção de opção agora é única por cena; tentativas posteriores não entram no diário.
 - Depois de avançar capítulo, o checkpoint é salvo automaticamente.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-story-flow-cleanup-pwa`.
+- Corrigido travamento do painel dos pais causado por um `return` solto no fim de `app.js`, que gerava `Uncaught SyntaxError: Illegal return statement` e impedia todos os handlers de inicializar.
+- Perfil inicial deixou de bloquear o fluxo se o nome não for preenchido; o app usa `Aventureira`/`Aventureiro` como fallback.
+- Botão do painel de configuração passou de `Continuar` para `Escolher história`, deixando a próxima etapa mais explícita.
+- O botão `Aprovar e jogar` agora reflete falta de créditos/consentimento quando uma aventura exige condição antes de iniciar.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-parent-flow-unlock-pwa`.
 
 ## Decisoes tomadas
 
@@ -394,10 +399,13 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Busca confirmou `childGenderSelect`, `genderedText`, `Menina · aventureira`, `Menino · aventureiro` e cache `gender-voice-pwa` em `prototype/` e `public/`.
 - Validação após perfil/estilo/avatar/modo só voz/relatório executada com `node --check prototype/app.js`, `node --check prototype/sw.js`, `npm run sync:public`, `npm run check` e `node --check public/sw.js`.
 - Busca confirmou `Nome na aventura`, `Estilo do mestre`, `Modo só voz`, `Companheiro`, `buildLearningReport`, `profile-learning-pwa`, `hero-companion` e `learning-report` em `prototype/` e `public/`.
+- Validação após destravar painel dos pais executada com `npm run check`.
+- Chrome headless confirmou que o erro `Uncaught SyntaxError: Illegal return statement` desapareceu e que o DOM inicializa com modal de perfil, cards de aventura e texto dinâmico.
+- Captura mobile gerada em `/tmp/rpg-kids-parent-flow-fixed.png` confirmou o modal inicial renderizado com botão acessível.
 
 ## O que falta fazer
 
-- Testar `prototype/index.html` manualmente no navegador/celular.
+- Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
 - No celular, testar instalação PWA via `Adicionar à tela inicial`, abertura em modo standalone e permissão de microfone em HTTPS.
 - Gerar imagens bitmap para as aventuras antigas (`Portal das Estrelinhas` e `Caverna dos Bichinhos`) se o estilo das novas for aprovado.
@@ -427,7 +435,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 
 ## Pendencias fora do commit
 
-- Nao ha repositorio git inicializado neste projeto.
+- Arquivos de referência visual continuam fora do commit: `modelo.png` e `modelo historias.png`.
 
 ## Riscos / atencoes
 
