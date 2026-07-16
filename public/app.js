@@ -25,6 +25,7 @@ const state = {
   lastActionInsight: "",
   narrationQueue: [],
   narrationRunId: 0,
+  narrationOnComplete: null,
   credits: 2,
   paidSummaries: new Set(),
   timeLimitSeconds: 30 * 60,
@@ -34,6 +35,7 @@ const state = {
   soundEnabled: true,
   narrationEnabled: true,
   narrationRate: 0.98,
+  narrationVolume: 0.95,
   childGender: "girl",
   childName: "",
   childAge: "4",
@@ -54,6 +56,7 @@ const state = {
   prebuiltAudioAvailable: null,
   diceModalReady: false,
   diceRolling: false,
+  journalModalOpen: false,
 };
 
 const els = {
@@ -86,6 +89,16 @@ const els = {
   narrationRateSelect: document.querySelector("#narrationRateSelect"),
   removeRestrictedHumorToggle: document.querySelector("#removeRestrictedHumorToggle"),
   paidExtensionToggle: document.querySelector("#paidExtensionToggle"),
+  parentPermissionButton: document.querySelector("#parentPermissionButton"),
+  volumeSelect: document.querySelector("#volumeSelect"),
+  narratorSelect: document.querySelector("#narratorSelect"),
+  storyActionModal: document.querySelector("#storyActionModal"),
+  storyActionTitle: document.querySelector("#storyActionTitle"),
+  storyActionCloseButton: document.querySelector("#storyActionCloseButton"),
+  storyReadFullButton: document.querySelector("#storyReadFullButton"),
+  storySummaryButton: document.querySelector("#storySummaryButton"),
+  storyApprovePlayButton: document.querySelector("#storyApprovePlayButton"),
+  parentReview: document.querySelector(".parent-review"),
   reviewTitle: document.querySelector("#reviewTitle"),
   reviewStatus: document.querySelector("#reviewStatus"),
   reviewSummary: document.querySelector("#reviewSummary"),
@@ -108,6 +121,7 @@ const els = {
   timerText: document.querySelector("#timerText"),
   sceneStage: document.querySelector(".scene-stage"),
   sceneArt: document.querySelector("#sceneArt"),
+  sceneCopy: document.querySelector(".scene-copy"),
   sceneNarration: document.querySelector("#sceneNarration"),
   scenePrompt: document.querySelector("#scenePrompt"),
   roundHint: document.querySelector("#roundHint"),
@@ -115,6 +129,9 @@ const els = {
   feedbackPanel: document.querySelector("#feedbackPanel"),
   feedbackText: document.querySelector("#feedbackText"),
   narratorLog: document.querySelector("#narratorLog"),
+  journalButton: document.querySelector("#journalButton"),
+  journalModal: document.querySelector("#journalModal"),
+  journalModalCloseButton: document.querySelector("#journalModalCloseButton"),
   openChoiceModalButton: document.querySelector("#openChoiceModalButton"),
   choiceModal: document.querySelector("#choiceModal"),
   choiceModalCloseButton: document.querySelector("#choiceModalCloseButton"),
@@ -216,8 +233,14 @@ function loadParentState() {
     state.avatarColor = saved.avatarColor || state.avatarColor;
     state.avatarCompanion = saved.avatarCompanion || state.avatarCompanion;
     state.voiceOnly = saved.voiceOnly ?? state.voiceOnly;
+    state.narrationVolume = saved.narrationVolume ?? state.narrationVolume;
+    if (els.volumeSelect) els.volumeSelect.value = String(state.narrationVolume);
     state.profileCompleted = saved.profileCompleted ?? Boolean(saved.childName);
     state.setupStep = saved.setupStep || (state.profileCompleted ? "setup" : "profile");
+    if (saved.timeLimitMinutes) {
+      els.timeLimitSelect.value = String(saved.timeLimitMinutes);
+      updateTimeButtons(saved.timeLimitMinutes);
+    }
     els.narrationToggle.checked = state.narrationEnabled;
     els.narrationRateSelect.value = String(state.narrationRate);
     els.childGenderSelect.value = state.childGender;
@@ -248,8 +271,16 @@ function saveParentState() {
     voiceOnly: els.voiceOnlyToggle.checked,
     profileCompleted: state.profileCompleted,
     setupStep: state.setupStep,
+    timeLimitMinutes: Number(els.timeLimitSelect.value || 30),
+    narrationVolume: Number(els.volumeSelect?.value || state.narrationVolume),
   };
   localStorage.setItem(STORAGE_KEYS.parentState, JSON.stringify(payload));
+}
+
+function updateTimeButtons(minutes) {
+  document.querySelectorAll("[data-time-limit]").forEach((button) => {
+    button.classList.toggle("is-selected", button.dataset.timeLimit === String(minutes));
+  });
 }
 
 function loadGeneratedDrafts() {
@@ -273,8 +304,7 @@ function renderLibrary() {
   els.adventureGrid.innerHTML = "";
 
   adventures.forEach((adventure) => {
-    const card = document.createElement("button");
-    card.type = "button";
+    const card = document.createElement("article");
     card.className = "adventure-card";
     card.classList.toggle("is-selected", adventure.id === state.selectedAdventureId);
     const coverSrc = coverImageSrc(adventure);
@@ -289,8 +319,9 @@ function renderLibrary() {
         <p class="card-meta">${sceneCount} cenas · ${labelForTemplate(adventure.template)} · ${adventure.ageRange}</p>
         <div class="tags">${adventure.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
       </div>
+      <button class="play-story-button" type="button" data-adventure-id="${escapeHtml(adventure.id)}">PLAY</button>
     `;
-    card.addEventListener("click", () => selectAdventureForReview(adventure.id));
+    card.querySelector(".play-story-button").addEventListener("click", () => openStoryActionModal(adventure.id));
     els.adventureGrid.appendChild(card);
   });
 }
@@ -301,6 +332,28 @@ function selectAdventureForReview(adventureId) {
   els.restrictedHumorCheckbox.checked = false;
   renderLibrary();
   renderParentReview();
+}
+
+function openStoryActionModal(adventureId) {
+  selectAdventureForReview(adventureId);
+  const adventure = selectedAdventure();
+  if (!adventure || !els.storyActionModal) return;
+  els.storyActionTitle.textContent = adventure.title;
+  els.storyActionModal.hidden = false;
+}
+
+function closeStoryActionModal() {
+  if (els.storyActionModal) els.storyActionModal.hidden = true;
+}
+
+function approveAndStartSelectedStory() {
+  const adventure = selectedAdventure();
+  if (!adventure) return;
+  els.approveStoryCheckbox.checked = true;
+  els.restrictedHumorCheckbox.checked = false;
+  updateParentApproval();
+  closeStoryActionModal();
+  startAdventure(adventure.id);
 }
 
 function selectedAdventure() {
@@ -403,13 +456,11 @@ function renderFlaggedContexts(contexts) {
 function renderReviewSettings(adventure) {
   const minutes = Number(els.timeLimitSelect.value);
   const extensionCost = extensionCreditCost(minutes);
-  const sound = els.soundToggle.checked ? "ligados" : "desligados";
-  const narration = els.narrationToggle.checked ? `ligada (${labelForNarrationRate(Number(els.narrationRateSelect.value))})` : "desligada";
   const restrictedAction = els.removeRestrictedHumorToggle.checked ? "remover se aparecer" : "manter somente com consentimento";
   const paidExtension = extensionCost > 0 ? `${extensionCost} crédito(s)` : "não usa crédito";
   return `
     <h3>Configuração de hoje</h3>
-    <p>Tempo: ${minutes} min · Sons: ${sound} · Narrador: ${narration} · Humor restrito: ${restrictedAction} · Extensão: ${paidExtension}</p>
+    <p>Tempo: ${minutes} min · Sons e narrador ativos · Humor restrito: ${restrictedAction} · Extensão: ${paidExtension}</p>
     <p>Aviso antes do fim: ${adventure.sessionPolicy?.warningMinutesBeforeEnd || 5} min · Extensão suave: ${adventure.sessionPolicy?.softExtensionMinutes || 0} min</p>
   `;
 }
@@ -429,6 +480,29 @@ function extensionCreditCost(minutes) {
 function updateCreditUI() {
   els.creditBalance.textContent = state.credits;
   saveParentState();
+}
+
+async function requestParentMediaPermission() {
+  ensureAudioContext();
+  if (!navigator.mediaDevices?.getUserMedia) {
+    showSetupPermissionFeedback("Som ativado. Microfone depende do navegador.");
+    return;
+  }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => track.stop());
+    showSetupPermissionFeedback("Voz e som liberados para a sessão.");
+  } catch {
+    showSetupPermissionFeedback("Microfone não liberado. A criança ainda pode tocar nas opções.");
+  }
+}
+
+function showSetupPermissionFeedback(text) {
+  if (!els.parentPermissionButton) return;
+  els.parentPermissionButton.textContent = text;
+  window.setTimeout(() => {
+    if (els.parentPermissionButton) els.parentPermissionButton.textContent = "Ativar voz e som";
+  }, 2600);
 }
 
 function renderParentFlow() {
@@ -727,16 +801,17 @@ function startAdventure(adventureId, checkpoint = null) {
   state.pendingOutcomeByScene = structuredClone(checkpoint?.pendingOutcomeByScene || {});
   state.selectedChoice = checkpoint?.selectedChoice || null;
   state.warned = false;
-  state.soundEnabled = els.soundToggle.checked;
-  state.narrationEnabled = els.narrationToggle.checked;
-  state.narrationRate = Number(els.narrationRateSelect.value);
+  state.soundEnabled = true;
+  state.narrationEnabled = true;
+  state.narrationRate = 0.98;
+  state.narrationVolume = Number(els.volumeSelect?.value || 0.95);
   state.childGender = checkpoint?.childGender || els.childGenderSelect.value || state.childGender;
   state.childName = checkpoint?.childName || els.childNameInput.value.trim() || state.childName;
   state.childAge = checkpoint?.childAge || els.childAgeSelect.value || state.childAge;
   state.narratorStyle = checkpoint?.narratorStyle || els.narratorStyleSelect.value || state.narratorStyle;
   state.avatarColor = checkpoint?.avatarColor || els.avatarColorSelect.value || state.avatarColor;
   state.avatarCompanion = checkpoint?.avatarCompanion || els.avatarCompanionSelect.value || state.avatarCompanion;
-  state.voiceOnly = checkpoint?.voiceOnly ?? els.voiceOnlyToggle.checked;
+  state.voiceOnly = false;
   state.timeLimitSeconds = Number(els.timeLimitSelect.value) * 60;
   state.remainingSeconds = checkpoint?.remainingSeconds || state.timeLimitSeconds;
   if (!checkpoint) {
@@ -849,8 +924,14 @@ function renderScene() {
   updateTimerUI();
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
-  speakNarration(composeSceneNarration(scene), { quality: "fast", audioKey: audioKeyForScene(scene, "scene") });
-  openChoiceModal();
+  speakNarration(composeSceneNarration(scene), {
+    quality: "fast",
+    onComplete: () => {
+      els.sceneCopy?.classList.remove("is-reading");
+      if (currentScene()?.id === scene.id && !state.selectedChoice) openChoiceModal();
+    },
+  });
+  els.sceneCopy?.classList.add("is-reading");
 }
 
 function renderHubPanel(scene) {
@@ -922,6 +1003,19 @@ function renderNarratorLog() {
   els.narratorLog.innerHTML = state.narrativeLog
     .map((entry) => `<li data-kind="${escapeHtml(entry.kind)}">${escapeHtml(entry.text)}</li>`)
     .join("");
+}
+
+function openJournalModal() {
+  if (!els.journalModal) return;
+  renderNarratorLog();
+  els.journalModal.hidden = false;
+  state.journalModalOpen = true;
+}
+
+function closeJournalModal() {
+  if (!els.journalModal) return;
+  els.journalModal.hidden = true;
+  state.journalModalOpen = false;
 }
 
 function renderChildTerms() {
@@ -1025,7 +1119,6 @@ function genderedText(value) {
 }
 
 function composeSceneNarration(scene) {
-  const terms = childTerms();
   const name = childCallName();
   const choices = sceneChoices(scene).filter(Boolean);
   const optionText = choices.length
@@ -1033,16 +1126,12 @@ function composeSceneNarration(scene) {
         .map((choice, index) => `Opção ${index + 1}: ${choice}.`)
         .join(" ")}`
     : "";
-  const diceHint = scene.dice
-    ? `Quando decidir, diga o número da opção ou toque na tela. Depois o dado conta a sorte.`
-    : `Quando decidir, diga o número da opção ou toque na tela para continuar.`;
 
   return [
     `${name}, esta é a cena.`,
     scene.narration,
     scene.prompt || "O que você faz?",
     optionText,
-    diceHint,
   ]
     .filter(Boolean)
     .join(" ");
@@ -1059,7 +1148,6 @@ function escapeHtml(value) {
 
 function handlePlayerAction(actionText, source) {
   const scene = currentScene();
-  const terms = childTerms();
   const action = actionText.trim();
   if (!scene || !action) {
     showFeedback("Escolha uma das opções da cena.", "warm_chime");
@@ -1087,7 +1175,9 @@ function handlePlayerAction(actionText, source) {
   addNarratorEntry("action", `${origin}: "${action}".`);
   showFeedback(`${origin}: ${action}.${diceHint}`, "warm_chime", "choice_confirmed", { speak: false });
   rememberAction(scene, action);
-  if (!scene.dice && scene.movement) {
+  if (scene.dice) {
+    window.setTimeout(openDiceModal, 320);
+  } else if (scene.movement) {
     state.pendingMovementScenes.add(scene.id);
     state.pendingOutcomeByScene[scene.id] = {
       progressDelta: scene.progressDelta,
@@ -1677,7 +1767,7 @@ function skipChallenge() {
 function nextScene() {
   const scene = currentScene();
   if (!state.selectedChoice) {
-    showFeedback("Antes de avançar, escolha uma ação ou invente uma resposta para o mestre.", "warm_chime");
+    showFeedback("Antes de avançar, escolha uma das opções do mestre.", "warm_chime");
     return;
   }
   if (scene.dice && !state.rolledScenes.has(scene.id)) {
@@ -1702,6 +1792,7 @@ function nextScene() {
   state.selectedChoice = null;
   playSceneTransition();
   renderScene();
+  saveCheckpoint(`Salvo automaticamente em ${currentScene()?.title || "novo capítulo"}.`);
 }
 
 function playSceneTransition() {
@@ -2028,7 +2119,15 @@ function showDiceResult(result, message, cue, effect) {
       state.diceRolling = false;
       if (effect) runSceneEffect(effect);
       playCue(cue);
-      speakNarration(displayMessage, { quality: "premium", audioKey: audioKeyForDice(currentScene(), result) });
+      speakNarration(displayMessage, {
+        quality: "premium",
+        audioKey: audioKeyForDice(currentScene(), result),
+        onComplete: () => {
+          window.setTimeout(() => {
+            els.diceModal.hidden = true;
+          }, 900);
+        },
+      });
     }
   }, 90);
 }
@@ -2095,6 +2194,7 @@ function speakNarration(text, options = {}) {
 
   if (shouldInterrupt) {
     state.narrationQueue = chunks;
+    state.narrationOnComplete = typeof options.onComplete === "function" ? options.onComplete : null;
   } else {
     state.narrationQueue.push(...chunks);
   }
@@ -2119,6 +2219,9 @@ function narrationChunks(text) {
 async function speakNextNarrationChunk() {
   if (!state.narrationQueue.length) {
     state.narrationPlaying = false;
+    const callback = state.narrationOnComplete;
+    state.narrationOnComplete = null;
+    if (callback) window.setTimeout(callback, 450);
     return;
   }
   const item = state.narrationQueue.shift();
@@ -2190,6 +2293,7 @@ async function playApiNarrationChunk(chunk) {
   const audio = new Audio(URL.createObjectURL(audioBlob));
   state.apiNarrationAudio = audio;
   audio.playbackRate = Math.min(1.08, Math.max(0.92, state.narrationRate + 0.04));
+  audio.volume = state.narrationVolume;
 
   await new Promise((resolve, reject) => {
     audio.onended = resolve;
@@ -2208,6 +2312,7 @@ async function playPrebuiltNarration(audioKey) {
   const audio = new Audio(src);
   state.apiNarrationAudio = audio;
   audio.playbackRate = Math.min(1.08, Math.max(0.92, state.narrationRate + 0.04));
+  audio.volume = state.narrationVolume;
   await new Promise((resolve, reject) => {
     audio.onended = resolve;
     audio.onerror = reject;
@@ -2250,7 +2355,7 @@ function speakBrowserNarrationChunk(chunk, runId = state.narrationRunId) {
   utterance.lang = "pt-BR";
   utterance.rate = Math.min(1.12, Math.max(0.78, state.narrationRate + (style.voiceRateOffset || 0)));
   utterance.pitch = chunk.includes("Opção") ? Math.min(1.2, (style.voicePitch || 1.05) + 0.04) : style.voicePitch || 1.05;
-  utterance.volume = 0.95;
+  utterance.volume = state.narrationVolume;
   const voice = preferredNarrationVoice();
   if (voice) utterance.voice = voice;
   utterance.onend = () => {
@@ -2288,7 +2393,9 @@ function stopNarration() {
 function stopNarrationPlayback() {
   state.narrationRunId += 1;
   state.narrationQueue = [];
+  state.narrationOnComplete = null;
   state.narrationPlaying = false;
+  els.sceneCopy?.classList.remove("is-reading");
   if (state.apiNarrationAudio) {
     state.apiNarrationAudio.pause();
     state.apiNarrationAudio.currentTime = 0;
@@ -2457,6 +2564,16 @@ els.backToSetupButton.addEventListener("click", showSetupStep);
 els.resumeButton.addEventListener("click", resumeAdventure);
 els.backButton.addEventListener("click", goLibrary);
 els.generateDraftButton.addEventListener("click", generateDraftAdventure);
+document.querySelectorAll("[data-time-limit]").forEach((button) => {
+  button.addEventListener("click", () => {
+    document.querySelectorAll("[data-time-limit]").forEach((item) => item.classList.remove("is-selected"));
+    button.classList.add("is-selected");
+    els.timeLimitSelect.value = button.dataset.timeLimit;
+    renderParentReview();
+    updateParentApproval();
+    updateCreditUI();
+  });
+});
 els.timeLimitSelect.addEventListener("change", () => {
   renderParentReview();
   updateParentApproval();
@@ -2487,6 +2604,25 @@ els.removeRestrictedHumorToggle.addEventListener("change", () => {
   renderParentReview();
   updateParentApproval();
 });
+els.parentPermissionButton?.addEventListener("click", requestParentMediaPermission);
+els.volumeSelect?.addEventListener("change", () => {
+  state.narrationVolume = Number(els.volumeSelect.value);
+  updateCreditUI();
+});
+els.storyActionCloseButton?.addEventListener("click", closeStoryActionModal);
+els.storyReadFullButton?.addEventListener("click", () => {
+  const adventure = selectedAdventure();
+  if (!adventure) return;
+  if (els.parentReview) els.parentReview.hidden = false;
+  renderFullStory(adventure);
+  closeStoryActionModal();
+});
+els.storySummaryButton?.addEventListener("click", () => {
+  buySummary();
+  if (els.parentReview) els.parentReview.hidden = false;
+  closeStoryActionModal();
+});
+els.storyApprovePlayButton?.addEventListener("click", approveAndStartSelectedStory);
 els.startChildPanelButton.addEventListener("click", () => {
   const adventure = selectedAdventure();
   if (!adventure || els.startChildPanelButton.disabled) return;
@@ -2500,6 +2636,8 @@ els.readFullStoryButton.addEventListener("click", () => {
 els.buySummaryButton.addEventListener("click", buySummary);
 els.repeatNarrationButton.addEventListener("click", repeatLastNarration);
 els.stopNarrationButton.addEventListener("click", stopNarration);
+els.journalButton?.addEventListener("click", openJournalModal);
+els.journalModalCloseButton?.addEventListener("click", closeJournalModal);
 els.openChoiceModalButton.addEventListener("click", openChoiceModal);
 els.choiceModalCloseButton.addEventListener("click", closeChoiceModal);
 els.voiceActionButton.addEventListener("click", captureVoiceAction);
@@ -2550,3 +2688,7 @@ renderLibrary();
 renderParentReview();
 renderParentFlow();
 updateCreditUI();
+  if (state.selectedChoice) {
+    showFeedback("Opção já escolhida. Continue a aventura.", "warm_chime", null, { speak: false });
+    return;
+  }

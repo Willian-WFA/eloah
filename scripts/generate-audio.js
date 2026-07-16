@@ -109,10 +109,6 @@ function sceneText(scene) {
     scene.narration,
     scene.prompt || "O que você faz?",
     spokenChoices ? `Escute suas opções de aventura. ${spokenChoices}` : "",
-    choices.some((choice) => String(choice).toLowerCase().includes("livre"))
-      ? "Você também pode inventar sua própria ação e falar para mim."
-      : "",
-    scene.dice ? "Depois da sua escolha, o dado conta a sorte." : "",
   ].filter(Boolean).join(" ");
 }
 

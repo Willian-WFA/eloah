@@ -43,63 +43,15 @@
           <details class="collapsible-panel" open>
             <summary>Configurar jogo</summary>
             <div class="adult-panel" aria-label="Configurações da sessão">
-              <label>
-                Tempo de hoje (30 min grátis)
-                <select id="timeLimitSelect">
-                  <option value="30" selected>30 min</option>
-                  <option value="45">45 min · 1 crédito</option>
-                  <option value="60">60 min · 2 créditos</option>
-                </select>
-              </label>
-              <label>
-                Estilo do mestre
-                <select id="narratorStyleSelect">
-                  <option value="theatrical" selected>Teatral e engraçado</option>
-                  <option value="gentle">Calmo e doce</option>
-                  <option value="epic">Épico leve</option>
-                  <option value="teacher">Professor gentil</option>
-                </select>
-              </label>
-              <label>
-                Cor do avatar
-                <select id="avatarColorSelect">
-                  <option value="violet" selected>Violeta mágico</option>
-                  <option value="mint">Verde folha</option>
-                  <option value="sun">Amarelo estrela</option>
-                  <option value="rose">Rosa aventura</option>
-                  <option value="sky">Azul céu</option>
-                </select>
-              </label>
-              <label>
-                Companheiro
-                <select id="avatarCompanionSelect">
-                  <option value="spark" selected>Fagulha</option>
-                  <option value="cloud">Nuvinha</option>
-                  <option value="bell">Sininho</option>
-                  <option value="leaf">Folhinha</option>
-                </select>
-              </label>
-              <label class="toggle-line">
-                <input id="soundToggle" type="checkbox" checked />
-                Sons e efeitos
-              </label>
-              <label class="toggle-line">
-                <input id="voiceOnlyToggle" type="checkbox" />
-                Modo só voz
-              </label>
-              <label class="toggle-line">
-                <input id="narrationToggle" type="checkbox" checked />
-                Voz do narrador
-              </label>
-              <label>
-                Ritmo da narração
-                <select id="narrationRateSelect">
-                  <option value="0.78">Bem calmo</option>
-                  <option value="0.9">Calmo</option>
-                  <option value="0.98" selected>Teatral</option>
-                  <option value="1">Normal</option>
-                </select>
-              </label>
+              <div class="segmented-field" aria-label="Tempo de hoje">
+                <span>Tempo de jogo</span>
+                <input id="timeLimitSelect" type="hidden" value="30" />
+                <div class="segmented-buttons">
+                  <button class="segment-button is-selected" type="button" data-time-limit="30">30 min</button>
+                  <button class="segment-button" type="button" data-time-limit="45">45 min</button>
+                  <button class="segment-button" type="button" data-time-limit="60">60 min</button>
+                </div>
+              </div>
               <div class="toggle-help-row">
                 <label class="toggle-line">
                   <input id="removeRestrictedHumorToggle" type="checkbox" checked />
@@ -110,6 +62,7 @@
                   Humor restrito é conteúdo que só aparece com revisão dos pais, como piadas leves de pum, cocô ou xixi. O padrão é remover.
                 </span>
               </div>
+              <button id="parentPermissionButton" class="secondary-button" type="button">Ativar voz e som</button>
               <label class="toggle-line is-disabled">
                 <input id="paidExtensionToggle" type="checkbox" disabled />
                 Extensão extra no futuro
@@ -124,15 +77,35 @@
           <section class="approval-note" aria-label="Aviso de aprovação">
             <div>
               <p class="eyebrow">Aprovação</p>
-              <h2>Escolha uma história validada</h2>
+              <h2>Escolha uma História</h2>
               <p>Leia a história quando quiser. A criança só entra depois que você aprovar a aventura selecionada.</p>
             </div>
             <button id="backToSetupButton" class="ghost-button" type="button">Configurações</button>
           </section>
 
+          <div class="story-toolbar" aria-label="Controles de histórias">
+            <label>
+              Volume
+              <select id="volumeSelect">
+                <option value="0.75">Baixo</option>
+                <option value="0.95" selected>Normal</option>
+                <option value="1">Alto</option>
+              </select>
+            </label>
+            <label>
+              Narrador
+              <select id="narratorSelect">
+                <option value="master" selected>Mestre contador</option>
+                <option value="witch" disabled>Bruxinha futura</option>
+                <option value="potato" disabled>Batata sábia futura</option>
+                <option value="guard" disabled>Guardião futuro</option>
+              </select>
+            </label>
+          </div>
+
           <div id="adventureGrid" class="adventure-grid"></div>
 
-          <section class="parent-review" aria-labelledby="reviewTitle">
+          <section class="parent-review" aria-labelledby="reviewTitle" hidden>
             <div class="review-header">
               <div>
                 <p class="eyebrow">Revisão</p>
@@ -180,11 +153,6 @@
             <span id="timerText">30:00</span>
           </div>
         </header>
-        <div class="narration-controls" aria-label="Controles de narração">
-          <button id="repeatNarrationButton" class="ghost-button" type="button">Ouvir de novo</button>
-          <button id="stopNarrationButton" class="ghost-button" type="button">Pausar voz</button>
-        </div>
-
         <section class="scene-stage" aria-label="Cena atual">
           <div id="sceneArt" class="scene-art"></div>
           <div class="scene-copy">
@@ -194,19 +162,18 @@
           </div>
         </section>
 
+        <div class="narration-controls" aria-label="Controles de narração">
+          <button id="repeatNarrationButton" class="ghost-button" type="button">Ouvir de novo</button>
+          <button id="stopNarrationButton" class="ghost-button" type="button">Pausar voz</button>
+        </div>
+
         <section id="hubPanel" class="hub-panel" aria-label="Mapa da campanha" hidden></section>
 
         <section id="feedbackPanel" class="feedback-panel" hidden>
           <p id="feedbackText"></p>
         </section>
 
-        <section class="narrator-journal" aria-labelledby="journalTitle">
-          <div class="journal-header">
-            <p class="eyebrow">Mestre</p>
-            <h2 id="journalTitle">Diário da aventura</h2>
-          </div>
-          <ol id="narratorLog" class="narrator-log" aria-live="polite"></ol>
-        </section>
+        <button id="journalButton" class="journal-fab" type="button" aria-label="Abrir diário do mestre">📖</button>
 
         <section class="closed-choice-launcher" aria-label="Escolha da criança">
           <button id="openChoiceModalButton" class="primary-button voice-main-button" type="button">Escolher resposta</button>
@@ -265,7 +232,7 @@
           <p class="eyebrow">Sua vez</p>
           <h2 id="choiceModalTitle">Escolha uma opção</h2>
           <div id="choicePanel" class="choice-panel" aria-label="Opções da cena"></div>
-          <button id="choiceModalCloseButton" class="ghost-button" type="button">Voltar para cena</button>
+          <button id="choiceModalCloseButton" class="ghost-button" type="button" hidden>Voltar para cena</button>
         </div>
       </div>
 
@@ -276,6 +243,28 @@
           <p id="movementInstructionText"></p>
           <button id="movementReadyButton" class="ready-word-button" type="button">Pronto</button>
           <button id="movementFallbackButton" class="ghost-button" type="button">Adaptar desafio</button>
+        </div>
+      </div>
+
+      <div id="journalModal" class="journal-modal" role="dialog" aria-modal="true" aria-labelledby="journalTitle" hidden>
+        <div class="journal-card">
+          <div class="journal-header">
+            <p class="eyebrow">Mestre</p>
+            <h2 id="journalTitle">Diário da aventura</h2>
+          </div>
+          <ol id="narratorLog" class="narrator-log" aria-live="polite"></ol>
+          <button id="journalModalCloseButton" class="primary-button" type="button">Fechar diário</button>
+        </div>
+      </div>
+
+      <div id="storyActionModal" class="story-action-modal" role="dialog" aria-modal="true" aria-labelledby="storyActionTitle" hidden>
+        <div class="story-action-card">
+          <p class="eyebrow">História</p>
+          <h2 id="storyActionTitle">Aventura selecionada</h2>
+          <button id="storyReadFullButton" class="ghost-button" type="button">Ler história completa</button>
+          <button id="storySummaryButton" class="secondary-button" type="button">Ler resumo</button>
+          <button id="storyApprovePlayButton" class="primary-button" type="button">Aprovar e jogar</button>
+          <button id="storyActionCloseButton" class="ghost-button" type="button">Voltar</button>
         </div>
       </div>
 
@@ -304,6 +293,34 @@
               <option value="7">7 anos</option>
             </select>
           </label>
+          <label>
+            Cor do avatar
+            <select id="avatarColorSelect">
+              <option value="violet" selected>Violeta mágico</option>
+              <option value="mint">Verde folha</option>
+              <option value="sun">Amarelo estrela</option>
+              <option value="rose">Rosa aventura</option>
+              <option value="sky">Azul céu</option>
+            </select>
+          </label>
+          <label>
+            Companheiro
+            <select id="avatarCompanionSelect">
+              <option value="spark" selected>Fagulha</option>
+              <option value="cloud">Nuvinha</option>
+              <option value="bell">Sininho</option>
+              <option value="leaf">Folhinha</option>
+            </select>
+          </label>
+          <select id="narratorStyleSelect" hidden>
+            <option value="theatrical" selected>Teatral</option>
+          </select>
+          <input id="soundToggle" type="checkbox" checked hidden />
+          <input id="voiceOnlyToggle" type="checkbox" hidden />
+          <input id="narrationToggle" type="checkbox" checked hidden />
+          <select id="narrationRateSelect" hidden>
+            <option value="0.98" selected>Teatral</option>
+          </select>
           <button class="primary-button" type="submit">Confirmar perfil</button>
         </form>
       </div>

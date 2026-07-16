@@ -195,6 +195,15 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Narração ganhou controle de execução por `narrationRunId`, descartando filas antigas para reduzir voz duplicada.
 - Avanço de capítulo ganhou transição visual curta e cue de virada mágica.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-closed-choice-flow-pwa`.
+- Ajustado fluxo após revisão visual com modelos: perfil inicial agora também recebe cor do avatar e companheiro.
+- Painel dos pais ficou restrito a tempo, humor restrito e pedido de permissão de voz/som; sons e voz do narrador ficam sempre ativos no MVP.
+- Tela de histórias ganhou toolbar de volume/narrador e cards com botão `PLAY`; o botão abre modal com `Ler história completa`, `Ler resumo` e `Aprovar e jogar`.
+- Diário do mestre deixou de ocupar card na tela e virou botão flutuante de livro que abre modal.
+- Narração de cena deixou de usar WAVs pré-gerados antigos e agora abre o modal de opções somente após terminar de narrar cena/pergunta/opções.
+- Removidas frases de narração que convidavam a inventar ação fora das opções; o script de geração de áudio também foi ajustado para não recriar essa frase.
+- A seleção de opção agora é única por cena; tentativas posteriores não entram no diário.
+- Depois de avançar capítulo, o checkpoint é salvo automaticamente.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-story-flow-cleanup-pwa`.
 
 ## Decisoes tomadas
 

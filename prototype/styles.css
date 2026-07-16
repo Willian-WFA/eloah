@@ -101,8 +101,7 @@ h2 {
 .progress-card,
 .avatar-card,
 .ending-card,
-.feedback-panel,
-.narrator-journal {
+.feedback-panel {
   border: 1px solid var(--line);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.82);
@@ -148,6 +147,24 @@ h2 {
   gap: 14px;
 }
 
+.story-toolbar {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  border-radius: 20px;
+  background: #c9872c;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.story-toolbar label {
+  display: grid;
+  gap: 5px;
+  color: #fff8e8;
+  font-size: 0.76rem;
+  font-weight: 950;
+}
+
 .collapsible-panel {
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -177,6 +194,35 @@ h2 {
   gap: 12px;
   margin-bottom: 18px;
   padding: 14px;
+}
+
+.segmented-field {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.segmented-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+}
+
+.segment-button {
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--brand-strong);
+  font-weight: 950;
+}
+
+.segment-button.is-selected {
+  border-color: var(--brand);
+  background: #f0ecff;
+  box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.12);
 }
 
 .adult-panel label {
@@ -389,7 +435,8 @@ select {
 
 .adventure-card {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  align-items: center;
   gap: 12px;
   width: 100%;
   border: 1px solid var(--line);
@@ -399,6 +446,22 @@ select {
   color: inherit;
   text-align: left;
   box-shadow: var(--shadow);
+}
+
+.play-story-button {
+  min-width: 82px;
+  min-height: 42px;
+  border: 3px solid #111;
+  border-radius: 0;
+  background: #18c7e8;
+  color: #111;
+  font-family: "Courier New", ui-monospace, monospace;
+  font-size: 1.24rem;
+  font-weight: 1000;
+  letter-spacing: 0;
+  box-shadow:
+    inset -4px -4px 0 rgba(0, 0, 0, 0.18),
+    4px 4px 0 #111;
 }
 
 .adventure-card.is-selected {
@@ -810,9 +873,16 @@ select {
   padding: 18px;
 }
 
+.scene-copy.is-reading {
+  background:
+    linear-gradient(90deg, rgba(255, 246, 216, 0.2), rgba(120, 245, 255, 0.16), rgba(255, 246, 216, 0.2));
+  background-size: 220% 100%;
+  animation: readingGlow 2.4s ease-in-out infinite;
+}
+
 .scene-copy p {
-  font-size: 1.08rem;
-  line-height: 1.45;
+  font-size: clamp(1.18rem, 5vw, 1.72rem);
+  line-height: 1.48;
 }
 
 .prompt {
@@ -845,20 +915,25 @@ select {
   font-weight: 800;
 }
 
-.narrator-journal {
-  display: grid;
-  gap: 8px;
-  margin-top: 14px;
-  padding: 12px;
-  background:
-    linear-gradient(135deg, rgba(255, 246, 216, 0.92), rgba(255, 255, 255, 0.9));
-}
-
 .journal-header {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
+}
+
+.journal-fab {
+  position: fixed;
+  left: max(14px, calc(50% - 264px));
+  bottom: 24px;
+  z-index: 5;
+  width: 74px;
+  height: 62px;
+  border: 0;
+  border-radius: 18px;
+  background: #fff8e8;
+  box-shadow: 0 14px 34px rgba(45, 36, 56, 0.22);
+  font-size: 2.4rem;
 }
 
 .journal-header .eyebrow,
@@ -1466,7 +1541,9 @@ select {
 
 .dice-modal,
 .choice-modal,
-.movement-modal {
+.movement-modal,
+.journal-modal,
+.story-action-modal {
   position: fixed;
   inset: 0;
   z-index: 10;
@@ -1478,12 +1555,16 @@ select {
 
 .dice-modal[hidden],
 .choice-modal[hidden],
-.movement-modal[hidden] {
+.movement-modal[hidden],
+.journal-modal[hidden],
+.story-action-modal[hidden] {
   display: none;
 }
 
 .choice-card,
-.movement-card {
+.movement-card,
+.journal-card,
+.story-action-card {
   display: grid;
   gap: 14px;
   width: min(100%, 430px);
@@ -1494,6 +1575,10 @@ select {
     linear-gradient(180deg, #ffffff, #fff8ee);
   box-shadow: 0 24px 70px rgba(45, 36, 56, 0.32);
   padding: 18px;
+}
+
+.story-action-card button {
+  min-height: 52px;
 }
 
 .choice-card .choice-panel {
@@ -1723,6 +1808,16 @@ select {
   }
 }
 
+@keyframes readingGlow {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
 @keyframes chapterSlide {
   0% {
     opacity: 0.2;
@@ -1748,6 +1843,27 @@ select {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+@media (max-width: 430px) {
+  .adventure-card {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .play-story-button {
+    grid-column: 2;
+    justify-self: end;
+    min-width: 74px;
+    margin-top: 4px;
+  }
+
+  .cover-art {
+    min-height: 72px;
+  }
+
+  .story-toolbar {
+    grid-template-columns: 1fr;
   }
 }
 
