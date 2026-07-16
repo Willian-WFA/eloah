@@ -15,6 +15,8 @@ const prototypeOutDir = resolve("prototype/assets/audio");
 const selectedAdventureId = process.argv.find((arg) => arg.startsWith("--adventure="))?.split("=")[1] || "";
 const limit = Number(process.argv.find((arg) => arg.startsWith("--limit="))?.split("=")[1] || 0);
 const continueOnError = process.argv.includes("--continue-on-error");
+const force = process.argv.includes("--force");
+const selectedKind = process.argv.find((arg) => arg.startsWith("--kind="))?.split("=")[1] || "";
 const delayMs = Number(process.argv.find((arg) => arg.startsWith("--delay-ms="))?.split("=")[1] || 2500);
 
 main().catch((error) => {
@@ -27,7 +29,10 @@ async function main() {
   if (!geminiApiKey) throw new Error("GEMINI_API_KEY is required to generate audio assets");
 
   const adventures = await loadAdventures();
-  const jobs = buildAudioJobs(adventures).filter((job) => !selectedAdventureId || job.adventureId === selectedAdventureId);
+  const jobs = buildAudioJobs(adventures).filter((job) => (
+    (!selectedAdventureId || job.adventureId === selectedAdventureId) &&
+    (!selectedKind || job.kind === selectedKind)
+  ));
   const selectedJobs = limit > 0 ? jobs.slice(0, limit) : jobs;
   const manifest = await readJson(join(outDir, "manifest.json"));
 
@@ -41,7 +46,7 @@ async function main() {
     await mkdir(dirname(outputPath), { recursive: true });
     await mkdir(dirname(prototypePath), { recursive: true });
 
-    if (!existsSync(outputPath)) {
+    if (force || !existsSync(outputPath)) {
       console.log(`[${index + 1}/${selectedJobs.length}] ${job.key}`);
       try {
         const wav = await generateGeminiWavWithRetry(job.text);
@@ -78,6 +83,7 @@ function buildAudioJobs(adventures) {
       jobs.push({
         key: `${adventure.id}/${scene.id}/scene`,
         adventureId: adventure.id,
+        kind: "scene",
         text: sceneText(scene),
       });
 
@@ -88,6 +94,7 @@ function buildAudioJobs(adventures) {
           jobs.push({
             key: `${adventure.id}/${scene.id}/dice-${result}`,
             adventureId: adventure.id,
+            kind: "dice",
             text: `Você tirou ${result}. ${diceResultReaction(result)} ${outcome?.narration || defaultDiceNarration(result, bandByRoll[result])}`,
           });
         }

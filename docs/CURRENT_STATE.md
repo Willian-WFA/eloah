@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 8004d13 Fix parent panel startup flow; proximo commit desta sessao limpa tela de jogo e religa audio Gemini pre-gerado
+Commit(s): a12b4c0 Simplify game screen and restore prebuilt narration; proximo commit desta sessao foca na campanha Cidade dos Sinos Claros
 PR/Issues: n/a
 
 ## Resumo curto
@@ -216,6 +216,18 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Após dado, o botão `Continuar` do modal não aparece mais; o modal fecha depois da narração do resultado e a seta grande `→` fica disponível na tela.
 - O botão de checkpoint saiu da tela infantil; o diário permanece como ícone flutuante.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-clean-game-gemini-audio-pwa`.
+- `A Cidade dos Sinos Claros` passou a aparecer como primeira opção na biblioteca.
+- Durante a sessão, o app agora tenta manter a tela do celular ativa usando Screen Wake Lock API, liberando o bloqueio ao voltar para o painel/fim.
+- O modal de aprovação da história ganhou seletor de microfone; se o navegador negar permissão, o seletor desmarca e a criança continua por toque.
+- A Praça do Relógio Parado passou a oferecer no máximo 3 caminhos disponíveis por vez, removendo rotas já concluídas e escondendo rotas bloqueadas da lista infantil.
+- Ao voltar para a praça, o texto/narração usa uma retomada curta: `Voltamos à praça redonda...`, sem repetir a introdução inteira.
+- O fluxo de cenas com movimento e dado virou: escolha -> desafio físico -> espera de 20 segundos -> pergunta `Você já cumpriu o desafio?` com Sim/Não -> dado.
+- A fala `Toque no dado para rolar` foi removida da narração para não cair na voz do navegador.
+- Recompensas recebidas após dado não disparam mais uma segunda narração por cima do resultado.
+- O gerador de áudio ganhou `--force` e `--kind=scene`.
+- Foram regenerados com Gemini 7 WAVs de cena da campanha: portão, praça, Tico, biblioteca, ponte, oficina e Iara.
+- Por quota Gemini 429, não foram regenerados nesta rodada: `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final`; o app bloqueia o uso dos WAVs antigos dessas cenas para evitar frases antigas de escolha livre.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-focus-fixes-pwa`.
 
 ## Decisoes tomadas
 
@@ -412,10 +424,16 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Validação após tela limpa/áudio Gemini executada com `npm run check`.
 - Chrome headless com logs confirmou ausência de `Uncaught`, `SyntaxError`, `TypeError` e `ReferenceError`.
 - Busca confirmou `audioKeyForScene(scene, "scene")`, `.closed-choice-launcher`, `.tool-row`, `.is-waiting-reveal` e cache `clean-game-gemini-audio-pwa` em `public/`.
+- Validação após foco na campanha executada com `npm run check` e `node --check scripts/generate-audio.js`.
+- Busca em `public/` e `scripts/` não encontrou `Você também pode`, `inventar sua própria`, `contar sua própria` ou `Livre escolha`.
+- Chrome headless em `http://127.0.0.1:3114/` carregou sem `Uncaught`, `SyntaxError`, `TypeError` ou `ReferenceError`.
+- DOM renderizado confirmou `A Cidade dos Sinos Claros` como primeira aventura.
+- Simulação local do hub confirmou que opções concluídas somem e novas rotas entram em grupos de até 3 caminhos.
 
 ## O que falta fazer
 
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
+- Regenerar com Gemini, quando a quota permitir, os WAVs de cena restantes: `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final`.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
 - No celular, testar instalação PWA via `Adicionar à tela inicial`, abertura em modo standalone e permissão de microfone em HTTPS.
 - Gerar imagens bitmap para as aventuras antigas (`Portal das Estrelinhas` e `Caverna dos Bichinhos`) se o estilo das novas for aprovado.
@@ -445,7 +463,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 
 ## Pendencias fora do commit
 
-- Arquivos de referência visual continuam fora do commit: `modelo.png` e `modelo historias.png`.
+- Arquivos de referência visual continuam fora do commit: `modelo.png`, `modelo historias.png`, `tela jogo.jpg` e `tela jogo2.jpg`.
 
 ## Riscos / atencoes
 
@@ -459,6 +477,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Sons/efeitos precisam ter fallback silencioso e controle adulto de volume.
 - O prototipo ainda nao foi validado visualmente no browser com inspeção humana ou Playwright.
 - O modal do dado, sorte e avatar visual ainda precisam de validacao visual no browser/celular.
+- Três cenas da campanha estão sem uso de WAV pregerado nesta versão para evitar tocar áudio antigo com frase de escolha livre; elas devem usar API TTS/fallback até serem regeneradas.
 
 ## Proximo prompt recomendado
 

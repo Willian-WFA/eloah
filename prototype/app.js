@@ -59,6 +59,11 @@ const state = {
   journalModalOpen: false,
   choiceRevealTimers: [],
   choiceListening: false,
+  microphoneConsent: false,
+  movementConfirmTimer: null,
+  movementListenTimer: null,
+  movementSecondsRemaining: 0,
+  wakeLock: null,
 };
 
 const els = {
@@ -100,6 +105,7 @@ const els = {
   storyReadFullButton: document.querySelector("#storyReadFullButton"),
   storySummaryButton: document.querySelector("#storySummaryButton"),
   storyApprovePlayButton: document.querySelector("#storyApprovePlayButton"),
+  storyMicConsentToggle: document.querySelector("#storyMicConsentToggle"),
   parentReview: document.querySelector(".parent-review"),
   reviewTitle: document.querySelector("#reviewTitle"),
   reviewStatus: document.querySelector("#reviewStatus"),
@@ -147,6 +153,7 @@ const els = {
   movementModal: document.querySelector("#movementModal"),
   movementModalTitle: document.querySelector("#movementModalTitle"),
   movementInstructionText: document.querySelector("#movementInstructionText"),
+  movementQuestionText: document.querySelector("#movementQuestionText"),
   movementReadyButton: document.querySelector("#movementReadyButton"),
   movementFallbackButton: document.querySelector("#movementFallbackButton"),
   progressMeters: document.querySelector("#progressMeters"),
@@ -239,6 +246,8 @@ function loadParentState() {
     state.avatarCompanion = saved.avatarCompanion || state.avatarCompanion;
     state.voiceOnly = saved.voiceOnly ?? state.voiceOnly;
     state.narrationVolume = saved.narrationVolume ?? state.narrationVolume;
+    state.microphoneConsent = Boolean(saved.microphoneConsent);
+    if (els.storyMicConsentToggle) els.storyMicConsentToggle.checked = state.microphoneConsent;
     if (els.volumeSelect) els.volumeSelect.value = String(state.narrationVolume);
     state.profileCompleted = saved.profileCompleted ?? Boolean(saved.childName);
     state.setupStep = state.profileCompleted ? saved.setupStep || "setup" : "profile";
@@ -274,6 +283,7 @@ function saveParentState() {
     avatarColor: els.avatarColorSelect.value,
     avatarCompanion: els.avatarCompanionSelect.value,
     voiceOnly: els.voiceOnlyToggle.checked,
+    microphoneConsent: state.microphoneConsent,
     profileCompleted: state.profileCompleted,
     setupStep: state.setupStep,
     timeLimitMinutes: Number(els.timeLimitSelect.value || 30),
@@ -308,7 +318,13 @@ function renderLibrary() {
   els.resumeButton.hidden = !checkpoint;
   els.adventureGrid.innerHTML = "";
 
-  adventures.forEach((adventure) => {
+  const orderedAdventures = [...adventures].sort((a, b) => {
+    if (a.id === "cidade-dos-sinos-claros") return -1;
+    if (b.id === "cidade-dos-sinos-claros") return 1;
+    return 0;
+  });
+
+  orderedAdventures.forEach((adventure) => {
     const card = document.createElement("article");
     card.className = "adventure-card";
     card.classList.toggle("is-selected", adventure.id === state.selectedAdventureId);
@@ -344,6 +360,7 @@ function openStoryActionModal(adventureId) {
   const adventure = selectedAdventure();
   if (!adventure || !els.storyActionModal) return;
   els.storyActionTitle.textContent = adventure.title;
+  if (els.storyMicConsentToggle) els.storyMicConsentToggle.checked = state.microphoneConsent;
   els.storyActionModal.hidden = false;
 }
 
@@ -495,15 +512,30 @@ async function requestParentMediaPermission() {
   ensureAudioContext();
   if (!navigator.mediaDevices?.getUserMedia) {
     showSetupPermissionFeedback("Som ativado. Microfone depende do navegador.");
-    return;
+    return false;
   }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     stream.getTracks().forEach((track) => track.stop());
     showSetupPermissionFeedback("Voz e som liberados para a sessão.");
+    return true;
   } catch {
     showSetupPermissionFeedback("Microfone não liberado. A criança ainda pode tocar nas opções.");
+    return false;
   }
+}
+
+async function handleStoryMicConsentChange() {
+  if (!els.storyMicConsentToggle) return;
+  if (!els.storyMicConsentToggle.checked) {
+    state.microphoneConsent = false;
+    updateCreditUI();
+    return;
+  }
+  const allowed = await requestParentMediaPermission();
+  state.microphoneConsent = allowed;
+  els.storyMicConsentToggle.checked = allowed;
+  updateCreditUI();
 }
 
 function showSetupPermissionFeedback(text) {
@@ -832,9 +864,32 @@ function startAdventure(adventureId, checkpoint = null) {
   }
 
   showView(els.sessionView);
+  requestWakeLock();
   els.sessionView.classList.toggle("is-voice-only", state.voiceOnly);
   renderScene();
   startTimer();
+}
+
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator)) return;
+  try {
+    state.wakeLock = await navigator.wakeLock.request("screen");
+    state.wakeLock.addEventListener("release", () => {
+      state.wakeLock = null;
+    });
+  } catch (error) {
+    console.info("[RPG Kids] wake lock indisponível", error);
+  }
+}
+
+async function releaseWakeLock() {
+  if (!state.wakeLock) return;
+  try {
+    await state.wakeLock.release();
+  } catch {
+    // Wake lock can already be released by the browser when the tab hides.
+  }
+  state.wakeLock = null;
 }
 
 function resumeAdventure() {
@@ -852,11 +907,15 @@ function currentScene() {
 
 function sceneChoices(scene) {
   if (scene.hub?.routes?.length) {
-    const routes = scene.hub.routes.filter((route) => isRouteAvailable(route));
+    const routes = availableHubRoutes(scene).slice(0, 3);
     const labels = routes.map((route) => route.label);
     return labels.length ? labels : closedChoices({ choices: scene.hub.emptyChoices || ["Eu peço ajuda para Luma", "Eu olho o mapa"] });
   }
   return closedChoices(scene);
+}
+
+function availableHubRoutes(scene) {
+  return (scene.hub?.routes || []).filter((route) => isRouteAvailable(route));
 }
 
 function closedChoices(scene) {
@@ -879,7 +938,7 @@ function isRouteAvailable(route) {
 
 function resolveSceneNext(scene) {
   if (scene.hub?.routes?.length) {
-    const route = scene.hub.routes.find((item) => routeMatchesChoice(item, state.selectedChoice) && isRouteAvailable(item));
+    const route = availableHubRoutes(scene).find((item) => routeMatchesChoice(item, state.selectedChoice));
     return route?.target || scene.next;
   }
   return scene.choiceRoutes?.[state.selectedChoice] || scene.next;
@@ -903,7 +962,7 @@ function renderScene() {
   els.sessionKicker.textContent = state.adventure.title;
   els.sessionTitle.textContent = scene.title;
   renderSceneArt(scene);
-  els.sceneNarration.textContent = genderedText(scene.narration);
+  els.sceneNarration.textContent = genderedText(sceneDisplayNarration(scene));
   els.scenePrompt.textContent = "";
   els.scenePrompt.hidden = true;
   els.roundHint.hidden = true;
@@ -945,13 +1004,43 @@ function renderScene() {
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
   speakNarration(composeSceneNarration(scene), {
     quality: "premium",
-    audioKey: audioKeyForScene(scene, "scene"),
+    audioKey: scenePrebuiltAudioKey(scene),
     onComplete: () => {
       els.sceneCopy?.classList.remove("is-reading");
       if (currentScene()?.id === scene.id && !state.selectedChoice) openChoiceModal({ stagger: true, listen: true });
     },
   });
   els.sceneCopy?.classList.add("is-reading");
+}
+
+function sceneDisplayNarration(scene) {
+  if (!scene?.hub?.routes?.length) return scene.narration;
+  if (!hasSceneBeenNarrated(scene.id)) return scene.narration;
+  const choices = sceneChoices(scene);
+  return choices.length
+    ? "Voltamos à praça redonda. As Notas de Sino brilham na fonte, e Luma aponta os caminhos que ainda faltam visitar."
+    : "Voltamos à praça redonda. Luma olha para a fonte e ajuda você a lembrar o próximo passo.";
+}
+
+function hasSceneBeenNarrated(sceneId) {
+  return state.narrativeLog.some((entry) => entry.kind === "scene" && entry.sceneId === sceneId);
+}
+
+function scenePrebuiltAudioKey(scene) {
+  if (!scene || scene.hub?.routes?.length) return "";
+  if (state.adventure?.id === "cidade-dos-sinos-claros") {
+    const regeneratedSceneIds = new Set([
+      "sinos_portao_baixinho",
+      "sinos_praca_relogio",
+      "sinos_tico_biscoitos",
+      "sinos_vira_pagina",
+      "sinos_ponte_nara",
+      "sinos_bolim_oficina",
+      "sinos_iara_vento",
+    ]);
+    if (!regeneratedSceneIds.has(scene.id)) return "";
+  }
+  return audioKeyForScene(scene, "scene");
 }
 
 function renderHubPanel(scene) {
@@ -963,17 +1052,10 @@ function renderHubPanel(scene) {
   }
 
   const notes = Math.round(state.progress.notas_sino || 0);
-  const routes = scene.hub.routes.map((route, index) => {
-    const completed = state.completedScenes.has(route.target);
-    const available = isRouteAvailable(route);
-    const lockedReason = routeLockReason(route);
-    const status = completed ? "Concluído" : available ? "Aberto" : lockedReason;
-    const statusClass = completed ? "is-complete" : available ? "is-open" : "is-locked";
-    if (available && !completed) {
-      return `<li class="${statusClass}"><button type="button" data-route-index="${index}"><span>${escapeHtml(route.label)}</span><strong>${escapeHtml(status)}</strong></button></li>`;
-    }
-    return `<li class="${statusClass}"><span>${escapeHtml(route.label)}</span><strong>${escapeHtml(status)}</strong></li>`;
-  });
+  const selectableRoutes = availableHubRoutes(scene).slice(0, 3);
+  const routes = selectableRoutes.map((route, index) => (
+    `<li class="is-open"><button type="button" data-route-index="${index}"><span>${escapeHtml(route.label)}</span><strong>Aberto</strong></button></li>`
+  ));
 
   els.hubPanel.hidden = false;
   els.hubPanel.innerHTML = `
@@ -982,13 +1064,13 @@ function renderHubPanel(scene) {
         <p class="eyebrow">Mapa da cidade</p>
         <h2>Notas de Sino: ${notes}/5</h2>
       </div>
-      <span class="hub-badge">${sceneChoices(scene).filter((choice) => !choice.toLowerCase().includes("livre")).length} caminhos</span>
+      <span class="hub-badge">${selectableRoutes.length} caminhos</span>
     </div>
-    <ul class="hub-route-list">${routes.join("")}</ul>
+    <ul class="hub-route-list">${routes.join("") || "<li class=\"is-locked\"><span>Procure Luma para lembrar o objetivo.</span><strong>Dica</strong></li>"}</ul>
   `;
   els.hubPanel.querySelectorAll("[data-route-index]").forEach((button) => {
     button.addEventListener("click", () => {
-      const route = scene.hub.routes[Number(button.dataset.routeIndex)];
+      const route = selectableRoutes[Number(button.dataset.routeIndex)];
       if (route) handlePlayerAction(route.label, "choice");
     });
   });
@@ -1149,7 +1231,7 @@ function composeSceneNarration(scene) {
 
   return [
     `${name}, esta é a cena.`,
-    scene.narration,
+    sceneDisplayNarration(scene),
     scene.prompt || "O que você faz?",
     optionText,
   ]
@@ -1187,23 +1269,23 @@ function handlePlayerAction(actionText, source) {
   els.actionInsightText.textContent = `Escolha confirmada: ${action}`;
 
   const origin = source === "voice" ? "Ouvi" : "Entendi";
-  const diceHint = scene.dice
-    ? ` ${narratorStyleProfile().diceLead}`
-    : scene.movement
+  const diceHint = scene.movement
       ? " Agora faça o desafio físico para abrir o caminho."
+      : scene.dice
+        ? ` ${narratorStyleProfile().diceLead}`
       : " A cena escuta sua escolha, e o caminho abre para a próxima parte.";
   addNarratorEntry("action", `${origin}: "${action}".`);
   showFeedback(`${origin}: ${action}.${diceHint}`, "warm_chime", "choice_confirmed", { speak: false });
   rememberAction(scene, action);
-  if (scene.dice) {
-    window.setTimeout(openDiceModal, 320);
-  } else if (scene.movement) {
+  if (scene.movement) {
     state.pendingMovementScenes.add(scene.id);
     state.pendingOutcomeByScene[scene.id] = {
       progressDelta: scene.progressDelta,
       rewardId: scene.reward,
     };
     openMovementModal();
+  } else if (scene.dice) {
+    window.setTimeout(openDiceModal, 320);
   }
   renderSceneControls();
 }
@@ -1443,7 +1525,7 @@ function openChoiceModal(options = {}) {
       state.choiceRevealTimers.push(timer);
     });
   }
-  if (options.listen) {
+  if (options.listen && state.microphoneConsent) {
     const timer = window.setTimeout(() => startChoiceListening({ silent: true, auto: true }), 1200 + buttons.length * 650);
     state.choiceRevealTimers.push(timer);
   }
@@ -1596,7 +1678,9 @@ function applySceneProgress(scene, multiplier = 1, options = {}) {
       state.avatarLayers.push(reward.layer);
     }
     addNarratorEntry("reward", `Item ganho: ${reward?.label || rewardId}.`);
-    showFeedback(`Você ganhou: ${reward?.label || rewardId}!`, reward?.cue || scene.sound?.reward, scene.effects?.reward);
+    showFeedback(`Você ganhou: ${reward?.label || rewardId}!`, reward?.cue || scene.sound?.reward, scene.effects?.reward, {
+      speak: options.speakReward !== false,
+    });
   }
 
   renderProgress();
@@ -1625,7 +1709,7 @@ function openDiceModal() {
   els.diceResultText.textContent = "Quando tocar, o dado vai girar e mostrar um número bem grande.";
   state.diceModalReady = true;
   state.diceRolling = false;
-  speakNarration("Toque no dado para rolar.", { interrupt: true, quality: "fast" });
+  playCue("dice_tick_roll");
 }
 
 function rollDice() {
@@ -1677,11 +1761,13 @@ function rollDice() {
       progressDelta: outcomeProgress,
       rewardId: outcomeReward,
       grantReward: String(outcomeReward || "").startsWith("nota_"),
+      speakReward: false,
     });
   } else {
     addNarratorEntry("dice", `Dado ${result}: ${outcome?.narration || "sucesso brilhante."}`);
-    applySceneProgress(scene, 1, { progressDelta: outcomeProgress, rewardId: outcomeReward });
+    applySceneProgress(scene, 1, { progressDelta: outcomeProgress, rewardId: outcomeReward, speakReward: false });
   }
+  delete state.pendingOutcomeByScene[scene.id];
 
   renderSceneControls();
 }
@@ -1772,17 +1858,80 @@ function masterEffectForContext(context = {}) {
 function openMovementModal() {
   const scene = currentScene();
   if (!scene.movement) return;
+  clearMovementTimers();
   els.movementModal.hidden = false;
   els.movementModalTitle.textContent = scene.movement.label || "Desafio físico";
   els.movementInstructionText.textContent = scene.movement.instruction;
+  els.movementQuestionText.hidden = true;
+  els.movementReadyButton.disabled = true;
+  els.movementReadyButton.textContent = "20";
+  els.movementFallbackButton.hidden = true;
   speakNarration(`${scene.movement.label}. ${scene.movement.instruction}. Quando terminar, toque em Pronto.`, {
     interrupt: true,
-    quality: "fast",
+    quality: "premium",
   });
+  startMovementCountdown(20);
 }
 
 function closeMovementModal() {
+  clearMovementTimers();
   if (els.movementModal) els.movementModal.hidden = true;
+}
+
+function clearMovementTimers() {
+  if (state.movementConfirmTimer) window.clearInterval(state.movementConfirmTimer);
+  if (state.movementListenTimer) window.clearTimeout(state.movementListenTimer);
+  state.movementConfirmTimer = null;
+  state.movementListenTimer = null;
+}
+
+function startMovementCountdown(seconds) {
+  state.movementSecondsRemaining = seconds;
+  els.movementReadyButton.textContent = String(seconds);
+  state.movementConfirmTimer = window.setInterval(() => {
+    state.movementSecondsRemaining -= 1;
+    els.movementReadyButton.textContent = String(Math.max(0, state.movementSecondsRemaining));
+    if (state.movementSecondsRemaining <= 0) {
+      window.clearInterval(state.movementConfirmTimer);
+      state.movementConfirmTimer = null;
+      askMovementComplete();
+    }
+  }, 1000);
+}
+
+function askMovementComplete() {
+  els.movementQuestionText.hidden = false;
+  els.movementReadyButton.disabled = false;
+  els.movementReadyButton.textContent = "Sim";
+  els.movementFallbackButton.hidden = false;
+  els.movementFallbackButton.textContent = "Não";
+  speakNarration("Você já cumpriu o desafio?", { interrupt: true, quality: "premium" });
+  if (state.microphoneConsent) {
+    state.movementListenTimer = window.setTimeout(listenForMovementConfirmation, 600);
+  }
+}
+
+function listenForMovementConfirmation() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition || els.movementModal.hidden) return;
+  const recognition = new SpeechRecognition();
+  recognition.lang = "pt-BR";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.onresult = (event) => {
+    const transcript = normalizeActionText(event.results?.[0]?.[0]?.transcript || "");
+    if (/\b(sim|consegui|pronto|fiz|terminei)\b/.test(transcript)) {
+      completeMovement();
+    } else if (/\b(nao|não|ainda|espera)\b/.test(transcript)) {
+      extendMovementChallenge();
+    }
+  };
+  recognition.onerror = () => {};
+  try {
+    recognition.start();
+  } catch {
+    // Touch remains available if recognition is already busy.
+  }
 }
 
 function completeMovement() {
@@ -1791,14 +1940,18 @@ function completeMovement() {
   if (state.pendingMovementScenes.has(scene.id)) {
     state.pendingMovementScenes.delete(scene.id);
     const pendingOutcome = state.pendingOutcomeByScene[scene.id] || {};
-    delete state.pendingOutcomeByScene[scene.id];
     closeMovementModal();
     addNarratorEntry("challenge", `${scene.movement.label} completo. O caminho abriu.`);
-    showFeedback(`${scene.movement.label} completo. O caminho abriu e a aventura continua!`, scene.sound?.success || scene.audiovisual?.reward, scene.effects?.reward, { interrupt: true });
-    applySceneProgress(scene, 1, {
-      progressDelta: pendingOutcome.progressDelta,
-      rewardId: pendingOutcome.rewardId,
-    });
+    showFeedback(`${scene.movement.label} completo. O caminho abriu!`, scene.sound?.success || scene.audiovisual?.reward, scene.effects?.reward, { interrupt: true, speak: false });
+    if (scene.dice) {
+      window.setTimeout(openDiceModal, 420);
+    } else {
+      delete state.pendingOutcomeByScene[scene.id];
+      applySceneProgress(scene, 1, {
+        progressDelta: pendingOutcome.progressDelta,
+        rewardId: pendingOutcome.rewardId,
+      });
+    }
     renderSceneControls();
     return;
   }
@@ -1808,22 +1961,19 @@ function completeMovement() {
 }
 
 function skipChallenge() {
+  extendMovementChallenge();
+}
+
+function extendMovementChallenge() {
   const scene = currentScene();
-  const fallback = scene.movement?.fallback || "Tudo bem. Luma transforma isso em um caminho mais fácil.";
-  if (state.pendingMovementScenes.has(scene.id)) {
-    state.pendingMovementScenes.delete(scene.id);
-    const pendingOutcome = state.pendingOutcomeByScene[scene.id] || {};
-    delete state.pendingOutcomeByScene[scene.id];
-    applySceneProgress(scene, 1, {
-      progressDelta: pendingOutcome.progressDelta,
-      rewardId: pendingOutcome.rewardId,
-      grantReward: false,
-    });
-    renderSceneControls();
-  }
-  closeMovementModal();
-  addNarratorEntry("challenge", `Desafio adaptado: ${fallback}`);
-  showFeedback(fallback, scene.sound?.softFallback || "gentle_plop", scene.effects?.softFallback);
+  const fallback = scene?.movement?.fallback || "Tudo bem. Vamos tentar de um jeito mais calmo.";
+  clearMovementTimers();
+  els.movementQuestionText.hidden = true;
+  els.movementFallbackButton.hidden = true;
+  els.movementReadyButton.disabled = true;
+  els.movementInstructionText.textContent = fallback;
+  speakNarration(`${fallback} Mais dez segundos e eu pergunto de novo.`, { interrupt: true, quality: "premium" });
+  startMovementCountdown(10);
 }
 
 function nextScene() {
@@ -1996,6 +2146,7 @@ function updateTimerUI() {
 
 function finishAdventure(timebox) {
   clearInterval(state.timer);
+  releaseWakeLock();
   const scene = currentScene();
   const rewardLabels = state.rewards.map((id) => state.adventure.rewards[id]?.label || id);
   const topProgress = Object.entries(state.progress)
@@ -2438,7 +2589,7 @@ function repeatLastNarration() {
   if (scene) {
     speakNarration(composeSceneNarration(scene), {
       quality: "premium",
-      audioKey: audioKeyForScene(scene, "scene"),
+      audioKey: scenePrebuiltAudioKey(scene),
     });
     return;
   }
@@ -2593,6 +2744,7 @@ function goLibrary() {
   clearInterval(state.timer);
   state.masterRequestId += 1;
   stopNarration();
+  releaseWakeLock();
   renderLibrary();
   renderParentReview();
   renderParentFlow();
@@ -2665,6 +2817,7 @@ els.removeRestrictedHumorToggle.addEventListener("change", () => {
   updateParentApproval();
 });
 els.parentPermissionButton?.addEventListener("click", requestParentMediaPermission);
+els.storyMicConsentToggle?.addEventListener("change", handleStoryMicConsentChange);
 els.volumeSelect?.addEventListener("change", () => {
   state.narrationVolume = Number(els.volumeSelect.value);
   updateCreditUI();
@@ -2742,6 +2895,12 @@ if ("serviceWorker" in navigator) {
     });
   });
 }
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible" && els.sessionView.classList.contains("is-active")) {
+    requestWakeLock();
+  }
+});
 
 loadParentState();
 renderLibrary();

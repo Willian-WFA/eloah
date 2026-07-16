@@ -241,8 +241,9 @@
           <p class="eyebrow">Desafio físico</p>
           <h2 id="movementModalTitle">Movimento da aventura</h2>
           <p id="movementInstructionText"></p>
+          <p id="movementQuestionText" class="movement-question" hidden>Você já cumpriu o desafio?</p>
           <button id="movementReadyButton" class="ready-word-button" type="button">Pronto</button>
-          <button id="movementFallbackButton" class="ghost-button" type="button">Adaptar desafio</button>
+          <button id="movementFallbackButton" class="ghost-button" type="button">Não</button>
         </div>
       </div>
 
@@ -263,6 +264,10 @@
           <h2 id="storyActionTitle">Aventura selecionada</h2>
           <button id="storyReadFullButton" class="ghost-button" type="button">Ler história completa</button>
           <button id="storySummaryButton" class="secondary-button" type="button">Ler resumo</button>
+          <label class="mic-consent-line">
+            <input id="storyMicConsentToggle" type="checkbox" />
+            Usar microfone nesta aventura
+          </label>
           <button id="storyApprovePlayButton" class="primary-button" type="button">Aprovar e jogar</button>
           <button id="storyActionCloseButton" class="ghost-button" type="button">Voltar</button>
         </div>

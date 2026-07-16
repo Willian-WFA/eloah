@@ -1632,6 +1632,25 @@ select {
   min-height: 52px;
 }
 
+.mic-consent-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  border: 1px solid rgba(108, 92, 231, 0.18);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--ink);
+  padding: 10px 12px;
+  font-weight: 900;
+}
+
+.mic-consent-line input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--brand);
+}
+
 .choice-card .choice-panel {
   grid-template-columns: 1fr;
   margin-top: 0;
@@ -1649,6 +1668,11 @@ select {
   font-size: 1.04rem;
   font-weight: 850;
   line-height: 1.38;
+}
+
+.movement-question {
+  color: var(--brand-strong) !important;
+  font-size: 1.16rem !important;
 }
 
 .ready-word-button {
