@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): b5aa66b Refine story selection and gameplay flow; proximo commit desta sessao corrige travamento do painel dos pais
+Commit(s): 8004d13 Fix parent panel startup flow; proximo commit desta sessao limpa tela de jogo e religa audio Gemini pre-gerado
 PR/Issues: n/a
 
 ## Resumo curto
@@ -209,6 +209,13 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Botão do painel de configuração passou de `Continuar` para `Escolher história`, deixando a próxima etapa mais explícita.
 - O botão `Aprovar e jogar` agora reflete falta de créditos/consentimento quando uma aventura exige condição antes de iniciar.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-parent-flow-unlock-pwa`.
+- Tela principal do jogo foi simplificada para o modelo visual limpo: a pergunta, dica de rodada, botões `Escolher resposta`, `Falar opção`, `Escolha uma opção`, `Usar sorte`, `Desafio` e `Pular` deixaram de aparecer no corpo da cena.
+- A narração de cena voltou a priorizar `assets/audio/.../scene.wav` via manifesto de áudio, usando os WAVs pré-gerados com Gemini antes de API TTS/voz do navegador.
+- Botão `Ouvir de novo` também tenta repetir o WAV pré-gerado da cena atual.
+- Modal de opções ganhou revelação escalonada dos botões 1, 2 e 3; o jogo permanece travado nele até clique ou fala válida.
+- Após dado, o botão `Continuar` do modal não aparece mais; o modal fecha depois da narração do resultado e a seta grande `→` fica disponível na tela.
+- O botão de checkpoint saiu da tela infantil; o diário permanece como ícone flutuante.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-clean-game-gemini-audio-pwa`.
 
 ## Decisoes tomadas
 
@@ -402,6 +409,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Validação após destravar painel dos pais executada com `npm run check`.
 - Chrome headless confirmou que o erro `Uncaught SyntaxError: Illegal return statement` desapareceu e que o DOM inicializa com modal de perfil, cards de aventura e texto dinâmico.
 - Captura mobile gerada em `/tmp/rpg-kids-parent-flow-fixed.png` confirmou o modal inicial renderizado com botão acessível.
+- Validação após tela limpa/áudio Gemini executada com `npm run check`.
+- Chrome headless com logs confirmou ausência de `Uncaught`, `SyntaxError`, `TypeError` e `ReferenceError`.
+- Busca confirmou `audioKeyForScene(scene, "scene")`, `.closed-choice-launcher`, `.tool-row`, `.is-waiting-reveal` e cache `clean-game-gemini-audio-pwa` em `public/`.
 
 ## O que falta fazer
 

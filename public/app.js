@@ -57,6 +57,8 @@ const state = {
   diceModalReady: false,
   diceRolling: false,
   journalModalOpen: false,
+  choiceRevealTimers: [],
+  choiceListening: false,
 };
 
 const els = {
@@ -902,10 +904,13 @@ function renderScene() {
   els.sessionTitle.textContent = scene.title;
   renderSceneArt(scene);
   els.sceneNarration.textContent = genderedText(scene.narration);
-  els.scenePrompt.textContent = genderedText(scene.prompt || "");
+  els.scenePrompt.textContent = "";
+  els.scenePrompt.hidden = true;
+  els.roundHint.hidden = true;
   els.choicePanel.innerHTML = "";
   els.actionInsightText.textContent = "";
   els.feedbackPanel.hidden = true;
+  clearChoiceRevealTimers();
   renderChildTerms();
   renderHubPanel(scene);
 
@@ -923,11 +928,14 @@ function renderScene() {
     els.choicePanel.appendChild(button);
   });
 
-  els.diceButton.hidden = !scene.dice;
-  els.movementButton.hidden = !scene.movement || scene.dice;
-  els.skipButton.hidden = false;
+  els.openChoiceModalButton.hidden = true;
+  els.voiceActionButton.hidden = true;
+  els.diceButton.hidden = true;
+  els.movementButton.hidden = true;
+  els.skipButton.hidden = true;
   renderSceneControls();
-  els.nextButton.textContent = scene.hub ? "Seguir caminho" : scene.next ? "Avançar" : "Finalizar";
+  els.nextButton.textContent = scene.next ? "→" : "✓";
+  els.nextButton.setAttribute("aria-label", scene.next ? "Continuar aventura" : "Finalizar aventura");
 
   renderProgress();
   renderAvatar();
@@ -936,10 +944,11 @@ function renderScene() {
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
   speakNarration(composeSceneNarration(scene), {
-    quality: "fast",
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "scene"),
     onComplete: () => {
       els.sceneCopy?.classList.remove("is-reading");
-      if (currentScene()?.id === scene.id && !state.selectedChoice) openChoiceModal();
+      if (currentScene()?.id === scene.id && !state.selectedChoice) openChoiceModal({ stagger: true, listen: true });
     },
   });
   els.sceneCopy?.classList.add("is-reading");
@@ -1411,13 +1420,38 @@ function applyActionProgress(progressDelta) {
   renderProgress();
 }
 
-function openChoiceModal() {
+function clearChoiceRevealTimers() {
+  state.choiceRevealTimers.forEach((timer) => window.clearTimeout(timer));
+  state.choiceRevealTimers = [];
+}
+
+function openChoiceModal(options = {}) {
   if (!els.choiceModal) return;
+  clearChoiceRevealTimers();
   els.choiceModal.hidden = false;
+  const buttons = [...els.choicePanel.querySelectorAll(".choice-button")];
+  buttons.forEach((button, index) => {
+    button.classList.toggle("is-waiting-reveal", Boolean(options.stagger));
+    button.style.transitionDelay = options.stagger ? `${index * 110}ms` : "0ms";
+  });
+  if (options.stagger) {
+    buttons.forEach((button, index) => {
+      const timer = window.setTimeout(() => {
+        button.classList.remove("is-waiting-reveal");
+        playCue(index === 0 ? "warm_chime" : "soft_step");
+      }, 220 + index * 700);
+      state.choiceRevealTimers.push(timer);
+    });
+  }
+  if (options.listen) {
+    const timer = window.setTimeout(() => startChoiceListening({ silent: true, auto: true }), 1200 + buttons.length * 650);
+    state.choiceRevealTimers.push(timer);
+  }
 }
 
 function closeChoiceModal() {
   if (!els.choiceModal) return;
+  clearChoiceRevealTimers();
   els.choiceModal.hidden = true;
 }
 
@@ -1443,22 +1477,28 @@ function resolveSpokenChoice(transcript) {
   return scored[0]?.score > 0 ? scored[0].choice : "";
 }
 
-function captureVoiceAction() {
+function startChoiceListening(options = {}) {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     openChoiceModal();
-    showFeedback("Este navegador ainda não liberou voz aqui. Toque em uma opção na tela.", "gentle_plop", null, { speak: false });
+    if (!options.silent) {
+      showFeedback("Este navegador ainda não liberou voz aqui. Toque em uma opção na tela.", "gentle_plop", null, { speak: false });
+    }
     return;
   }
+  if (state.choiceListening) return;
 
   const recognition = new SpeechRecognition();
   recognition.lang = "pt-BR";
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
-  els.voiceActionButton.disabled = true;
-  els.voiceActionButton.textContent = "Ouvindo...";
-  stopNarration();
-  showFeedback("Estou ouvindo sua ação.", null, null, { speak: false });
+  state.choiceListening = true;
+  if (!els.voiceActionButton.hidden) {
+    els.voiceActionButton.disabled = true;
+    els.voiceActionButton.textContent = "Ouvindo...";
+  }
+  if (!options.auto) stopNarration();
+  if (!options.silent) showFeedback("Estou ouvindo sua ação.", null, null, { speak: false });
 
   recognition.onresult = (event) => {
     const transcript = event.results?.[0]?.[0]?.transcript || "";
@@ -1471,13 +1511,24 @@ function captureVoiceAction() {
     handlePlayerAction(choice, "voice");
   };
   recognition.onerror = () => {
-    showFeedback("Não consegui ouvir bem. Diga opção 1, 2 ou 3, ou toque na tela.", "gentle_plop", null, { speak: false });
+    if (!options.silent) {
+      showFeedback("Não consegui ouvir bem. Diga opção 1, 2 ou 3, ou toque na tela.", "gentle_plop", null, { speak: false });
+    }
   };
   recognition.onend = () => {
+    state.choiceListening = false;
     els.voiceActionButton.disabled = false;
     els.voiceActionButton.textContent = "Falar opção";
   };
-  recognition.start();
+  try {
+    recognition.start();
+  } catch {
+    state.choiceListening = false;
+  }
+}
+
+function captureVoiceAction() {
+  startChoiceListening({ silent: false, auto: false });
 }
 
 function prepareAdventureForChild(adventure) {
@@ -2078,27 +2129,20 @@ function renderSceneControls() {
   const alreadyRolled = state.rolledScenes.has(scene.id);
   const pendingMovement = state.pendingMovementScenes.has(scene.id);
   const waitingAction = !state.selectedChoice;
-  if (els.roundHint) {
-    if (waitingAction) {
-      const terms = childTerms();
-      els.roundHint.textContent = `1. Escolha uma opção ou fale o número.`;
-    } else if (scene.dice && !alreadyRolled) {
-      els.roundHint.textContent = "2. Agora abra o dado e toque para rolar.";
-    } else if (pendingMovement) {
-      els.roundHint.textContent = "2. Faça o desafio e toque em Pronto.";
-    } else {
-      els.roundHint.textContent = scene.next ? "Pronto. Você pode avançar." : "Pronto. Você pode finalizar a aventura.";
-    }
-  }
-  els.diceButton.disabled = Boolean(scene.dice && (alreadyRolled || waitingAction));
-  els.diceButton.textContent = waitingAction ? "Escolha uma opção" : alreadyRolled ? "Dado usado" : "⚂ Abrir dado";
-  els.luckButton.hidden = !scene.dice || alreadyRolled;
-  els.luckButton.disabled = !scene.dice || alreadyRolled || waitingAction || state.luckPoints <= 0;
-  els.luckButton.textContent = state.luckPoints > 0 ? `Usar sorte (${state.luckPoints})` : "Sem sorte";
+  const needsDice = Boolean(scene.dice && !alreadyRolled);
+  const readyToAdvance = Boolean(!waitingAction && !needsDice && !pendingMovement);
+  els.roundHint.textContent = "";
+  els.diceButton.hidden = true;
+  els.luckButton.hidden = true;
+  els.movementButton.hidden = true;
+  els.skipButton.hidden = true;
+  els.diceButton.disabled = true;
+  els.luckButton.disabled = true;
+  els.movementButton.disabled = true;
+  els.skipButton.disabled = true;
   els.luckButton.classList.toggle("is-active", state.useLuck);
-  els.movementButton.disabled = waitingAction || scene.dice;
-  els.movementButton.textContent = pendingMovement ? "Ver desafio" : "Desafio físico";
-  els.nextButton.disabled = Boolean(waitingAction || (scene.dice && (!alreadyRolled || pendingMovement)));
+  els.nextButton.hidden = !readyToAdvance;
+  els.nextButton.disabled = !readyToAdvance;
 }
 
 function showDiceResult(result, message, cue, effect) {
@@ -2126,7 +2170,7 @@ function showDiceResult(result, message, cue, effect) {
       els.diceCube.dataset.result = diceBand(result);
       els.diceModalTitle.textContent = `Resultado ${result}`;
       els.diceResultText.textContent = displayMessage;
-      els.diceCloseButton.hidden = false;
+      els.diceCloseButton.hidden = true;
       state.diceRolling = false;
       if (effect) runSceneEffect(effect);
       playCue(cue);
@@ -2136,6 +2180,7 @@ function showDiceResult(result, message, cue, effect) {
         onComplete: () => {
           window.setTimeout(() => {
             els.diceModal.hidden = true;
+            renderSceneControls();
           }, 900);
         },
       });
@@ -2389,12 +2434,15 @@ function preferredNarrationVoice() {
 }
 
 function repeatLastNarration() {
-  if (!state.lastNarration) {
-    const scene = currentScene();
-    if (scene) speakNarration(composeSceneNarration(scene));
+  const scene = currentScene();
+  if (scene) {
+    speakNarration(composeSceneNarration(scene), {
+      quality: "premium",
+      audioKey: audioKeyForScene(scene, "scene"),
+    });
     return;
   }
-  speakNarration(state.lastNarration);
+  if (state.lastNarration) speakNarration(state.lastNarration, { quality: "premium" });
 }
 
 function stopNarration() {
@@ -2406,6 +2454,7 @@ function stopNarrationPlayback() {
   state.narrationQueue = [];
   state.narrationOnComplete = null;
   state.narrationPlaying = false;
+  clearChoiceRevealTimers();
   els.sceneCopy?.classList.remove("is-reading");
   if (state.apiNarrationAudio) {
     state.apiNarrationAudio.pause();
