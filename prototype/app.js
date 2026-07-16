@@ -56,6 +56,7 @@ const state = {
   prebuiltAudioAvailable: null,
   diceModalReady: false,
   diceRolling: false,
+  diceAnimationTimer: null,
   recentDiceRolls: [],
   activeDiceNarrationId: "",
   journalModalOpen: false,
@@ -969,7 +970,8 @@ function renderScene() {
   els.sessionKicker.textContent = state.adventure.title;
   els.sessionTitle.textContent = scene.title;
   renderSceneArt(scene);
-  els.sceneNarration.textContent = genderedText(sceneDisplayNarration(scene));
+  const displayNarration = sceneDisplayNarration(scene);
+  els.sceneNarration.textContent = genderedText(displayNarration);
   els.scenePrompt.textContent = "";
   els.scenePrompt.hidden = true;
   els.roundHint.hidden = true;
@@ -1009,7 +1011,7 @@ function renderScene() {
   updateTimerUI();
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
-  speakNarration(composeSceneNarration(scene), {
+  speakNarration(composeSceneNarration(scene, displayNarration), {
     quality: "premium",
     audioKey: scenePrebuiltAudioKey(scene),
     onComplete: () => {
@@ -1022,28 +1024,36 @@ function renderScene() {
 
 function sceneDisplayNarration(scene) {
   if (!scene?.hub?.routes?.length) return scene.narration;
-  const choices = sceneChoices(scene);
+  const counts = hubRouteCounts(scene);
   if (!hasSceneBeenNarrated(scene.id)) {
-    return `${scene.narration} ${hubRemainingRouteText(choices.length, true)}`;
+    return `${scene.narration} ${hubRemainingRouteText(counts, true)}`;
   }
-  if (!choices.length) {
+  if (!counts.visible) {
     return "Voltamos à praça redonda. As Notas de Sino brilham juntas, e Luma aponta para a torre do Relógio-Coração.";
   }
-  return `Voltamos à praça redonda. As Notas de Sino brilham na fonte, e Luma aponta os caminhos que ainda faltam visitar. ${hubRemainingRouteText(choices.length)}`;
+  return `Voltamos à praça redonda. As Notas de Sino brilham na fonte, e Luma aponta os caminhos que ainda faltam visitar. ${hubRemainingRouteText(counts)}`;
 }
 
 function hasSceneBeenNarrated(sceneId) {
   return state.narrativeLog.some((entry) => entry.kind === "scene" && entry.sceneId === sceneId);
 }
 
-function hubRemainingRouteText(count, firstVisit = false) {
-  if (count >= 3) {
+function hubRouteCounts(scene) {
+  const visible = sceneChoices(scene).length;
+  const remaining = (scene.hub?.routes || []).filter((route) => !route.hideWhenCompleted || !state.completedScenes.has(route.target)).length;
+  return { visible, remaining };
+}
+
+function hubRemainingRouteText(counts, firstVisit = false) {
+  const remaining = counts.remaining || counts.visible;
+  if (remaining > 3) {
     return firstVisit
-      ? "Para começar, só três caminhos aparecem no mapa agora."
-      : "Agora restam três caminhos brilhando no mapa.";
+      ? `A cidade tem ${remaining} caminhos no mapa. O mestre mostra até três opções por vez.`
+      : `Ainda existem ${remaining} caminhos no mapa. O mestre mostra até três opções por vez.`;
   }
-  if (count === 2) return "Agora só restam dois caminhos para investigar.";
-  if (count === 1) return "Chegamos ao último local antes da torre. Só resta um caminho.";
+  if (remaining === 3) return "Agora restam três caminhos brilhando no mapa.";
+  if (remaining === 2) return "Agora só restam dois caminhos para investigar.";
+  if (remaining === 1) return "Chegamos ao último local antes da torre. Só resta um caminho.";
   return "Os caminhos da cidade já foram visitados. A torre espera por você.";
 }
 
@@ -1077,6 +1087,7 @@ function renderHubPanel(scene) {
 
   const notes = Math.round(state.progress.notas_sino || 0);
   const selectableRoutes = availableHubRoutes(scene).slice(0, 3);
+  const remainingRoutes = hubRouteCounts(scene).remaining;
   const routes = selectableRoutes.map((route, index) => (
     `<li class="is-open"><button type="button" data-route-index="${index}"><span>${escapeHtml(route.label)}</span><strong>Aberto</strong></button></li>`
   ));
@@ -1088,12 +1099,16 @@ function renderHubPanel(scene) {
         <p class="eyebrow">Mapa da cidade</p>
         <h2>Notas de Sino: ${notes}/5</h2>
       </div>
-      <span class="hub-badge">${selectableRoutes.length} caminhos</span>
+      <span class="hub-badge">${selectableRoutes.length}/${remainingRoutes} caminhos</span>
     </div>
     <ul class="hub-route-list">${routes.join("") || "<li class=\"is-locked\"><span>Procure Luma para lembrar o objetivo.</span><strong>Dica</strong></li>"}</ul>
   `;
   els.hubPanel.querySelectorAll("[data-route-index]").forEach((button) => {
     button.addEventListener("click", () => {
+      if (state.narrationPlaying) {
+        showFeedback("Espere o mestre terminar de apresentar os caminhos.", "warm_chime", undefined, { speak: false });
+        return;
+      }
       const route = selectableRoutes[Number(button.dataset.routeIndex)];
       if (route) handlePlayerAction(route.label, "choice");
     });
@@ -1244,18 +1259,18 @@ function genderedText(value) {
     .replaceAll("Guardião", "Guardiã");
 }
 
-function composeSceneNarration(scene) {
+function composeSceneNarration(scene, narrationText = sceneDisplayNarration(scene)) {
   const name = childCallName();
   const choices = sceneChoices(scene).filter(Boolean);
   const optionText = choices.length
     ? `Escute suas opções de aventura. ${choices
         .map((choice, index) => `Opção ${index + 1}: ${choice}.`)
-        .join(" ")}`
+    .join(" ")}`
     : "";
 
   return [
     `${name}, esta é a cena.`,
-    sceneDisplayNarration(scene),
+    narrationText,
     scene.prompt || "O que você faz?",
     optionText,
   ]
@@ -1287,6 +1302,7 @@ function handlePlayerAction(actionText, source) {
     return;
   }
 
+  stopNarrationPlayback();
   state.selectedChoice = action;
   closeChoiceModal();
   state.lastActionInsight = "";
@@ -1734,6 +1750,10 @@ function openDiceModal() {
   state.diceModalReady = true;
   state.diceRolling = false;
   playCue("dice_tick_roll");
+  speakNarration("Jogue um dado.", {
+    quality: "premium",
+    audioKey: uiAudioKey("jogue-um-dado", "prompt"),
+  });
 }
 
 function rollDice() {
@@ -2003,6 +2023,10 @@ function extendMovementChallenge() {
 
 function nextScene() {
   const scene = currentScene();
+  if (state.diceRolling || !els.diceModal.hidden) {
+    showFeedback("Espere o dado terminar primeiro.", "dice_tick_roll", undefined, { speak: false });
+    return;
+  }
   if (!state.selectedChoice) {
     showFeedback("Antes de avançar, escolha uma das opções do mestre.", "warm_chime");
     return;
@@ -2331,9 +2355,10 @@ function renderSceneControls() {
   if (!scene) return;
   const alreadyRolled = state.rolledScenes.has(scene.id);
   const pendingMovement = state.pendingMovementScenes.has(scene.id);
+  const diceModalOpen = !els.diceModal.hidden || state.diceRolling;
   const waitingAction = !state.selectedChoice;
   const needsDice = Boolean(scene.dice && !alreadyRolled);
-  const readyToAdvance = Boolean(!waitingAction && !needsDice && !pendingMovement);
+  const readyToAdvance = Boolean(!waitingAction && !needsDice && !pendingMovement && !diceModalOpen);
   els.roundHint.textContent = "";
   els.diceButton.hidden = true;
   els.luckButton.hidden = true;
@@ -2363,14 +2388,21 @@ function showDiceResult(result, message, cue, effect) {
   els.diceResultText.textContent = "Escute o dado girando.";
 
   let ticks = 0;
-  const rollAnimation = setInterval(() => {
+  if (state.diceAnimationTimer) window.clearInterval(state.diceAnimationTimer);
+  state.diceAnimationTimer = window.setInterval(() => {
+    if (state.activeDiceNarrationId !== diceNarrationId || currentScene()?.id !== scene?.id) {
+      window.clearInterval(state.diceAnimationTimer);
+      state.diceAnimationTimer = null;
+      return;
+    }
     const face = faces[Math.floor(Math.random() * faces.length)];
     els.diceCube.textContent = face;
     els.diceCube.setAttribute("aria-label", `Dado girando, passou pelo número ${face}`);
     if (ticks % 2 === 0) playCue("dice_tick_roll");
     ticks += 1;
     if (ticks >= 14) {
-      clearInterval(rollAnimation);
+      window.clearInterval(state.diceAnimationTimer);
+      state.diceAnimationTimer = null;
       els.diceCube.classList.remove("is-rolling");
       els.diceCube.textContent = faces[result - 1];
       els.diceCube.setAttribute("aria-label", `Resultado do dado: ${result}`);
@@ -2389,6 +2421,8 @@ function showDiceResult(result, message, cue, effect) {
           window.setTimeout(() => {
             if (state.activeDiceNarrationId !== diceNarrationId) return;
             els.diceModal.hidden = true;
+            state.diceModalReady = false;
+            state.diceRolling = false;
             renderSceneControls();
           }, 900);
         },
@@ -2630,6 +2664,10 @@ function audioKeyForDice(scene, result) {
   return audioKeyForScene(scene, `dice-${result}`);
 }
 
+function uiAudioKey(name, kind) {
+  return `ui/${name}/${kind}`;
+}
+
 function speakBrowserNarrationChunk(chunk, runId = state.narrationRunId) {
   if (!("speechSynthesis" in window)) {
     state.narrationPlaying = false;
@@ -2684,6 +2722,10 @@ function stopNarrationPlayback() {
   state.narrationOnComplete = null;
   state.narrationPlaying = false;
   state.activeDiceNarrationId = "";
+  if (state.diceAnimationTimer) {
+    window.clearInterval(state.diceAnimationTimer);
+    state.diceAnimationTimer = null;
+  }
   clearChoiceRevealTimers();
   els.sceneCopy?.classList.remove("is-reading");
   if (state.apiNarrationAudio) {

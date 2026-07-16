@@ -85,5 +85,6 @@
   "cidade-dos-sinos-claros/sinos_torre_final/dice-3": "assets/audio/cidade-dos-sinos-claros/sinos_torre_final/dice-3.wav",
   "cidade-dos-sinos-claros/sinos_torre_final/dice-4": "assets/audio/cidade-dos-sinos-claros/sinos_torre_final/dice-4.wav",
   "cidade-dos-sinos-claros/sinos_torre_final/dice-5": "assets/audio/cidade-dos-sinos-claros/sinos_torre_final/dice-5.wav",
-  "cidade-dos-sinos-claros/sinos_torre_final/dice-6": "assets/audio/cidade-dos-sinos-claros/sinos_torre_final/dice-6.wav"
+  "cidade-dos-sinos-claros/sinos_torre_final/dice-6": "assets/audio/cidade-dos-sinos-claros/sinos_torre_final/dice-6.wav",
+  "ui/jogue-um-dado/prompt": "assets/audio/ui/jogue-um-dado/prompt.wav"
 }

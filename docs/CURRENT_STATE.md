@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 107ee1b Polish bell city dice and ending flow; 357ab85 Regenerate remaining bell city narration
+Commit(s): 357ab85 Regenerate remaining bell city narration; proximo commit corrige fluxo da praça/dado e áudio curto
 PR/Issues: n/a
 
 ## Resumo curto
@@ -231,6 +231,15 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Regenerados os WAVs de cena de `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final` em `public/` e `prototype/`.
 - `scenePrebuiltAudioKey()` passou a liberar esses três IDs, então a campanha `A Cidade dos Sinos Claros` voltou a usar áudio pregerado para todas as cenas não-hub.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-regenerated-audio-pwa`.
+- Corrigida a primeira chegada à Praça do Relógio Parado: tela e áudio usam a narração completa antes de registrar a cena no diário, evitando retomada curta na primeira visita.
+- A praça passou a tratar o mapa como vários caminhos restantes, mas continua apresentando/falando no máximo 3 opções por vez no modal infantil.
+- Toques no mapa da praça durante a narração não selecionam rota; o jogo espera o mestre terminar e abrir o modal de opções.
+- Selecionar uma opção agora interrompe narração pendente, reduzindo áudio antigo tocando ao entrar na próxima cena.
+- Gerado áudio Gemini avulso `ui/jogue-um-dado/prompt.wav` para a fala `Jogue um dado.`, usado ao abrir o modal de dado.
+- O gerador de áudio ganhou modo customizado `--key=... --text=...` para frases de UI.
+- Corrigido travamento após resultado do dado: a seta não aparece enquanto o modal/animação/narração do dado está ativo, `nextScene()` bloqueia avanço nesse estado e timers antigos do dado são invalidados.
+- Botão do diário foi movido para o canto superior direito do card da heroína e o título ganhou respiro para não ficar coberto.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-flow-audio-fixes-pwa`.
 - O modal de aprovação da história ganhou seletor de microfone; se o navegador negar permissão, o seletor desmarca e a criança continua por toque.
 - A Praça do Relógio Parado passou a oferecer no máximo 3 caminhos disponíveis por vez, removendo rotas já concluídas e escondendo rotas bloqueadas da lista infantil.
 - Ao voltar para a praça, o texto/narração usa uma retomada curta: `Voltamos à praça redonda...`, sem repetir a introdução inteira.
@@ -447,6 +456,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Chrome headless em `http://127.0.0.1:3000/` carregou o DOM inicial sem erro de sintaxe/runtime e gerou captura mobile em `/tmp/rpg-kids-polish.png`.
 - Validação após regenerar áudios executada com `npm run check`, `node --check scripts/generate-audio.js` e `cmp` entre `public/` e `prototype/`.
 - Confirmado que os três WAVs regenerados existem e são idênticos em `public/assets/audio/` e `prototype/assets/audio/`.
+- Validação após correções de praça/dado/áudio curto executada com `npm run check`, `node --check scripts/generate-audio.js`, `cmp` entre `public/` e `prototype/`, confirmação do WAV `ui/jogue-um-dado/prompt.wav` e Chrome headless em `http://127.0.0.1:3000/`.
 
 ## O que falta fazer
 
@@ -496,7 +506,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Sons/efeitos precisam ter fallback silencioso e controle adulto de volume.
 - O prototipo ainda nao foi validado visualmente no browser com inspeção humana ou Playwright.
 - O modal do dado, sorte e avatar visual ainda precisam de validacao visual no browser/celular.
-- Três cenas da campanha estão sem uso de WAV pregerado nesta versão para evitar tocar áudio antigo com frase de escolha livre; elas devem usar API TTS/fallback até serem regeneradas.
+- Ainda é necessário testar no celular real a correção de travamento pós-dado e a ausência de áudio sobreposto, porque autoplay/latência variam por navegador.
 
 ## Proximo prompt recomendado
 

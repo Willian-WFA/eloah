@@ -925,10 +925,10 @@ select {
 .journal-card-button {
   position: absolute;
   top: 10px;
-  left: 10px;
+  right: 10px;
   z-index: 2;
-  width: 48px;
-  height: 44px;
+  width: 44px;
+  height: 40px;
   border: 0;
   border-radius: 16px;
   background: #fff8e8;
@@ -1293,7 +1293,12 @@ select {
 
 .avatar-card {
   position: relative;
-  padding-top: 42px;
+  padding-top: 18px;
+}
+
+.avatar-card h2 {
+  max-width: calc(100% - 56px);
+  margin-right: 48px;
 }
 
 .meters {

@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-16-bell-city-regenerated-audio-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-16-bell-city-flow-audio-fixes-pwa";
 
 const CORE_ASSETS = [
   "./",

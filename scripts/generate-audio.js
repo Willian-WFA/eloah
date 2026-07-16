@@ -21,6 +21,8 @@ const selectedSceneIds = new Set((process.argv.find((arg) => arg.startsWith("--s
   .split(",")
   .map((value) => value.trim())
   .filter(Boolean));
+const customKey = process.argv.find((arg) => arg.startsWith("--key="))?.slice("--key=".length) || "";
+const customText = process.argv.find((arg) => arg.startsWith("--text="))?.slice("--text=".length) || "";
 const delayMs = Number(process.argv.find((arg) => arg.startsWith("--delay-ms="))?.split("=")[1] || 2500);
 
 main().catch((error) => {
@@ -32,12 +34,13 @@ async function main() {
   if (provider !== "gemini") throw new Error("generate:audio currently supports TTS_PROVIDER=gemini");
   if (!geminiApiKey) throw new Error("GEMINI_API_KEY is required to generate audio assets");
 
-  const adventures = await loadAdventures();
-  const jobs = buildAudioJobs(adventures).filter((job) => (
-    (!selectedAdventureId || job.adventureId === selectedAdventureId) &&
-    (!selectedKind || job.kind === selectedKind) &&
-    (!selectedSceneIds.size || selectedSceneIds.has(job.sceneId))
-  ));
+  const jobs = customKey || customText
+    ? buildCustomAudioJobs()
+    : buildAudioJobs(await loadAdventures()).filter((job) => (
+      (!selectedAdventureId || job.adventureId === selectedAdventureId) &&
+      (!selectedKind || job.kind === selectedKind) &&
+      (!selectedSceneIds.size || selectedSceneIds.has(job.sceneId))
+    ));
   const selectedJobs = limit > 0 ? jobs.slice(0, limit) : jobs;
   const manifest = await readJson(join(outDir, "manifest.json"));
 
@@ -109,6 +112,17 @@ function buildAudioJobs(adventures) {
     }
   }
   return jobs.filter((job) => job.text);
+}
+
+function buildCustomAudioJobs() {
+  if (!customKey || !customText) throw new Error("--key and --text are required for custom audio jobs");
+  return [{
+    key: customKey,
+    adventureId: "__custom",
+    sceneId: "__custom",
+    kind: "custom",
+    text: customText,
+  }];
 }
 
 function sceneText(scene) {
