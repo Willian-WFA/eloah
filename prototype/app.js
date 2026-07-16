@@ -1025,7 +1025,13 @@ function renderScene() {
     audioKey: scenePrebuiltAudioKey(scene),
     onComplete: () => {
       els.sceneCopy?.classList.remove("is-reading");
-      if (currentScene()?.id === scene.id && !state.selectedChoice) openChoiceModal({ stagger: true, listen: true });
+      if (currentScene()?.id === scene.id && !state.selectedChoice) {
+        if (scene.hub?.routes?.length) {
+          openCityMapModal(scene);
+        } else {
+          openChoiceModal({ stagger: true, listen: true });
+        }
+      }
     },
   });
   els.sceneCopy?.classList.add("is-reading");
@@ -1201,6 +1207,12 @@ function selectCityMapRoute(route) {
   closeCityMapModal();
   closeChoiceModal();
   handlePlayerAction(route.label, "choice");
+  window.setTimeout(() => {
+    const scene = currentScene();
+    if (scene?.hub?.routes?.length && state.selectedChoice && !state.diceRolling && els.diceModal.hidden) {
+      nextScene();
+    }
+  }, 260);
 }
 
 function cityMapMeta(route, index) {
@@ -1403,7 +1415,9 @@ function handlePlayerAction(actionText, source) {
     return;
   }
 
-  const validChoices = sceneChoices(scene);
+  const validChoices = scene.hub?.routes?.length
+    ? availableHubRoutes(scene).map((route) => route.label)
+    : sceneChoices(scene);
   if (!validChoices.includes(action)) {
     showFeedback("Essa opção não está disponível agora. Escolha 1, 2 ou 3.", "gentle_plop");
     openChoiceModal();
@@ -2752,15 +2766,27 @@ function speakNarration(text, options = {}) {
 }
 
 function narrationChunks(text) {
-  return String(text)
+  const pieces = String(text)
     .split(/(?<=[.!?])\s+/)
     .map((chunk) => chunk.trim())
     .filter(Boolean)
-    .reduce((chunks, sentence) => {
-      if (sentence.length <= 190) return [...chunks, sentence];
-      const pieces = sentence.split(/,\s+/);
-      return [...chunks, ...pieces.map((piece) => piece.trim()).filter(Boolean)];
-    }, []);
+    .flatMap((sentence) => {
+      if (sentence.length <= 260) return [sentence];
+      return sentence.split(/,\s+/).map((piece) => piece.trim()).filter(Boolean);
+    });
+
+  return pieces.reduce((chunks, sentence) => {
+    const previous = chunks[chunks.length - 1] || "";
+    const next = previous ? `${previous} ${sentence}` : sentence;
+    const optionBlock = previous.includes("Opção") || sentence.includes("Opção");
+    const maxLength = optionBlock ? 420 : 320;
+    if (previous && next.length <= maxLength) {
+      chunks[chunks.length - 1] = next;
+      return chunks;
+    }
+    chunks.push(sentence);
+    return chunks;
+  }, []);
 }
 
 async function speakNextNarrationChunk() {
@@ -2815,8 +2841,8 @@ async function speakNextNarrationChunk() {
 function shouldUseApiTts(chunk, quality) {
   if (quality === "fast") return false;
   if (Date.now() < state.apiTtsCooldownUntil) return false;
-  if (chunk.includes("Opção")) return false;
   if (quality === "premium") return true;
+  if (chunk.includes("Opção")) return false;
   return chunk.length <= 220 && /Mestre:|Você tirou|Resultado|Seis|sorte|dado|ganhou|brilhou|aventura/i.test(chunk);
 }
 
