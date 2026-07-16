@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): c88fb39 Focus bell city campaign flow; proximo commit desta sessao foca em polimento de dado, hub, diario e encerramento
+Commit(s): c88fb39 Focus bell city campaign flow; 107ee1b Polish bell city dice and ending flow
 PR/Issues: n/a
 
 ## Resumo curto
