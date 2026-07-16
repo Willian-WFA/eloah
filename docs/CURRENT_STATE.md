@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA; f81aba8 Add bell city idle effects; 8e6452d Shorten bell city hub narration
+Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA; f81aba8 Add bell city idle effects; 8e6452d Shorten bell city hub narration; e263787 Add bell city touch map modal
 PR/Issues: n/a
 
 ## Resumo curto
@@ -268,6 +268,12 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Detalhes da praça, como fonte e janelas em forma de sino, foram movidos para falas ociosas quando a criança fica sem escolher.
 - O botão `Ouvir de novo` passou a repetir a versão curta falada do hub, não o texto completo da tela.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-hub-voice-pwa`.
+- A Praça do Relógio ganhou um botão `Abrir mapa da cidade`.
+- O mapa abre em modal tocável com os 8 pontos da Cidade dos Sinos: Biscoitos, Biblioteca, Jardim, Ponte, Oficina, Bosque, Colina e Torre.
+- Cada ponto mostra estado visual: aberto, bloqueado por Notas de Sino ou concluído.
+- Tocar em um ponto aberto confirma a rota, fecha mapa/modal de opções e libera a seta para seguir até a missão.
+- Pontos bloqueados/concluídos não avançam a história, preservando a progressão aprovada.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-map-modal-pwa`.
 
 ## Decisoes tomadas
 
@@ -481,6 +487,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Chrome headless/CDP confirmou que a animação de recompensa/Nota de Sino aparece no DOM e some sozinha, sem erros.
 - Validação após encurtar voz da praça executada com `npm run check` e `cmp` entre `public/` e `prototype/`.
 - Chrome headless/CDP com checkpoint direto na Praça do Relógio confirmou fala inicial curta, modal de 3 opções aberto e primeira fala ociosa entrando após espera sem escolha.
+- Validação após mapa tocável executada com `npm run check`, `node --check prototype/app.js` e `cmp` entre `public/` e `prototype/`.
+- Chrome headless/CDP confirmou mapa da Praça com 8 pontos, 3 abertos e 5 bloqueados no início; tocar em `Rua dos Biscoitos Redondos` fechou o mapa, confirmou a escolha e liberou a seta.
 
 ## O que falta fazer
 
