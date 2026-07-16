@@ -21,6 +21,8 @@ Usuario obteve uma key do Gemini e quer usar essa key para a voz do narrador.
 - Evolucao seguinte: audio previsivel agora pode ser pre-gerado com `npm run generate:audio`. O app consulta `assets/audio/manifest.json` e toca WAV salvo antes de tentar Gemini ao vivo.
 - Primeiro lote local gerou 4 WAVs para `portal-das-estrelinhas` antes de a Gemini retornar `429 quota exceeded`; os arquivos foram mantidos e o manifest foi sincronizado.
 - `scripts/generate-audio.js` agora grava manifest incremental, pula WAVs existentes, faz backoff em 429 e pode continuar com `--continue-on-error`.
+- Retomada com `--delay-ms=12000 --continue-on-error` completou `portal-das-estrelinhas`: 23 WAVs previsiveis, incluindo narracao das 5 cenas e resultados de dado.
+- Geradas 5 imagens bitmap para `portal-das-estrelinhas`: `forest_gate_soft`, `crystal_bridge_soft`, `tiny_bell_town`, `sleepy_star_portal` e `star_party_soft`; as cenas agora apontam para `.webp`.
 - Suporte OpenAI TTS foi mantido como opcao futura (`TTS_PROVIDER=openai`).
 - O fallback do frontend permanece: se `/api/tts` falhar, volta para `speechSynthesis`.
 

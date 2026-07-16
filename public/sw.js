@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-15-prebuilt-audio-dedupe-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-15-portal-audio-images-pwa";
 
 const CORE_ASSETS = [
   "./",
@@ -11,6 +11,11 @@ const CORE_ASSETS = [
   "./assets/icons/icon.svg",
   "./assets/icons/icon-192.png",
   "./assets/icons/icon-512.png",
+  "./assets/scenes/forest_gate_soft.webp",
+  "./assets/scenes/crystal_bridge_soft.webp",
+  "./assets/scenes/tiny_bell_town.webp",
+  "./assets/scenes/sleepy_star_portal.webp",
+  "./assets/scenes/star_party_soft.webp",
   "./assets/scenes/cloud_harbor_soft.webp",
   "./assets/scenes/storm_spoon_deck.webp",
   "./assets/scenes/tea_whale_gate.webp",
