@@ -139,6 +139,10 @@ const els = {
   scenePrompt: document.querySelector("#scenePrompt"),
   roundHint: document.querySelector("#roundHint"),
   hubPanel: document.querySelector("#hubPanel"),
+  cityMapModal: document.querySelector("#cityMapModal"),
+  cityMapGrid: document.querySelector("#cityMapGrid"),
+  cityMapHint: document.querySelector("#cityMapHint"),
+  cityMapCloseButton: document.querySelector("#cityMapCloseButton"),
   feedbackPanel: document.querySelector("#feedbackPanel"),
   feedbackText: document.querySelector("#feedbackText"),
   narratorLog: document.querySelector("#narratorLog"),
@@ -1105,9 +1109,7 @@ function renderHubPanel(scene) {
   const notes = Math.round(state.progress.notas_sino || 0);
   const selectableRoutes = availableHubRoutes(scene).slice(0, 3);
   const remainingRoutes = hubRouteCounts(scene).remaining;
-  const routes = selectableRoutes.map((route, index) => (
-    `<li class="is-open"><button type="button" data-route-index="${index}"><span>${escapeHtml(route.label)}</span><strong>Aberto</strong></button></li>`
-  ));
+  const nextRoutes = selectableRoutes.map((route) => `<span>${hubRouteSymbol(route)} ${escapeHtml(shortRouteLabel(route))}</span>`);
 
   els.hubPanel.hidden = false;
   els.hubPanel.innerHTML = `
@@ -1118,18 +1120,109 @@ function renderHubPanel(scene) {
       </div>
       <span class="hub-badge">${selectableRoutes.length}/${remainingRoutes} caminhos</span>
     </div>
-    <ul class="hub-route-list">${routes.join("") || "<li class=\"is-locked\"><span>Procure Luma para lembrar o objetivo.</span><strong>Dica</strong></li>"}</ul>
+    <button class="city-map-open-button" type="button" data-open-city-map>
+      <span class="map-button-icon">◷</span>
+      <span>Abrir mapa da cidade</span>
+    </button>
+    <div class="hub-route-chips">${nextRoutes.join("") || "<span>Peça uma dica para Luma</span>"}</div>
   `;
-  els.hubPanel.querySelectorAll("[data-route-index]").forEach((button) => {
-    button.addEventListener("click", () => {
-      if (state.narrationPlaying) {
-        showFeedback("Espere o mestre terminar de apresentar os caminhos.", "warm_chime", undefined, { speak: false });
-        return;
-      }
-      const route = selectableRoutes[Number(button.dataset.routeIndex)];
-      if (route) handlePlayerAction(route.label, "choice");
-    });
+  els.hubPanel.querySelector("[data-open-city-map]")?.addEventListener("click", () => {
+    openCityMapModal(scene);
   });
+}
+
+function openCityMapModal(scene = currentScene()) {
+  if (!els.cityMapModal || !els.cityMapGrid || !scene?.hub?.routes?.length) return;
+  renderCityMap(scene);
+  els.cityMapModal.hidden = false;
+  playCue("page_turn_magic");
+}
+
+function closeCityMapModal() {
+  if (!els.cityMapModal) return;
+  els.cityMapModal.hidden = true;
+}
+
+function renderCityMap(scene) {
+  const routes = scene.hub?.routes || [];
+  const notes = Math.round(state.progress.notas_sino || 0);
+  els.cityMapGrid.innerHTML = `
+    <div class="city-map-path city-map-path-a"></div>
+    <div class="city-map-path city-map-path-b"></div>
+    <div class="city-map-center">
+      <strong>◷</strong>
+      <span>${notes}/5</span>
+    </div>
+    ${routes.map((route, index) => renderCityMapPoint(route, index)).join("")}
+  `;
+  els.cityMapHint.textContent = "Toque em um ponto aberto para investigar. Os pontos apagados precisam de mais Notas de Sino.";
+  els.cityMapGrid.querySelectorAll("[data-map-route]").forEach((button) => {
+    button.addEventListener("click", () => selectCityMapRoute(routes[Number(button.dataset.mapRoute)]));
+  });
+}
+
+function renderCityMapPoint(route, index) {
+  const meta = cityMapMeta(route, index);
+  const complete = state.completedScenes.has(route.target);
+  const open = isRouteAvailable(route);
+  const status = complete ? "complete" : open ? "open" : "locked";
+  const disabled = complete || !open;
+  const statusText = complete ? "feito" : open ? "aberto" : routeLockReason(route);
+  return `
+    <button
+      class="city-map-point is-${status}"
+      type="button"
+      data-map-route="${index}"
+      style="--x:${meta.x}%; --y:${meta.y}%"
+      ${disabled ? "disabled" : ""}
+      aria-label="${escapeHtml(`${route.label}, ${statusText}`)}"
+    >
+      <span class="point-symbol">${meta.symbol}</span>
+      <span class="point-label">${escapeHtml(meta.shortLabel)}</span>
+      <span class="point-status">${escapeHtml(statusText)}</span>
+    </button>
+  `;
+}
+
+function selectCityMapRoute(route) {
+  if (!route) return;
+  if (state.narrationPlaying) {
+    showFeedback("Espere o mestre terminar de apresentar os caminhos.", "warm_chime", undefined, { speak: false });
+    return;
+  }
+  if (state.completedScenes.has(route.target)) {
+    showFeedback("Esse lugar já foi ajudado. Procure outro ponto no mapa.", "warm_chime", undefined, { speak: false });
+    return;
+  }
+  if (!isRouteAvailable(route)) {
+    showFeedback(`Esse caminho ainda precisa de ${routeLockReason(route)}.`, "gentle_plop", undefined, { speak: false });
+    return;
+  }
+  closeCityMapModal();
+  closeChoiceModal();
+  handlePlayerAction(route.label, "choice");
+}
+
+function cityMapMeta(route, index) {
+  const byTarget = {
+    sinos_tico_biscoitos: { symbol: "●", shortLabel: "Biscoitos", x: 22, y: 31 },
+    sinos_vira_pagina: { symbol: "▤", shortLabel: "Biblioteca", x: 50, y: 18 },
+    sinos_pipoca_jardim: { symbol: "✿", shortLabel: "Jardim", x: 78, y: 31 },
+    sinos_ponte_nara: { symbol: "≈", shortLabel: "Ponte", x: 84, y: 60 },
+    sinos_bolim_oficina: { symbol: "◆", shortLabel: "Oficina", x: 63, y: 80 },
+    sinos_bento_bosque: { symbol: "▴", shortLabel: "Bosque", x: 37, y: 80 },
+    sinos_iara_vento: { symbol: "〰", shortLabel: "Colina", x: 16, y: 60 },
+    sinos_torre_final: { symbol: "◷", shortLabel: "Torre", x: 50, y: 50 },
+  };
+  return byTarget[route.target] || { symbol: String(index + 1), shortLabel: String(route.label || "Lugar").split(" ").slice(0, 2).join(" "), x: 50, y: 50 };
+}
+
+function hubRouteSymbol(route) {
+  return cityMapMeta(route, 0).symbol;
+}
+
+function shortRouteLabel(route) {
+  return cityMapMeta(route, 0).shortLabel || route.label;
 }
 
 function routeLockReason(route) {
@@ -3131,6 +3224,7 @@ els.repeatNarrationButton.addEventListener("click", repeatLastNarration);
 els.stopNarrationButton.addEventListener("click", stopNarration);
 els.journalButton?.addEventListener("click", openJournalModal);
 els.journalModalCloseButton?.addEventListener("click", closeJournalModal);
+els.cityMapCloseButton?.addEventListener("click", closeCityMapModal);
 els.openChoiceModalButton.addEventListener("click", openChoiceModal);
 els.choiceModalCloseButton.addEventListener("click", closeChoiceModal);
 els.voiceActionButton.addEventListener("click", captureVoiceAction);

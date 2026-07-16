@@ -246,6 +246,25 @@
         </div>
       </div>
 
+      <div id="cityMapModal" class="city-map-modal" role="dialog" aria-modal="true" aria-labelledby="cityMapTitle" hidden>
+        <div class="city-map-card">
+          <div class="city-map-header">
+            <div>
+              <p class="eyebrow">Cidade dos Sinos</p>
+              <h2 id="cityMapTitle">Escolha um lugar no mapa</h2>
+            </div>
+            <button id="cityMapCloseButton" class="icon-button" type="button" aria-label="Fechar mapa">×</button>
+          </div>
+          <div id="cityMapGrid" class="city-map-grid" aria-label="Mapa tocável da cidade"></div>
+          <p id="cityMapHint" class="city-map-hint" aria-live="polite"></p>
+          <div class="city-map-legend" aria-hidden="true">
+            <span><i class="legend-open"></i> Aberto</span>
+            <span><i class="legend-complete"></i> Feito</span>
+            <span><i class="legend-locked"></i> Precisa de notas</span>
+          </div>
+        </div>
+      </div>
+
       <div id="journalModal" class="journal-modal" role="dialog" aria-modal="true" aria-labelledby="journalTitle" hidden>
         <div class="journal-card">
           <div class="journal-header">

@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-16-bell-city-hub-voice-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-16-bell-city-map-modal-pwa";
 
 const CORE_ASSETS = [
   "./",
