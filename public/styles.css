@@ -922,18 +922,20 @@ select {
   gap: 10px;
 }
 
-.journal-fab {
-  position: fixed;
-  left: max(14px, calc(50% - 264px));
-  bottom: 24px;
-  z-index: 5;
-  width: 74px;
-  height: 62px;
+.journal-card-button {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+  width: 48px;
+  height: 44px;
   border: 0;
-  border-radius: 18px;
+  border-radius: 16px;
   background: #fff8e8;
-  box-shadow: 0 14px 34px rgba(45, 36, 56, 0.22);
-  font-size: 2.4rem;
+  box-shadow:
+    0 10px 22px rgba(45, 36, 56, 0.16),
+    inset 0 -4px 8px rgba(45, 36, 56, 0.08);
+  font-size: 1.7rem;
 }
 
 .journal-header .eyebrow,
@@ -1011,22 +1013,44 @@ select {
 .session-footer #nextButton {
   display: grid;
   place-items: center;
-  width: clamp(76px, 24vw, 116px);
-  height: clamp(76px, 24vw, 116px);
-  border: 0;
+  width: clamp(78px, 22vw, 104px);
+  height: clamp(78px, 22vw, 104px);
+  border: 4px solid rgba(255, 255, 255, 0.86);
   border-radius: 999px;
-  background: #086135;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.42), transparent 28%),
+    linear-gradient(135deg, #078447, #07572f);
   color: #fff;
-  font-size: clamp(3rem, 15vw, 5.8rem);
+  font-size: clamp(2.8rem, 12vw, 5rem);
   line-height: 1;
   box-shadow:
-    0 18px 36px rgba(8, 97, 53, 0.3),
+    0 0 0 8px rgba(8, 97, 53, 0.1),
+    0 18px 36px rgba(8, 97, 53, 0.32),
     inset 0 -8px 16px rgba(0, 0, 0, 0.18);
   pointer-events: auto;
+  animation: nextPulse 1.5s ease-in-out infinite;
 }
 
 .session-footer #nextButton[hidden] {
   display: none;
+}
+
+@keyframes nextPulse {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+    box-shadow:
+      0 0 0 8px rgba(8, 97, 53, 0.1),
+      0 18px 36px rgba(8, 97, 53, 0.32),
+      inset 0 -8px 16px rgba(0, 0, 0, 0.18);
+  }
+  50% {
+    transform: translateX(4px) scale(1.03);
+    box-shadow:
+      0 0 0 12px rgba(8, 97, 53, 0.08),
+      0 22px 42px rgba(8, 97, 53, 0.36),
+      inset 0 -8px 16px rgba(0, 0, 0, 0.18);
+  }
 }
 
 .hub-panel {
@@ -1265,6 +1289,11 @@ select {
 .progress-card,
 .avatar-card {
   padding: 14px;
+}
+
+.avatar-card {
+  position: relative;
+  padding-top: 42px;
 }
 
 .meters {

@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): a12b4c0 Simplify game screen and restore prebuilt narration; proximo commit desta sessao foca na campanha Cidade dos Sinos Claros
+Commit(s): c88fb39 Focus bell city campaign flow; proximo commit desta sessao foca em polimento de dado, hub, diario e encerramento
 PR/Issues: n/a
 
 ## Resumo curto
@@ -218,6 +218,14 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-clean-game-gemini-audio-pwa`.
 - `A Cidade dos Sinos Claros` passou a aparecer como primeira opção na biblioteca.
 - Durante a sessão, o app agora tenta manter a tela do celular ativa usando Screen Wake Lock API, liberando o bloqueio ao voltar para o painel/fim.
+- Dado ganhou histórico de rolagens e suavização de azar: depois de sequência baixa, novo resultado baixo é elevado para faixa 3-6, evitando sensação de cair apenas 1 e 2.
+- Resultado do dado agora interrompe narração anterior antes de animar/falar, registra uma narração ativa por resultado e ignora callbacks antigos para reduzir áudio duplicado.
+- Praça do Relógio Parado passou a narrar quantos caminhos restam: três caminhos, dois caminhos, último local ou torre, conforme as rotas disponíveis do hub.
+- Diário da aventura saiu do botão flutuante fixo e foi para o canto superior esquerdo do card da heroína, evitando cobrir itens obtidos/texto da tela.
+- Botão de avanço mudou para seta `➜`, com visual mais forte e pulso sutil.
+- Encerramento final ganhou fala de parabéns com nome da criança, Notas de Sino, itens guardados e domínio de progresso mais forte.
+- Sons sintéticos de final ganharam sequência de fanfarra/sinos/confete (`victory_fanfare`, `bell_wave`, `star_confetti_soft`).
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-celebration-pwa`.
 - O modal de aprovação da história ganhou seletor de microfone; se o navegador negar permissão, o seletor desmarca e a criança continua por toque.
 - A Praça do Relógio Parado passou a oferecer no máximo 3 caminhos disponíveis por vez, removendo rotas já concluídas e escondendo rotas bloqueadas da lista infantil.
 - Ao voltar para a praça, o texto/narração usa uma retomada curta: `Voltamos à praça redonda...`, sem repetir a introdução inteira.
@@ -429,11 +437,16 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Chrome headless em `http://127.0.0.1:3114/` carregou sem `Uncaught`, `SyntaxError`, `TypeError` ou `ReferenceError`.
 - DOM renderizado confirmou `A Cidade dos Sinos Claros` como primeira aventura.
 - Simulação local do hub confirmou que opções concluídas somem e novas rotas entram em grupos de até 3 caminhos.
+- Validação após polimento de dado/hub/final executada com `npm run check`, `node --check public/app.js` e `cmp` entre `public/` e `prototype/`.
+- Busca em `public/`, `prototype/` e `scripts/` não encontrou frases antigas de escolha livre (`pode inventar`, `própria escolha`, `própria ação`, `contar algo diferente`, `livre escolha`).
+- Chrome headless em `http://127.0.0.1:3000/` carregou o DOM inicial sem erro de sintaxe/runtime e gerou captura mobile em `/tmp/rpg-kids-polish.png`.
 
 ## O que falta fazer
 
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Regenerar com Gemini, quando a quota permitir, os WAVs de cena restantes: `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final`.
+- Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
+- Gerar ou pregerar áudio Gemini específico para encerramento final da `A Cidade dos Sinos Claros`, se a fala dinâmica do browser/API ainda não ficar teatral o suficiente.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
 - No celular, testar instalação PWA via `Adicionar à tela inicial`, abertura em modo standalone e permissão de microfone em HTTPS.
 - Gerar imagens bitmap para as aventuras antigas (`Portal das Estrelinhas` e `Caverna dos Bichinhos`) se o estilo das novas for aprovado.
@@ -481,4 +494,4 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 
 ## Proximo prompt recomendado
 
-Atue como The Creator no projeto RPG Kids. Abra/teste a versão em `http://localhost:3000`, avalie o loop com foco em crianca de 4 anos, valide as imagens WebP das 3 aventuras novas, ajuste friccoes de UX/texto/tempo e proponha se o proximo passo deve ser gerar imagens para as aventuras antigas, polir o prototipo estatico ou migrar para Vite/React. Nao conectar DeepSeek, STT ou TTS ainda.
+Atue como The Creator no projeto RPG Kids. Abra/teste a versão publicada e local em `http://localhost:3000`, foque na campanha `A Cidade dos Sinos Claros`, valide no celular o loop fechado de opções, microfone, dado, desafio físico, hub com rotas restantes, diário no card da heroína e encerramento com parabéns. Se o fluxo estiver estável, o próximo passo é regenerar os WAVs restantes da campanha e criar áudio pregerado para o final.

@@ -56,6 +56,8 @@ const state = {
   prebuiltAudioAvailable: null,
   diceModalReady: false,
   diceRolling: false,
+  recentDiceRolls: [],
+  activeDiceNarrationId: "",
   journalModalOpen: false,
   choiceRevealTimers: [],
   choiceListening: false,
@@ -189,6 +191,7 @@ function saveCheckpoint(summary) {
     rewards: state.rewards,
     avatarLayers: state.avatarLayers,
     rolledScenes: [...state.rolledScenes],
+    recentDiceRolls: [...state.recentDiceRolls],
     pendingMovementScenes: [...state.pendingMovementScenes],
     completedScenes: [...state.completedScenes],
     actionProgressScenes: [...state.actionProgressScenes],
@@ -837,12 +840,16 @@ function startAdventure(adventureId, checkpoint = null) {
   state.rewards = [...(checkpoint?.rewards || [])];
   state.avatarLayers = [...(checkpoint?.avatarLayers || ["Herói"])];
   state.rolledScenes = new Set(checkpoint?.rolledScenes || []);
+  state.recentDiceRolls = [...(checkpoint?.recentDiceRolls || [])].slice(-6);
   state.pendingMovementScenes = new Set(checkpoint?.pendingMovementScenes || []);
   state.completedScenes = new Set(checkpoint?.completedScenes || []);
   state.actionProgressScenes = new Set(checkpoint?.actionProgressScenes || []);
   state.actionHistory = [...(checkpoint?.actionHistory || [])];
   state.luckPoints = checkpoint?.luckPoints ?? state.adventure.luck?.startingPoints ?? 1;
   state.useLuck = false;
+  state.activeDiceNarrationId = "";
+  state.diceRolling = false;
+  state.diceModalReady = false;
   state.pendingOutcomeByScene = structuredClone(checkpoint?.pendingOutcomeByScene || {});
   state.selectedChoice = checkpoint?.selectedChoice || null;
   state.warned = false;
@@ -993,7 +1000,7 @@ function renderScene() {
   els.movementButton.hidden = true;
   els.skipButton.hidden = true;
   renderSceneControls();
-  els.nextButton.textContent = scene.next ? "→" : "✓";
+  els.nextButton.textContent = scene.next ? "➜" : "✓";
   els.nextButton.setAttribute("aria-label", scene.next ? "Continuar aventura" : "Finalizar aventura");
 
   renderProgress();
@@ -1015,15 +1022,29 @@ function renderScene() {
 
 function sceneDisplayNarration(scene) {
   if (!scene?.hub?.routes?.length) return scene.narration;
-  if (!hasSceneBeenNarrated(scene.id)) return scene.narration;
   const choices = sceneChoices(scene);
-  return choices.length
-    ? "Voltamos à praça redonda. As Notas de Sino brilham na fonte, e Luma aponta os caminhos que ainda faltam visitar."
-    : "Voltamos à praça redonda. Luma olha para a fonte e ajuda você a lembrar o próximo passo.";
+  if (!hasSceneBeenNarrated(scene.id)) {
+    return `${scene.narration} ${hubRemainingRouteText(choices.length, true)}`;
+  }
+  if (!choices.length) {
+    return "Voltamos à praça redonda. As Notas de Sino brilham juntas, e Luma aponta para a torre do Relógio-Coração.";
+  }
+  return `Voltamos à praça redonda. As Notas de Sino brilham na fonte, e Luma aponta os caminhos que ainda faltam visitar. ${hubRemainingRouteText(choices.length)}`;
 }
 
 function hasSceneBeenNarrated(sceneId) {
   return state.narrativeLog.some((entry) => entry.kind === "scene" && entry.sceneId === sceneId);
+}
+
+function hubRemainingRouteText(count, firstVisit = false) {
+  if (count >= 3) {
+    return firstVisit
+      ? "Para começar, só três caminhos aparecem no mapa agora."
+      : "Agora restam três caminhos brilhando no mapa.";
+  }
+  if (count === 2) return "Agora só restam dois caminhos para investigar.";
+  if (count === 1) return "Chegamos ao último local antes da torre. Só resta um caminho.";
+  return "Os caminhos da cidade já foram visitados. A torre espera por você.";
 }
 
 function scenePrebuiltAudioKey(scene) {
@@ -1723,7 +1744,7 @@ function rollDice() {
 
   state.rolledScenes.add(scene.id);
   playCue(scene.sound?.diceRoll || scene.audiovisual?.diceRolling);
-  const rolls = [rollD6()];
+  const rolls = [rollFriendlyD6()];
   let spentLuck = false;
 
   if (state.useLuck && state.luckPoints > 0) {
@@ -1733,6 +1754,7 @@ function rollDice() {
   }
 
   const result = Math.max(...rolls);
+  rememberDiceRoll(result);
   const band = diceBand(result);
   const outcome = scene.diceOutcomes?.[band];
   const outcomeProgress = outcome?.progressDelta || scene.progressDelta;
@@ -2158,6 +2180,7 @@ function finishAdventure(timebox) {
   const summary = timebox
     ? buildResumeSummary()
     : `Hoje você mostrou ${topProgress || "coragem"}. ${rewardLabels.length ? `${capitalize(childTerms().your)} ${childTerms().hero} ganhou ${rewardLabels.join(", ")}.` : "Luma ficou feliz com sua ajuda."}`;
+  const celebrationText = timebox ? "" : buildAdventureCelebrationText(rewardLabels, topProgress);
 
   addNarratorEntry("checkpoint", summary);
   saveCheckpoint(summary);
@@ -2170,7 +2193,33 @@ function finishAdventure(timebox) {
   }
   showView(els.endingView);
   runSceneEffect(timebox ? "book_close_soft" : "star_confetti_soft");
-  playCue(timebox ? "book_close_soft" : "star_confetti_soft");
+  if (timebox) {
+    playCue("book_close_soft");
+  } else {
+    playCelebrationCues();
+    speakNarration(celebrationText, { quality: "premium", interrupt: true });
+  }
+}
+
+function buildAdventureCelebrationText(rewardLabels, topProgress) {
+  const name = childCallName();
+  const notes = Math.round(state.progress.notas_sino || 0);
+  const itemText = rewardLabels.length
+    ? `Você guardou ${rewardLabels.join(", ")}.`
+    : "Você guardou coragem e boas escolhas no coração da aventura.";
+  const progressText = topProgress
+    ? `Seu maior brilho hoje foi ${topProgress}.`
+    : "Você mostrou coragem, atenção e vontade de ajudar.";
+  const notesText = notes
+    ? `As ${notes} Notas de Sino tocaram juntas no Relógio-Coração.`
+    : "A cidade percebeu sua ajuda e ficou mais acordada.";
+  return `Parabéns, ${name}! A aventura chegou ao final. ${notesText} ${itemText} ${progressText} Luma bate palmas e diz: missão cumprida, ${childTerms().adventurer}!`;
+}
+
+function playCelebrationCues() {
+  playCue("victory_fanfare");
+  window.setTimeout(() => playCue("bell_wave"), 260);
+  window.setTimeout(() => playCue("star_confetti_soft"), 520);
 }
 
 function buildLearningReport() {
@@ -2297,7 +2346,11 @@ function renderSceneControls() {
 }
 
 function showDiceResult(result, message, cue, effect) {
+  stopNarrationPlayback();
   const reaction = diceResultReaction(result);
+  const scene = currentScene();
+  const diceNarrationId = `${scene?.id || "scene"}-${result}-${Date.now()}`;
+  state.activeDiceNarrationId = diceNarrationId;
   const displayMessage = genderedText(`Você tirou ${result}. ${reaction} ${message}`.trim());
   const faces = ["1", "2", "3", "4", "5", "6"];
   els.diceModal.hidden = false;
@@ -2327,20 +2380,42 @@ function showDiceResult(result, message, cue, effect) {
       playCue(cue);
       speakNarration(displayMessage, {
         quality: "premium",
-        audioKey: audioKeyForDice(currentScene(), result),
+        audioKey: audioKeyForDice(scene, result),
         onComplete: () => {
+          if (state.activeDiceNarrationId !== diceNarrationId) return;
           window.setTimeout(() => {
+            if (state.activeDiceNarrationId !== diceNarrationId) return;
             els.diceModal.hidden = true;
             renderSceneControls();
           }, 900);
         },
       });
+      state.activeDiceNarrationId = diceNarrationId;
     }
   }, 90);
 }
 
 function rollD6() {
+  const values = new Uint32Array(1);
+  if (window.crypto?.getRandomValues) {
+    window.crypto.getRandomValues(values);
+    return (values[0] % 6) + 1;
+  }
   return Math.floor(Math.random() * 6) + 1;
+}
+
+function rollFriendlyD6() {
+  let result = rollD6();
+  const lastTwo = state.recentDiceRolls.slice(-2);
+  const tooMuchBadLuck = lastTwo.length === 2 && lastTwo.every((value) => value <= 2);
+  if (tooMuchBadLuck && result <= 2) {
+    result = 3 + (rollD6() % 4);
+  }
+  return result;
+}
+
+function rememberDiceRoll(result) {
+  state.recentDiceRolls = [...state.recentDiceRolls, result].slice(-6);
 }
 
 function diceBand(result) {
@@ -2605,6 +2680,7 @@ function stopNarrationPlayback() {
   state.narrationQueue = [];
   state.narrationOnComplete = null;
   state.narrationPlaying = false;
+  state.activeDiceNarrationId = "";
   clearChoiceRevealTimers();
   els.sceneCopy?.classList.remove("is-reading");
   if (state.apiNarrationAudio) {
@@ -2664,6 +2740,15 @@ function cuePattern(cue) {
       { frequency: 520, duration: 0.08, volume: 0.04, type: "sine" },
       { frequency: 780, duration: 0.1, volume: 0.04, type: "sine" },
       { frequency: 1040, duration: 0.14, volume: 0.035, type: "sine" },
+    ];
+  }
+  if (cue.includes("victory") || cue.includes("fanfare") || cue.includes("parabens")) {
+    return [
+      { frequency: 392, duration: 0.1, volume: 0.038, type: "triangle" },
+      { frequency: 523, duration: 0.1, volume: 0.04, type: "triangle" },
+      { frequency: 659, duration: 0.12, volume: 0.04, type: "sine" },
+      { frequency: 784, duration: 0.16, volume: 0.036, type: "sine" },
+      { frequency: 1047, duration: 0.22, volume: 0.032, type: "sine" },
     ];
   }
   if (cue.includes("clock") || cue.includes("book_close")) {
