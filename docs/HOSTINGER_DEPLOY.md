@@ -18,18 +18,22 @@ rpg-kids/
 
 ## Configuracao na Hostinger
 
+- Framework/preset: `Express`.
 - Runtime: Node.js 18 ou superior.
 - Arquivo inicial: `server.js`.
 - Comando de start: `npm start`.
+- Comando de build: `npm run build` ou `Nenhum`.
+- Diretorio de saida: deixar vazio para app Node/Express. Use `public` apenas se for publicar como site estatico.
 - Porta: usar a variavel `PORT` fornecida pela Hostinger. O servidor ja usa `process.env.PORT`.
 - Host: o servidor escuta em `0.0.0.0` por padrao, adequado para runtime gerenciado.
 
 Campos recomendados quando o painel pedir compilacao e saida:
 
 ```text
-Comando de construcao: Nenhum
+Framework: Express
+Comando de construcao: npm run build
 Gerenciador de pacotes: npm
-Diretorio de saida: public
+Diretorio de saida: deixe vazio
 Arquivo de entrada: server.js
 ```
 

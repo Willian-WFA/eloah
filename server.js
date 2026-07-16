@@ -1,7 +1,6 @@
-const { createServer } = require("node:http");
-const { readFile } = require("node:fs/promises");
+const express = require("express");
 const { existsSync, readFileSync } = require("node:fs");
-const { extname, join, normalize, resolve } = require("node:path");
+const { join, resolve } = require("node:path");
 
 loadEnvFile();
 
@@ -19,55 +18,50 @@ const ttsVoice = process.env.TTS_VOICE || (ttsProvider === "gemini" ? "Puck" : "
 const openAiTtsUrl = process.env.OPENAI_TTS_URL || "https://api.openai.com/v1/audio/speech";
 const geminiTtsUrl = process.env.GEMINI_TTS_URL || "https://generativelanguage.googleapis.com/v1beta/interactions";
 
-const mimeTypes = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-  ".json": "application/json; charset=utf-8",
-  ".webmanifest": "application/manifest+json; charset=utf-8",
-  ".png": "image/png",
-  ".jpg": "image/jpeg",
-  ".jpeg": "image/jpeg",
-  ".webp": "image/webp",
-  ".svg": "image/svg+xml",
-  ".ico": "image/x-icon",
-};
+const app = express();
 
-const server = createServer(async (req, res) => {
+app.use(express.json({ limit: "100kb" }));
+
+app.get("/health", (_req, res) => {
+  sendJson(res, 200, { ok: true, app: "rpg-kids" });
+});
+
+app.post("/api/master", async (req, res) => {
   try {
-    const url = new URL(req.url || "/", `http://${req.headers.host || "localhost"}`);
-
-    if (url.pathname === "/health") {
-      sendJson(res, 200, { ok: true, app: "rpg-kids" });
-      return;
-    }
-
-    if (url.pathname === "/api/master" && req.method === "POST") {
-      const payload = parseJsonBody(await readBody(req));
-      const response = deepSeekApiKey ? await callDeepSeekMaster(payload) : mockMasterResponse(payload);
-      sendJson(res, 200, response);
-      return;
-    }
-
-    if (url.pathname === "/api/tts" && req.method === "POST") {
-      const payload = parseJsonBody(await readBody(req));
-      await handleTtsRequest(payload, res);
-      return;
-    }
-
-    if (url.pathname.startsWith("/api/")) {
-      sendJson(res, 404, { error: "api_route_not_found" });
-      return;
-    }
-
-    await serveStatic(url.pathname, res);
+    const response = deepSeekApiKey ? await callDeepSeekMaster(req.body || {}) : mockMasterResponse(req.body || {});
+    sendJson(res, 200, response);
   } catch (error) {
     console.error(error);
     sendJson(res, 500, { error: "internal_server_error" });
   }
 });
 
-server.listen(port, host, () => {
+app.post("/api/tts", async (req, res) => {
+  try {
+    await handleTtsRequest(req.body || {}, res);
+  } catch (error) {
+    console.error(error);
+    sendJson(res, 500, { error: "internal_server_error" });
+  }
+});
+
+app.use("/api", (_req, res) => {
+  sendJson(res, 404, { error: "api_route_not_found" });
+});
+
+app.use(express.static(publicDir, {
+  etag: false,
+  setHeaders: (res) => {
+    res.setHeader("Cache-Control", "no-cache");
+  },
+}));
+
+app.get("*", (_req, res) => {
+  res.setHeader("Cache-Control", "no-cache");
+  res.sendFile(join(publicDir, "index.html"));
+});
+
+app.listen(port, host, () => {
   console.log(`RPG Kids rodando em http://${host}:${port}`);
 });
 
@@ -93,59 +87,14 @@ function loadEnvFile() {
   }
 }
 
-async function serveStatic(pathname, res) {
-  const requestedPath = pathname === "/" ? "/index.html" : decodeURIComponent(pathname);
-  const safePath = normalize(requestedPath).replace(/^(\.\.[/\\])+/, "");
-  const filePath = resolve(join(publicDir, safePath));
-
-  if (!filePath.startsWith(publicDir)) {
-    sendText(res, 403, "Acesso negado");
-    return;
-  }
-
-  try {
-    const body = await readFile(filePath);
-    const contentType = mimeTypes[extname(filePath)] || "application/octet-stream";
-    res.writeHead(200, {
-      "Content-Type": contentType,
-      "Cache-Control": "no-cache",
-    });
-    res.end(body);
-  } catch {
-    const indexBody = await readFile(join(publicDir, "index.html"));
-    res.writeHead(200, {
-      "Content-Type": mimeTypes[".html"],
-      "Cache-Control": "no-cache",
-    });
-    res.end(indexBody);
-  }
-}
-
 function sendJson(res, statusCode, payload) {
-  res.writeHead(statusCode, { "Content-Type": "application/json; charset=utf-8" });
-  res.end(JSON.stringify(payload));
-}
-
-function sendText(res, statusCode, text) {
-  res.writeHead(statusCode, { "Content-Type": "text/plain; charset=utf-8" });
-  res.end(text);
+  res.status(statusCode).json(payload);
 }
 
 function sendAudio(res, contentType, body) {
-  res.writeHead(200, {
-    "Content-Type": contentType,
-    "Cache-Control": "no-store",
-  });
-  res.end(body);
-}
-
-function parseJsonBody(body) {
-  if (!body) return {};
-  try {
-    return JSON.parse(body);
-  } catch {
-    return {};
-  }
+  res.setHeader("Content-Type", contentType);
+  res.setHeader("Cache-Control", "no-store");
+  res.status(200).end(body);
 }
 
 function mockMasterResponse(payload = {}) {
