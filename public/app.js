@@ -974,6 +974,7 @@ function renderScene() {
   els.sessionTitle.textContent = scene.title;
   renderSceneArt(scene);
   const displayNarration = sceneDisplayNarration(scene);
+  const spokenNarration = sceneSpokenNarration(scene, displayNarration);
   els.sceneNarration.textContent = genderedText(displayNarration);
   els.scenePrompt.textContent = "";
   els.scenePrompt.hidden = true;
@@ -1015,7 +1016,7 @@ function renderScene() {
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
   scheduleSceneAmbience(scene);
-  speakNarration(composeSceneNarration(scene, displayNarration), {
+  speakNarration(composeSceneNarration(scene, spokenNarration), {
     quality: "premium",
     audioKey: scenePrebuiltAudioKey(scene),
     onComplete: () => {
@@ -1036,6 +1037,18 @@ function sceneDisplayNarration(scene) {
     return "Voltamos à praça redonda. As Notas de Sino brilham juntas, e Luma aponta para a torre do Relógio-Coração.";
   }
   return `Voltamos à praça redonda. As Notas de Sino brilham na fonte, e Luma aponta os caminhos que ainda faltam visitar. ${hubRemainingRouteText(counts)}`;
+}
+
+function sceneSpokenNarration(scene, displayNarration = sceneDisplayNarration(scene)) {
+  if (!scene?.hub?.routes?.length) return displayNarration;
+  const counts = hubRouteCounts(scene);
+  if (!hasSceneBeenNarrated(scene.id)) {
+    return "Você chegou à Praça do Relógio. O Relógio-Coração parou, e a fonte espera cinco Notas de Sino. Luma abre o mapa e mostra três caminhos.";
+  }
+  if (!counts.visible) {
+    return "Voltamos à praça redonda. As Notas de Sino brilham juntas, e a torre espera por você.";
+  }
+  return `Voltamos à praça redonda. Luma mostra só os caminhos que ainda faltam. ${hubRemainingRouteText(counts)}`;
 }
 
 function hasSceneBeenNarrated(sceneId) {
@@ -1264,7 +1277,6 @@ function genderedText(value) {
 }
 
 function composeSceneNarration(scene, narrationText = sceneDisplayNarration(scene)) {
-  const name = childCallName();
   const choices = sceneChoices(scene).filter(Boolean);
   const optionText = choices.length
     ? `Escute suas opções de aventura. ${choices
@@ -1273,7 +1285,6 @@ function composeSceneNarration(scene, narrationText = sceneDisplayNarration(scen
     : "";
 
   return [
-    `${name}, esta é a cena.`,
     narrationText,
     scene.prompt || "O que você faz?",
     optionText,
@@ -1644,9 +1655,23 @@ function scheduleChoiceIdlePrompts(scene) {
 
 function idlePromptsForScene(scene) {
   if (scene?.hub?.routes?.length) {
+    const counts = hubRouteCounts(scene);
+    const firstVisit = scene.id === "sinos_praca_relogio" && (state.progress.notas_sino || 0) === 0;
+    if (firstVisit) {
+      return [
+        "Repare na fonte: cada espaço vazio espera uma Nota de Sino acordar.",
+        "A torre tem janelas em forma de sino. Ela parece quietinha, como se estivesse esperando ajuda.",
+      ];
+    }
+    if (counts.remaining <= 3) {
+      return [
+        hubRemainingRouteText(counts),
+        "Luma aponta para o mapa: escolha um caminho que ainda está brilhando.",
+      ];
+    }
     return [
-      "Luma segura o mapa bem quietinha. Quando quiser, toque em um caminho.",
-      "A praça espera sem pressa. Escolha um número para visitar um lugar.",
+      "Luma segura o mapa bem quietinha. A cidade é grande, mas o mestre mostra três caminhos por vez.",
+      "A praça espera sem pressa. Cada caminho visitado pode acordar uma Nota de Sino.",
     ];
   }
   if (scene?.dice) {
@@ -2813,7 +2838,7 @@ function preferredNarrationVoice() {
 function repeatLastNarration() {
   const scene = currentScene();
   if (scene) {
-    speakNarration(composeSceneNarration(scene), {
+    speakNarration(composeSceneNarration(scene, sceneSpokenNarration(scene)), {
       quality: "premium",
       audioKey: scenePrebuiltAudioKey(scene),
     });
