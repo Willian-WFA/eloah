@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 357ab85 Regenerate remaining bell city narration; proximo commit corrige fluxo da praça/dado e áudio curto
+Commit(s): 357ab85 Regenerate remaining bell city narration; 4b2cfc3 Fix bell city hub and dice flow
 PR/Issues: n/a
 
 ## Resumo curto
