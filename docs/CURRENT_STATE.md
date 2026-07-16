@@ -503,9 +503,16 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Criado `scripts/check-audio-coverage.js` e `npm run generate:audio:missing` para validar e retomar somente áudios faltantes.
 - Validação de sintaxe passou em `public/app.js`, `prototype/app.js`, `scripts/generate-audio.js` e `scripts/check-audio-coverage.js`; `public/` e `prototype/` estão sincronizados para app, service worker e manifesto.
 - Cobertura atual de áudio completa: 221 chaves esperadas, 221 entradas no manifesto e 0 áudios faltantes. Todas as cenas, dados, desafios físicos, celebrações e falas ociosas de UI têm WAV pré-gerado em `public/` e `prototype/`.
+- Corrigida a primeira chegada à Praça do Relógio: a cena de hub agora usa o WAV pré-gerado da própria cena antes de registrar a cena no diário, evitando cair no áudio curto de retorno.
+- Retornos à Praça do Relógio agora usam fala curta pré-gerada (`hub-return`) e abrem o mapa em seguida.
+- Seleção pelo mapa ganhou fala teatral por rota quando o WAV específico existir; 4 rotas já têm áudio gerado e 4 ficaram como áudio complementar pendente por quota Gemini.
+- Adicionado primeiro modelo de desafio visual reutilizável (`visualChallenge`) na cena `Tico e a Ordem dos Biscoitos`: modal com slots `?`, objetos tocáveis e sequência estrela → lua → sino antes do dado.
+- Ao trocar/selecionar capítulo, a página volta ao topo da cena para mostrar a imagem do capítulo.
+- `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 
 ## O que falta fazer
 
+- Quando a quota Gemini liberar, completar os 5 WAVs complementares pendentes: `route-sinos_bolim_oficina`, `route-sinos_bento_bosque`, `route-sinos_iara_vento`, `route-sinos_torre_final` e `sinos_tico_biscoitos/visual-success`.
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
@@ -553,8 +560,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - O prototipo ainda nao foi validado visualmente no browser com inspeção humana ou Playwright.
 - O modal do dado, sorte e avatar visual ainda precisam de validacao visual no browser/celular.
 - Ainda é necessário testar no celular real a correção de travamento pós-dado e a ausência de áudio sobreposto, porque autoplay/latência variam por navegador.
-- A cobertura local de áudio está completa, mas ainda é necessário testar no celular se autoplay/cache/service worker não impedem algum WAV de tocar.
+- A cobertura obrigatória local de áudio está completa, mas ainda existem 5 falas complementares sem WAV por quota Gemini. O app não cai para voz do navegador nessas falas; elas ficam visuais/silenciosas se o WAV não existir.
 
 ## Proximo prompt recomendado
 
-Atue como The Creator no projeto RPG Kids. Publique a versão atual na Hostinger e valide no celular a campanha `A Cidade dos Sinos Claros` com foco em ausência de voz do navegador, fluxo fechado de opções, microfone, dado, desafio físico, mapa da praça, cache do PWA e encerramento com parabéns. A cobertura local de áudio pré-gerado está completa (`Missing audio keys: 0`).
+Atue como The Creator no projeto RPG Kids. Publique a versão atual na Hostinger e valide no celular a campanha `A Cidade dos Sinos Claros` com foco na primeira chegada à Praça, retorno à Praça, mapa tocável, scroll para o topo da cena, desafio visual dos biscoitos, ausência de voz do navegador, dado e cache do PWA. Depois complete os 5 WAVs complementares pendentes quando a quota Gemini liberar.

@@ -13,6 +13,8 @@ const state = {
   narrativeLog: [],
   rolledScenes: new Set(),
   pendingMovementScenes: new Set(),
+  completedVisualChallenges: new Set(),
+  visualChallengeProgress: [],
   completedScenes: new Set(),
   actionProgressScenes: new Set(),
   actionHistory: [],
@@ -165,6 +167,12 @@ const els = {
   movementQuestionText: document.querySelector("#movementQuestionText"),
   movementReadyButton: document.querySelector("#movementReadyButton"),
   movementFallbackButton: document.querySelector("#movementFallbackButton"),
+  visualChallengeModal: document.querySelector("#visualChallengeModal"),
+  visualChallengeTitle: document.querySelector("#visualChallengeTitle"),
+  visualChallengeInstruction: document.querySelector("#visualChallengeInstruction"),
+  visualChallengeSlots: document.querySelector("#visualChallengeSlots"),
+  visualChallengeGrid: document.querySelector("#visualChallengeGrid"),
+  visualChallengeFeedback: document.querySelector("#visualChallengeFeedback"),
   progressMeters: document.querySelector("#progressMeters"),
   avatarPreview: document.querySelector("#avatarPreview"),
   avatarTitle: document.querySelector("#avatarTitle"),
@@ -198,6 +206,7 @@ function saveCheckpoint(summary) {
     rewards: state.rewards,
     avatarLayers: state.avatarLayers,
     rolledScenes: [...state.rolledScenes],
+    completedVisualChallenges: [...state.completedVisualChallenges],
     recentDiceRolls: [...state.recentDiceRolls],
     pendingMovementScenes: [...state.pendingMovementScenes],
     completedScenes: [...state.completedScenes],
@@ -847,6 +856,8 @@ function startAdventure(adventureId, checkpoint = null) {
   state.rewards = [...(checkpoint?.rewards || [])];
   state.avatarLayers = [...(checkpoint?.avatarLayers || ["Herói"])];
   state.rolledScenes = new Set(checkpoint?.rolledScenes || []);
+  state.completedVisualChallenges = new Set(checkpoint?.completedVisualChallenges || []);
+  state.visualChallengeProgress = [];
   state.recentDiceRolls = [...(checkpoint?.recentDiceRolls || [])].slice(-6);
   state.pendingMovementScenes = new Set(checkpoint?.pendingMovementScenes || []);
   state.completedScenes = new Set(checkpoint?.completedScenes || []);
@@ -973,6 +984,8 @@ function renderScene() {
     return;
   }
 
+  const firstNarrationForScene = !hasSceneBeenNarrated(scene.id);
+  scrollSessionToSceneTop();
   clearAmbientCueTimers();
   els.sessionKicker.textContent = state.adventure.title;
   els.sessionTitle.textContent = scene.title;
@@ -1022,7 +1035,7 @@ function renderScene() {
   scheduleSceneAmbience(scene);
   speakNarration(composeSceneNarration(scene, spokenNarration), {
     quality: "premium",
-    audioKey: scenePrebuiltAudioKey(scene),
+    audioKey: scenePrebuiltAudioKey(scene, firstNarrationForScene),
     onComplete: () => {
       els.sceneCopy?.classList.remove("is-reading");
       if (currentScene()?.id === scene.id && !state.selectedChoice) {
@@ -1084,8 +1097,12 @@ function hubRemainingRouteText(counts, firstVisit = false) {
   return "Os caminhos da cidade já foram visitados. A torre espera por você.";
 }
 
-function scenePrebuiltAudioKey(scene) {
-  if (!scene || scene.hub?.routes?.length) return "";
+function scenePrebuiltAudioKey(scene, firstNarrationForScene = !hasSceneBeenNarrated(scene?.id)) {
+  if (!scene) return "";
+  if (scene.hub?.routes?.length) {
+    if (firstNarrationForScene) return audioKeyForScene(scene, "scene");
+    return audioKeyForScene(scene, "hub-return");
+  }
   if (state.adventure?.id === "cidade-dos-sinos-claros") {
     const regeneratedSceneIds = new Set([
       "sinos_portao_baixinho",
@@ -1102,6 +1119,17 @@ function scenePrebuiltAudioKey(scene) {
     if (!regeneratedSceneIds.has(scene.id)) return "";
   }
   return audioKeyForScene(scene, "scene");
+}
+
+function scrollSessionToSceneTop() {
+  window.requestAnimationFrame(() => {
+    const target = els.sessionView?.classList.contains("is-active") ? els.sessionView : document.scrollingElement;
+    const top = els.sessionView?.offsetTop || 0;
+    if (target && typeof target.scrollTo === "function") {
+      target.scrollTo({ top: 0, behavior: "smooth" });
+    }
+    window.scrollTo({ top, behavior: "smooth" });
+  });
 }
 
 function renderHubPanel(scene) {
@@ -1207,6 +1235,31 @@ function selectCityMapRoute(route) {
   closeCityMapModal();
   closeChoiceModal();
   handlePlayerAction(route.label, "choice");
+  speakNarration(routeSelectionText(route), {
+    interrupt: true,
+    quality: "premium",
+    audioKey: routeAudioKey(route),
+    onComplete: () => {
+      const scene = currentScene();
+      if (scene?.hub?.routes?.length && state.selectedChoice && !state.diceRolling && els.diceModal.hidden) {
+        nextScene();
+      }
+    },
+  });
+}
+
+function routeSelectionText(route) {
+  const meta = cityMapMeta(route, 0);
+  return `Você tocou em ${route.label}. ${meta.shortLabel} brilhou no mapa. Luma abre caminho e o mestre vira a página.`;
+}
+
+function routeAudioKey(route) {
+  const scene = currentScene();
+  if (!scene || !route) return "";
+  return `${state.adventure.id}/${scene.id}/route-${route.target}`;
+}
+
+function continueSelectedHubRoute() {
   window.setTimeout(() => {
     const scene = currentScene();
     if (scene?.hub?.routes?.length && state.selectedChoice && !state.diceRolling && els.diceModal.hidden) {
@@ -1433,6 +1486,8 @@ function handlePlayerAction(actionText, source) {
   const origin = source === "voice" ? "Ouvi" : "Entendi";
   const diceHint = scene.movement
       ? " Agora faça o desafio físico para abrir o caminho."
+      : scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)
+        ? " Agora resolva o desafio da cena para abrir o dado."
       : scene.dice
         ? ` ${narratorStyleProfile().diceLead}`
       : " A cena escuta sua escolha, e o caminho abre para a próxima parte.";
@@ -1446,6 +1501,8 @@ function handlePlayerAction(actionText, source) {
       rewardId: scene.reward,
     };
     openMovementModal();
+  } else if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
+    openVisualChallengeModal(scene);
   } else if (scene.dice) {
     window.setTimeout(openDiceModal, 320);
   }
@@ -2171,6 +2228,98 @@ function closeMovementModal() {
   if (els.movementModal) els.movementModal.hidden = true;
 }
 
+function openVisualChallengeModal(scene = currentScene()) {
+  const challenge = scene?.visualChallenge;
+  if (!challenge || !els.visualChallengeModal) return;
+  state.visualChallengeProgress = [];
+  renderVisualChallenge(scene);
+  els.visualChallengeModal.hidden = false;
+  playCue("warm_chime");
+  speakNarration(`${challenge.title}. ${challenge.instruction}`, {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "visual-challenge"),
+  });
+}
+
+function closeVisualChallengeModal() {
+  if (!els.visualChallengeModal) return;
+  els.visualChallengeModal.hidden = true;
+  state.visualChallengeProgress = [];
+}
+
+function renderVisualChallenge(scene = currentScene()) {
+  const challenge = scene?.visualChallenge;
+  if (!challenge) return;
+  els.visualChallengeTitle.textContent = challenge.title || "Escolha";
+  els.visualChallengeInstruction.textContent = challenge.instruction || "Toque nos objetos certos.";
+  els.visualChallengeFeedback.textContent = "";
+  els.visualChallengeSlots.innerHTML = (challenge.targets || [])
+    .map((target, index) => {
+      const picked = state.visualChallengeProgress[index];
+      const optionId = picked || target;
+      const option = (challenge.options || []).find((item) => item.id === optionId);
+      return `<span class="visual-slot ${picked ? "is-filled" : ""}">${picked ? escapeHtml(option?.symbol || "✓") : "?"}</span>`;
+    })
+    .join("");
+  els.visualChallengeGrid.innerHTML = (challenge.options || [])
+    .map((option) => `
+      <button class="visual-object-button" type="button" data-visual-object="${escapeHtml(option.id)}" aria-label="${escapeHtml(option.label)}">
+        ${escapeHtml(option.symbol)}
+      </button>
+    `)
+    .join("");
+  els.visualChallengeGrid.querySelectorAll("[data-visual-object]").forEach((button) => {
+    button.addEventListener("click", () => chooseVisualObject(button.dataset.visualObject, button));
+  });
+}
+
+function chooseVisualObject(optionId, button) {
+  const scene = currentScene();
+  const challenge = scene?.visualChallenge;
+  if (!challenge) return;
+  const expected = challenge.targets?.[state.visualChallengeProgress.length];
+  if (optionId !== expected) {
+    button.classList.remove("is-wrong");
+    void button.offsetWidth;
+    button.classList.add("is-wrong");
+    els.visualChallengeFeedback.textContent = challenge.wrongText || "Tente outro objeto.";
+    playCue("gentle_plop");
+    return;
+  }
+
+  state.visualChallengeProgress.push(optionId);
+  playCue("bright_chime");
+  renderVisualChallenge(scene);
+
+  if (state.visualChallengeProgress.length >= (challenge.targets || []).length) {
+    completeVisualChallenge(scene);
+  }
+}
+
+function completeVisualChallenge(scene = currentScene()) {
+  const challenge = scene?.visualChallenge;
+  if (!challenge) return;
+  state.completedVisualChallenges.add(scene.id);
+  addNarratorEntry("challenge", challenge.successText || `${scene.title}: desafio resolvido.`);
+  els.visualChallengeFeedback.textContent = challenge.successText || "Muito bem.";
+  playCue(scene.sound?.success || scene.sound?.reward || "bell_wave");
+  runSceneEffect(scene.effects?.reward || "item_pop_glow");
+  speakNarration(challenge.successText || "Muito bem. O desafio abriu o caminho.", {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "visual-success"),
+    onComplete: () => {
+      closeVisualChallengeModal();
+      if (scene.dice && !state.rolledScenes.has(scene.id)) {
+        openDiceModal();
+      } else {
+        renderSceneControls();
+      }
+    },
+  });
+}
+
 function clearMovementTimers() {
   if (state.movementConfirmTimer) window.clearInterval(state.movementConfirmTimer);
   if (state.movementListenTimer) window.clearTimeout(state.movementListenTimer);
@@ -2285,6 +2434,11 @@ function nextScene() {
   }
   if (!state.selectedChoice) {
     showFeedback("Antes de avançar, escolha uma das opções do mestre.", "warm_chime");
+    return;
+  }
+  if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
+    showFeedback("Resolva o desafio da cena primeiro.", "warm_chime", undefined, { speak: false });
+    openVisualChallengeModal(scene);
     return;
   }
   if (scene.dice && !state.rolledScenes.has(scene.id)) {

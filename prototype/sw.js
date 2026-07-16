@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-16-prebuilt-audio-coverage-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-16-hub-map-visual-challenge-pwa";
 
 const CORE_ASSETS = [
   "./",

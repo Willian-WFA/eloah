@@ -219,5 +219,11 @@
   "ui/idle/dice-1": "assets/audio/ui/idle/dice-1.wav",
   "ui/idle/default-2": "assets/audio/ui/idle/default-2.wav",
   "ui/idle/dice-2": "assets/audio/ui/idle/dice-2.wav",
-  "ui/idle/default-1": "assets/audio/ui/idle/default-1.wav"
+  "ui/idle/default-1": "assets/audio/ui/idle/default-1.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/hub-return": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/hub-return.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_tico_biscoitos": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_tico_biscoitos.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_vira_pagina": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_vira_pagina.wav",
+  "cidade-dos-sinos-claros/sinos_tico_biscoitos/visual-challenge": "assets/audio/cidade-dos-sinos-claros/sinos_tico_biscoitos/visual-challenge.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_pipoca_jardim": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_pipoca_jardim.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_ponte_nara": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_ponte_nara.wav"
 }

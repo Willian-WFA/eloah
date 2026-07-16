@@ -1674,6 +1674,7 @@ select {
 .dice-modal,
 .choice-modal,
 .movement-modal,
+.visual-challenge-modal,
 .city-map-modal,
 .journal-modal,
 .story-action-modal {
@@ -1689,6 +1690,7 @@ select {
 .dice-modal[hidden],
 .choice-modal[hidden],
 .movement-modal[hidden],
+.visual-challenge-modal[hidden],
 .city-map-modal[hidden],
 .journal-modal[hidden],
 .story-action-modal[hidden] {
@@ -1697,6 +1699,7 @@ select {
 
 .choice-card,
 .movement-card,
+.visual-challenge-card,
 .city-map-card,
 .journal-card,
 .story-action-card {
@@ -1710,6 +1713,115 @@ select {
     linear-gradient(180deg, #ffffff, #fff8ee);
   box-shadow: 0 24px 70px rgba(45, 36, 56, 0.32);
   padding: 18px;
+}
+
+.visual-challenge-card {
+  width: min(100%, 420px);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.32), transparent 28%),
+    linear-gradient(180deg, #fff6df 0%, #f3bd68 100%);
+}
+
+.visual-challenge-card h2 {
+  margin: 0;
+  color: #120d19;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.1rem, 10vw, 3.4rem);
+  line-height: 0.95;
+  text-align: center;
+}
+
+.visual-challenge-card p {
+  margin: 0;
+}
+
+.visual-challenge-slots {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.visual-slot {
+  display: grid;
+  min-height: 70px;
+  place-items: center;
+  border: 2px dashed rgba(18, 13, 25, 0.32);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.28);
+  color: #120d19;
+  font-size: 2.4rem;
+  font-weight: 950;
+}
+
+.visual-slot.is-filled {
+  border-style: solid;
+  border-color: rgba(0, 99, 72, 0.58);
+  background: rgba(255, 255, 255, 0.62);
+  color: #00553f;
+}
+
+.visual-challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  padding: 8px;
+  border-radius: 20px;
+  background: rgba(162, 103, 35, 0.16);
+}
+
+.visual-object-button {
+  display: grid;
+  min-height: 74px;
+  place-items: center;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #006348;
+  font-size: 2.7rem;
+  font-weight: 950;
+  cursor: pointer;
+  transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.visual-object-button:active {
+  transform: scale(0.94);
+}
+
+.visual-object-button:hover,
+.visual-object-button:focus-visible {
+  background: rgba(255, 255, 255, 0.44);
+  box-shadow: 0 0 0 4px rgba(0, 99, 72, 0.14);
+  outline: 0;
+}
+
+.visual-object-button.is-picked {
+  background: rgba(255, 255, 255, 0.62);
+  box-shadow: inset 0 0 0 3px rgba(0, 99, 72, 0.38);
+}
+
+.visual-object-button.is-wrong {
+  animation: visualWrong 0.32s ease;
+}
+
+.visual-challenge-feedback {
+  min-height: 1.4em;
+  color: #3f2c13;
+  font-size: 0.94rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+@keyframes visualWrong {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 .city-map-card {

@@ -1345,6 +1345,22 @@ window.RPG_KIDS_ADVENTURES = [
           "A rua cheira a massa quente. Cada janela tem um paninho colorido, e cada paninho balança como se cumprimentasse. Tico, o padeiro baixinho, olha três bandejas: estrela, lua e sino. Ele diz que a ordem do festival escorregou do pensamento.",
         prompt: "Como você ajuda Tico?",
         choices: ["Eu pergunto qual vem primeiro", "Eu olho as marcas na mesa", "Eu monto a sequência estrela, lua, sino"],
+        visualChallenge: {
+          type: "sequence_pick",
+          title: "Escolha",
+          instruction: "Toque na estrela, depois na lua e depois no sino para montar a ordem do festival.",
+          targets: ["estrela", "lua", "sino"],
+          successText: "Muito bem. A sequência estrela, lua e sino voltou para a bandeja de Tico.",
+          wrongText: "Esse objeto é bonito, mas não entra nessa ordem. Tente de novo: estrela, lua e sino.",
+          options: [
+            { id: "estrela", label: "Estrela", symbol: "★" },
+            { id: "lua", label: "Lua", symbol: "☾" },
+            { id: "sino", label: "Sino", symbol: "🔔" },
+            { id: "arvore", label: "Árvore", symbol: "♣" },
+            { id: "circulo", label: "Círculo", symbol: "●" },
+            { id: "folha", label: "Folha", symbol: "◆" },
+          ],
+        },
         learningCriteria: "A quest treina sequência, escuta e reconhecimento de padrão.",
         language: { language: "en", word: "bell", phrase: "Bell!", meaning: "Sino!" },
         actionRubric: [

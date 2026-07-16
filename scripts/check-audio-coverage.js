@@ -11,16 +11,25 @@ main().catch((error) => {
 async function main() {
   const adventures = await loadAdventures();
   const manifest = await readJson(resolve("public/assets/audio/manifest.json"));
-  const expectedKeys = buildExpectedKeys(adventures);
+  const { requiredKeys, optionalKeys } = buildExpectedKeys(adventures);
+  const expectedKeys = [...requiredKeys, ...optionalKeys];
   const missing = expectedKeys.filter((key) => !manifest[key] || !existsSync(resolve("public", manifest[key])));
+  const missingRequired = requiredKeys.filter((key) => !manifest[key] || !existsSync(resolve("public", manifest[key])));
+  const missingOptional = optionalKeys.filter((key) => !manifest[key] || !existsSync(resolve("public", manifest[key])));
 
   console.log(`Expected audio keys: ${expectedKeys.length}`);
+  console.log(`Required audio keys: ${requiredKeys.length}`);
+  console.log(`Optional audio keys: ${optionalKeys.length}`);
   console.log(`Manifest entries: ${Object.keys(manifest).length}`);
-  console.log(`Missing audio keys: ${missing.length}`);
+  console.log(`Missing required audio keys: ${missingRequired.length}`);
+  console.log(`Missing optional audio keys: ${missingOptional.length}`);
 
-  if (missing.length) {
-    for (const key of missing) console.log(`- ${key}`);
+  if (missingRequired.length) {
+    for (const key of missingRequired) console.log(`- ${key}`);
     process.exitCode = 1;
+  } else if (missingOptional.length) {
+    console.log("Optional audio still missing:");
+    for (const key of missingOptional) console.log(`- ${key}`);
   }
 }
 
@@ -41,28 +50,41 @@ async function readJson(path) {
 }
 
 function buildExpectedKeys(adventures) {
-  const keys = [];
+  const requiredKeys = [];
+  const optionalKeys = [];
   for (const adventure of adventures) {
     for (const scene of adventure.scenes || []) {
-      keys.push(`${adventure.id}/${scene.id}/scene`);
+      requiredKeys.push(`${adventure.id}/${scene.id}/scene`);
 
       if (scene.diceOutcomes) {
         for (let result = 1; result <= 6; result += 1) {
-          keys.push(`${adventure.id}/${scene.id}/dice-${result}`);
+          requiredKeys.push(`${adventure.id}/${scene.id}/dice-${result}`);
         }
       }
 
       if (scene.movement) {
-        keys.push(`${adventure.id}/${scene.id}/movement`);
-        keys.push(`${adventure.id}/${scene.id}/movement-question`);
-        if (scene.movement.fallback) keys.push(`${adventure.id}/${scene.id}/movement-fallback`);
+        requiredKeys.push(`${adventure.id}/${scene.id}/movement`);
+        requiredKeys.push(`${adventure.id}/${scene.id}/movement-question`);
+        if (scene.movement.fallback) requiredKeys.push(`${adventure.id}/${scene.id}/movement-fallback`);
+      }
+
+      if (scene.visualChallenge) {
+        requiredKeys.push(`${adventure.id}/${scene.id}/visual-challenge`);
+        optionalKeys.push(`${adventure.id}/${scene.id}/visual-success`);
+      }
+
+      if (scene.hub?.routes?.length) {
+        requiredKeys.push(`${adventure.id}/${scene.id}/hub-return`);
+        for (const route of scene.hub.routes) {
+          optionalKeys.push(`${adventure.id}/${scene.id}/route-${route.target}`);
+        }
       }
     }
 
-    keys.push(`${adventure.id}/__adventure/celebration`);
+    requiredKeys.push(`${adventure.id}/__adventure/celebration`);
   }
 
-  return [...keys, ...uiAudioKeys()];
+  return { requiredKeys: [...requiredKeys, ...uiAudioKeys()], optionalKeys };
 }
 
 function uiAudioKeys() {

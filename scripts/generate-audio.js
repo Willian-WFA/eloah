@@ -139,6 +139,42 @@ function buildAudioJobs(adventures) {
           });
         }
       }
+
+      if (scene.visualChallenge) {
+        jobs.push({
+          key: `${adventure.id}/${scene.id}/visual-challenge`,
+          adventureId: adventure.id,
+          sceneId: scene.id,
+          kind: "visual",
+          text: `${scene.visualChallenge.title || "Desafio"}. ${scene.visualChallenge.instruction}`,
+        });
+        jobs.push({
+          key: `${adventure.id}/${scene.id}/visual-success`,
+          adventureId: adventure.id,
+          sceneId: scene.id,
+          kind: "visual",
+          text: scene.visualChallenge.successText || "Muito bem. O desafio abriu o caminho.",
+        });
+      }
+
+      if (scene.hub?.routes?.length) {
+        jobs.push({
+          key: `${adventure.id}/${scene.id}/hub-return`,
+          adventureId: adventure.id,
+          sceneId: scene.id,
+          kind: "hub",
+          text: "Voltamos à praça redonda. Luma mostra só os caminhos que ainda faltam. O mapa vai abrir agora.",
+        });
+        for (const route of scene.hub.routes) {
+          jobs.push({
+            key: `${adventure.id}/${scene.id}/route-${route.target}`,
+            adventureId: adventure.id,
+            sceneId: scene.id,
+            kind: "hub",
+            text: routeSelectionText(route),
+          });
+        }
+      }
     }
 
     jobs.push({
@@ -191,6 +227,25 @@ function endingCelebrationText(adventure) {
     return "Parabéns! As Notas de Sino tocaram juntas no Relógio-Coração. A cidade voltou a respirar música, e Luma guardou sua coragem no mapa da aventura.";
   }
   return `Parabéns! Você terminou ${adventure.title}. A aventura ficou guardada com suas escolhas, seus aprendizados e suas recompensas.`;
+}
+
+function routeSelectionText(route) {
+  const shortLabel = shortRouteLabel(route);
+  return `Você tocou em ${route.label}. ${shortLabel} brilhou no mapa. Luma abre caminho e o mestre vira a página.`;
+}
+
+function shortRouteLabel(route) {
+  const byTarget = {
+    sinos_tico_biscoitos: "Biscoitos",
+    sinos_vira_pagina: "Biblioteca",
+    sinos_pipoca_jardim: "Jardim",
+    sinos_ponte_nara: "Ponte",
+    sinos_bolim_oficina: "Oficina",
+    sinos_bento_bosque: "Bosque",
+    sinos_iara_vento: "Colina",
+    sinos_torre_final: "Torre",
+  };
+  return byTarget[route.target] || String(route.label || "O caminho").split(" ").slice(0, 2).join(" ");
 }
 
 function buildUiAudioJobs() {
