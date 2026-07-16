@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): c88fb39 Focus bell city campaign flow; 107ee1b Polish bell city dice and ending flow; proximo commit desta sessao regenera os WAVs restantes da campanha
+Commit(s): 107ee1b Polish bell city dice and ending flow; 357ab85 Regenerate remaining bell city narration
 PR/Issues: n/a
 
 ## Resumo curto
