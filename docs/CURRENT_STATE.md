@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA; f81aba8 Add bell city idle effects
+Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA; f81aba8 Add bell city idle effects; 8e6452d Shorten bell city hub narration
 PR/Issues: n/a
 
 ## Resumo curto
@@ -263,6 +263,11 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Recompensas e Notas de Sino ganharam animação visual voando na tela, com som curto dedicado.
 - Timers de ambiência são limpos ao trocar de cena, finalizar aventura ou voltar ao painel dos pais.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-idle-effects-pwa`.
+- A fala da Praça do Relógio Parado foi encurtada: a tela mantém o texto completo, mas a voz inicial fala apenas o essencial e as opções.
+- Removido o prefixo falado `esta é a cena`, deixando a narração começar direto no acontecimento.
+- Detalhes da praça, como fonte e janelas em forma de sino, foram movidos para falas ociosas quando a criança fica sem escolher.
+- O botão `Ouvir de novo` passou a repetir a versão curta falada do hub, não o texto completo da tela.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-hub-voice-pwa`.
 
 ## Decisoes tomadas
 
@@ -474,6 +479,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Validação após efeitos ociosos executada com `npm run check`, `node --check public/app.js`, `node --check prototype/app.js` e `cmp` entre `public/` e `prototype/`.
 - Chrome headless/CDP confirmou fluxo do Portão Baixinho: opções começam desabilitadas, destravam após revelação, dado abre, resultado mostra número/texto e `Escutando o resultado...`, modal fecha e seta aparece apenas depois.
 - Chrome headless/CDP confirmou que a animação de recompensa/Nota de Sino aparece no DOM e some sozinha, sem erros.
+- Validação após encurtar voz da praça executada com `npm run check` e `cmp` entre `public/` e `prototype/`.
+- Chrome headless/CDP com checkpoint direto na Praça do Relógio confirmou fala inicial curta, modal de 3 opções aberto e primeira fala ociosa entrando após espera sem escolha.
 
 ## O que falta fazer
 
