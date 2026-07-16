@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA
+Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA; f81aba8 Add bell city idle effects
 PR/Issues: n/a
 
 ## Resumo curto
@@ -256,6 +256,13 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Foram regenerados com Gemini 7 WAVs de cena da campanha: portão, praça, Tico, biblioteca, ponte, oficina e Iara.
 - Na rodada anterior, a quota Gemini 429 impediu regenerar `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final`; estes WAVs foram regenerados depois com `gemini-2.5-flash-preview-tts`.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-focus-fixes-pwa`.
+- Adicionadas falas ociosas curtas no modal de opções: uma após 8s e outra após 18s, sem abrir escolha livre.
+- O modal de opções agora bloqueia cliques durante a revelação escalonada e revela as três opções mais rápido.
+- Adicionadas ambiências leves por cena, como sinos suaves na praça, biblioteca/guarda-chuva, ponte, oficina, jardim e vento.
+- O resultado do dado mostra estado visual `Escutando o resultado...` enquanto a narração termina, mantendo a seta bloqueada.
+- Recompensas e Notas de Sino ganharam animação visual voando na tela, com som curto dedicado.
+- Timers de ambiência são limpos ao trocar de cena, finalizar aventura ou voltar ao painel dos pais.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-idle-effects-pwa`.
 
 ## Decisoes tomadas
 
@@ -464,6 +471,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Confirmado que os três WAVs regenerados existem e são idênticos em `public/assets/audio/` e `prototype/assets/audio/`.
 - Validação após correções de praça/dado/áudio curto executada com `npm run check`, `node --check scripts/generate-audio.js`, `cmp` entre `public/` e `prototype/`, confirmação do WAV `ui/jogue-um-dado/prompt.wav` e Chrome headless em `http://127.0.0.1:3000/`.
 - Validação após correção das narrativas de rota executada com `npm run check`, `node --check scripts/generate-audio.js`, `cmp` entre `public/` e `prototype/`, busca confirmando remoção de `Depois da padaria` e `Quando três notas`, e WAVs regenerados para Biblioteca/Ponte.
+- Validação após efeitos ociosos executada com `npm run check`, `node --check public/app.js`, `node --check prototype/app.js` e `cmp` entre `public/` e `prototype/`.
+- Chrome headless/CDP confirmou fluxo do Portão Baixinho: opções começam desabilitadas, destravam após revelação, dado abre, resultado mostra número/texto e `Escutando o resultado...`, modal fecha e seta aparece apenas depois.
+- Chrome headless/CDP confirmou que a animação de recompensa/Nota de Sino aparece no DOM e some sozinha, sem erros.
 
 ## O que falta fazer
 
@@ -476,6 +486,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Testar em navegador real o fluxo de retomada por checkpoint, voz e sons em Android/iOS.
 - Testar sons sinteticos no navegador, porque `node --check` valida sintaxe mas nao executa Web Audio.
 - Testar efeitos visuais no navegador/celular, especialmente entrada de cena, resultado alto/medio/baixo no dado e recompensa.
+- Testar no celular as novas falas ociosas, ambiências e animação de recompensa com áudio real do dispositivo.
 - Validar se o loop D&D infantil esta divertido para uma crianca de 4 anos: escolher acao, ouvir consequencia, rolar dado somente quando pedido e entender ponto de sorte.
 - Ler as duas aventuras completas no painel dos pais e ajustar ritmo, humor absurdo, quantidade de escolhas e clareza de objetivo apos teste real.
 - Testar reconhecimento de voz no navegador/celular; em navegadores sem Web Speech API o prototipo usa fallback de exemplo.
