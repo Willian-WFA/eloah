@@ -183,6 +183,10 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Narração do navegador ficou mais teatral/dinâmica: ritmo padrão 0.98, offsets por estilo do mestre, pitch por estilo e pausas menores entre frases.
 - Modal do dado agora mostra números grandes `1-6` em vez de faces pequenas, fala `Você tirou X` e toca ticks sintéticos durante a rolagem.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-deepseek-dice-voice-pwa`.
+- Painel dos pais reorganizado em fluxo dinâmico: modal inicial pede nome/apelido, tratamento e idade; depois aparece uma tela de boas-vindas/configuração da sessão; por fim a mãe vai para aprovação e escolha da história.
+- Configurações da sessão agora ficam em painel retrátil, e a revisão de história ficou mais compacta com pontos de atenção recolhíveis.
+- Cards de aventura passaram a usar a primeira imagem aprovada da história como miniatura e exibem cenas, modelo e idade no próprio card.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-parent-onboarding-pwa`.
 
 ## Decisoes tomadas
 

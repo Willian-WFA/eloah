@@ -35,10 +35,13 @@ const state = {
   narrationRate: 0.98,
   childGender: "girl",
   childName: "",
+  childAge: "4",
   narratorStyle: "theatrical",
   avatarColor: "violet",
   avatarCompanion: "spark",
   voiceOnly: false,
+  profileCompleted: false,
+  setupStep: "setup",
   lastNarration: "",
   audioContext: null,
   effectTimer: null,
@@ -55,10 +58,20 @@ const els = {
   sessionView: document.querySelector("#sessionView"),
   endingView: document.querySelector("#endingView"),
   adventureGrid: document.querySelector("#adventureGrid"),
+  setupWelcomePanel: document.querySelector("#setupWelcomePanel"),
+  setupWelcomeTitle: document.querySelector("#setupWelcomeTitle"),
+  setupWelcomeCopy: document.querySelector("#setupWelcomeCopy"),
+  approvalPanel: document.querySelector("#approvalPanel"),
+  continueToApprovalButton: document.querySelector("#continueToApprovalButton"),
+  backToSetupButton: document.querySelector("#backToSetupButton"),
+  editProfileButton: document.querySelector("#editProfileButton"),
+  profileModal: document.querySelector("#profileModal"),
+  profileForm: document.querySelector("#profileForm"),
   resumeButton: document.querySelector("#resumeButton"),
   timeLimitSelect: document.querySelector("#timeLimitSelect"),
   childGenderSelect: document.querySelector("#childGenderSelect"),
   childNameInput: document.querySelector("#childNameInput"),
+  childAgeSelect: document.querySelector("#childAgeSelect"),
   narratorStyleSelect: document.querySelector("#narratorStyleSelect"),
   avatarColorSelect: document.querySelector("#avatarColorSelect"),
   avatarCompanionSelect: document.querySelector("#avatarCompanionSelect"),
@@ -150,6 +163,7 @@ function saveCheckpoint(summary) {
     selectedChoice: state.selectedChoice,
     childGender: state.childGender,
     childName: state.childName,
+    childAge: state.childAge,
     narratorStyle: state.narratorStyle,
     avatarColor: state.avatarColor,
     avatarCompanion: state.avatarCompanion,
@@ -189,14 +203,18 @@ function loadParentState() {
     state.narrationRate = saved.narrationRate ?? state.narrationRate;
     state.childGender = saved.childGender || state.childGender;
     state.childName = saved.childName || state.childName;
+    state.childAge = saved.childAge || state.childAge;
     state.narratorStyle = saved.narratorStyle || state.narratorStyle;
     state.avatarColor = saved.avatarColor || state.avatarColor;
     state.avatarCompanion = saved.avatarCompanion || state.avatarCompanion;
     state.voiceOnly = saved.voiceOnly ?? state.voiceOnly;
+    state.profileCompleted = saved.profileCompleted ?? Boolean(saved.childName);
+    state.setupStep = saved.setupStep || (state.profileCompleted ? "setup" : "profile");
     els.narrationToggle.checked = state.narrationEnabled;
     els.narrationRateSelect.value = String(state.narrationRate);
     els.childGenderSelect.value = state.childGender;
     els.childNameInput.value = state.childName;
+    els.childAgeSelect.value = state.childAge;
     els.narratorStyleSelect.value = state.narratorStyle;
     els.avatarColorSelect.value = state.avatarColor;
     els.avatarCompanionSelect.value = state.avatarCompanion;
@@ -215,10 +233,13 @@ function saveParentState() {
     narrationRate: Number(els.narrationRateSelect.value),
     childGender: els.childGenderSelect.value,
     childName: els.childNameInput.value.trim(),
+    childAge: els.childAgeSelect.value,
     narratorStyle: els.narratorStyleSelect.value,
     avatarColor: els.avatarColorSelect.value,
     avatarCompanion: els.avatarCompanionSelect.value,
     voiceOnly: els.voiceOnlyToggle.checked,
+    profileCompleted: state.profileCompleted,
+    setupStep: state.setupStep,
   };
   localStorage.setItem(STORAGE_KEYS.parentState, JSON.stringify(payload));
 }
@@ -248,11 +269,16 @@ function renderLibrary() {
     card.type = "button";
     card.className = "adventure-card";
     card.classList.toggle("is-selected", adventure.id === state.selectedAdventureId);
+    const coverSrc = coverImageSrc(adventure);
+    const sceneCount = adventure.scenes?.length || 0;
     card.innerHTML = `
-      <div class="cover-art" style="background:${coverGradient(adventure)}">${coverIcon(adventure)}</div>
+      <div class="cover-art" style="background:${coverGradient(adventure)}">
+        ${coverSrc ? `<img src="${escapeHtml(coverSrc)}" alt="">` : coverIcon(adventure)}
+      </div>
       <div>
         <p class="status">${adventure.status === "approved" ? "Validada" : "Rascunho"} · ${adventure.duration}</p>
         <h2>${adventure.title}</h2>
+        <p class="card-meta">${sceneCount} cenas · ${labelForTemplate(adventure.template)} · ${adventure.ageRange}</p>
         <div class="tags">${adventure.tags.map((tag) => `<span class="tag">${tag}</span>`).join("")}</div>
       </div>
     `;
@@ -395,6 +421,71 @@ function extensionCreditCost(minutes) {
 function updateCreditUI() {
   els.creditBalance.textContent = state.credits;
   saveParentState();
+}
+
+function renderParentFlow() {
+  if (els.profileModal) {
+    els.profileModal.hidden = state.profileCompleted;
+  }
+  if (els.setupWelcomePanel && els.approvalPanel) {
+    const showApproval = state.setupStep === "approval" && state.profileCompleted;
+    els.setupWelcomePanel.hidden = showApproval;
+    els.approvalPanel.hidden = !showApproval;
+  }
+  renderSetupWelcome();
+}
+
+function renderSetupWelcome() {
+  if (!els.setupWelcomeTitle || !els.setupWelcomeCopy) return;
+  const name = state.childName || "a criança";
+  const ageText = state.childAge ? `${state.childAge} anos` : "idade não definida";
+  const treatment = state.childGender === "boy" ? "aventureiro" : "aventureira";
+  els.setupWelcomeTitle.textContent = `Bem-vinda, mãe`;
+  els.setupWelcomeCopy.textContent = `Perfil de ${name}: ${treatment}, ${ageText}. Ajuste a sessão e depois escolha uma história aprovada.`;
+}
+
+function openProfileModal() {
+  if (!els.profileModal) return;
+  els.childNameInput.value = state.childName;
+  els.childGenderSelect.value = state.childGender;
+  els.childAgeSelect.value = state.childAge;
+  els.profileModal.hidden = false;
+  window.setTimeout(() => els.childNameInput.focus(), 50);
+}
+
+function closeProfileModal() {
+  if (!els.profileModal) return;
+  els.profileModal.hidden = true;
+}
+
+function saveProfileFromModal() {
+  state.childName = els.childNameInput.value.trim();
+  state.childGender = els.childGenderSelect.value;
+  state.childAge = els.childAgeSelect.value;
+  state.profileCompleted = Boolean(state.childName);
+  state.setupStep = "setup";
+  updateChildProfile({ saveOnly: true });
+  closeProfileModal();
+  renderParentFlow();
+  updateCreditUI();
+}
+
+function showApprovalStep() {
+  if (!state.profileCompleted) {
+    openProfileModal();
+    return;
+  }
+  state.setupStep = "approval";
+  renderParentFlow();
+  renderLibrary();
+  renderParentReview();
+  updateCreditUI();
+}
+
+function showSetupStep() {
+  state.setupStep = "setup";
+  renderParentFlow();
+  updateCreditUI();
 }
 
 function renderFullStory(adventure) {
@@ -597,6 +688,10 @@ function coverGradient(adventure) {
   return "linear-gradient(135deg,#80bfff,#ff8fb3)";
 }
 
+function coverImageSrc(adventure) {
+  return adventure.coverImage || adventure.scenes?.find((scene) => scene.image?.src)?.image?.src || "";
+}
+
 function startAdventure(adventureId, checkpoint = null) {
   const adventure = adventures.find((item) => item.id === adventureId);
   if (!adventure) return;
@@ -629,6 +724,7 @@ function startAdventure(adventureId, checkpoint = null) {
   state.narrationRate = Number(els.narrationRateSelect.value);
   state.childGender = checkpoint?.childGender || els.childGenderSelect.value || state.childGender;
   state.childName = checkpoint?.childName || els.childNameInput.value.trim() || state.childName;
+  state.childAge = checkpoint?.childAge || els.childAgeSelect.value || state.childAge;
   state.narratorStyle = checkpoint?.narratorStyle || els.narratorStyleSelect.value || state.narratorStyle;
   state.avatarColor = checkpoint?.avatarColor || els.avatarColorSelect.value || state.avatarColor;
   state.avatarCompanion = checkpoint?.avatarCompanion || els.avatarCompanionSelect.value || state.avatarCompanion;
@@ -1438,6 +1534,7 @@ function buildMasterPayload(scene, context = {}) {
     learningCriteria: scene.learningCriteria || "",
     childProfile: {
       callName: childCallName(),
+      age: state.childAge,
       gender: state.childGender,
       heroTerm: childTerms().hero,
       adventurerTerm: childTerms().adventurer,
@@ -2230,12 +2327,14 @@ function goLibrary() {
   stopNarration();
   renderLibrary();
   renderParentReview();
+  renderParentFlow();
   showView(els.libraryView);
 }
 
-function updateChildProfile() {
+function updateChildProfile(options = {}) {
   state.childGender = els.childGenderSelect.value;
   state.childName = els.childNameInput.value.trim();
+  state.childAge = els.childAgeSelect.value;
   state.narratorStyle = els.narratorStyleSelect.value;
   state.avatarColor = els.avatarColorSelect.value;
   state.avatarCompanion = els.avatarCompanionSelect.value;
@@ -2243,9 +2342,17 @@ function updateChildProfile() {
   els.sessionView.classList.toggle("is-voice-only", state.voiceOnly);
   renderChildTerms();
   if (state.adventure) renderAvatar();
+  if (!options.saveOnly) renderSetupWelcome();
   updateCreditUI();
 }
 
+els.profileForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveProfileFromModal();
+});
+els.editProfileButton.addEventListener("click", openProfileModal);
+els.continueToApprovalButton.addEventListener("click", showApprovalStep);
+els.backToSetupButton.addEventListener("click", showSetupStep);
 els.resumeButton.addEventListener("click", resumeAdventure);
 els.backButton.addEventListener("click", goLibrary);
 els.generateDraftButton.addEventListener("click", generateDraftAdventure);
@@ -2342,4 +2449,5 @@ if ("serviceWorker" in navigator) {
 loadParentState();
 renderLibrary();
 renderParentReview();
+renderParentFlow();
 updateCreditUI();

@@ -22,130 +22,151 @@
             <p class="eyebrow">RPG Kids</p>
             <h1 id="libraryTitle">Painel dos pais</h1>
           </div>
-          <button id="resumeButton" class="ghost-button" type="button" hidden>Continuar</button>
+          <div class="topbar-actions">
+            <button id="editProfileButton" class="ghost-button" type="button">Perfil</button>
+            <button id="resumeButton" class="ghost-button" type="button" hidden>Continuar</button>
+          </div>
         </header>
 
-        <div class="adult-panel" aria-label="Configurações da sessão">
-          <label>
-            Tempo de hoje (30 min grátis)
-            <select id="timeLimitSelect">
-              <option value="30" selected>30 min</option>
-              <option value="45">45 min · 1 crédito</option>
-              <option value="60">60 min · 2 créditos</option>
-            </select>
-          </label>
-          <div class="credit-pill" aria-live="polite">
-            Créditos: <strong id="creditBalance">2</strong>
-          </div>
-          <label>
-            Tratamento da criança
-            <select id="childGenderSelect">
-              <option value="girl" selected>Menina · aventureira</option>
-              <option value="boy">Menino · aventureiro</option>
-            </select>
-          </label>
-          <label>
-            Nome na aventura
-            <input id="childNameInput" type="text" autocomplete="off" maxlength="24" placeholder="Nome ou apelido" />
-          </label>
-          <label>
-            Estilo do mestre
-            <select id="narratorStyleSelect">
-              <option value="theatrical" selected>Teatral e engraçado</option>
-              <option value="gentle">Calmo e doce</option>
-              <option value="epic">Épico leve</option>
-              <option value="teacher">Professor gentil</option>
-            </select>
-          </label>
-          <label>
-            Cor do avatar
-            <select id="avatarColorSelect">
-              <option value="violet" selected>Violeta mágico</option>
-              <option value="mint">Verde folha</option>
-              <option value="sun">Amarelo estrela</option>
-              <option value="rose">Rosa aventura</option>
-              <option value="sky">Azul céu</option>
-            </select>
-          </label>
-          <label>
-            Companheiro
-            <select id="avatarCompanionSelect">
-              <option value="spark" selected>Fagulha</option>
-              <option value="cloud">Nuvinha</option>
-              <option value="bell">Sininho</option>
-              <option value="leaf">Folhinha</option>
-            </select>
-          </label>
-          <label class="toggle-line">
-            <input id="soundToggle" type="checkbox" checked />
-            Sons e efeitos
-          </label>
-          <label class="toggle-line">
-            <input id="voiceOnlyToggle" type="checkbox" />
-            Modo só voz
-          </label>
-          <label class="toggle-line">
-            <input id="narrationToggle" type="checkbox" checked />
-            Voz do narrador
-          </label>
-          <label>
-            Ritmo da narração
-            <select id="narrationRateSelect">
-              <option value="0.78">Bem calmo</option>
-              <option value="0.9">Calmo</option>
-              <option value="0.98" selected>Teatral</option>
-              <option value="1">Normal</option>
-            </select>
-          </label>
-          <div class="toggle-help-row">
-            <label class="toggle-line">
-              <input id="removeRestrictedHumorToggle" type="checkbox" checked />
-              Remover humor restrito
-            </label>
-            <button class="help-bubble-trigger" type="button" aria-describedby="restrictedHumorHelp" aria-label="O que é humor restrito?">?</button>
-            <span id="restrictedHumorHelp" class="help-bubble" role="tooltip">
-              Humor restrito é conteúdo que só aparece com revisão dos pais, como piadas leves de pum, cocô ou xixi. O padrão é remover.
-            </span>
-          </div>
-          <label class="toggle-line is-disabled">
-            <input id="paidExtensionToggle" type="checkbox" disabled />
-            Extensão extra no futuro
-          </label>
-          <button id="generateDraftButton" class="secondary-button" type="button">Gerar rascunho com IA</button>
-        </div>
-
-        <section class="parent-review" aria-labelledby="reviewTitle">
-          <div class="review-header">
+        <section id="setupWelcomePanel" class="setup-panel" aria-labelledby="setupWelcomeTitle">
+          <div class="setup-hero">
             <div>
-              <p class="eyebrow">Revisão</p>
-              <h2 id="reviewTitle">História selecionada</h2>
+              <p class="eyebrow">Configuração</p>
+              <h2 id="setupWelcomeTitle">Bem-vinda, mãe</h2>
+              <p id="setupWelcomeCopy">Antes de entregar o jogo, ajuste tempo, som, voz e permissões para a aventura de hoje.</p>
             </div>
-            <span id="reviewStatus" class="review-status">Aguardando</span>
+            <div class="credit-pill" aria-live="polite">
+              Créditos: <strong id="creditBalance">2</strong>
+            </div>
           </div>
-          <p id="reviewSummary" class="review-summary">Escolha uma aventura para ver resumo, permissões e pontos de atenção.</p>
-          <div class="review-actions">
-            <button id="readFullStoryButton" class="ghost-button" type="button" disabled>Ler história inteira</button>
-            <button id="buySummaryButton" class="secondary-button" type="button" disabled>Gerar resumo · 1 crédito</button>
-          </div>
-          <div id="fullStoryPanel" class="review-contexts" hidden></div>
-          <dl id="reviewMeta" class="review-meta"></dl>
-          <div id="reviewFlags" class="review-flags"></div>
-          <div id="reviewContexts" class="review-contexts"></div>
-          <div id="reviewSettings" class="review-settings"></div>
-          <div class="permission-list">
-            <label class="toggle-line">
-              <input id="approveStoryCheckbox" type="checkbox" />
-              Aprovo esta história
-            </label>
-            <label class="toggle-line" id="restrictedConsentLine">
-              <input id="restrictedHumorCheckbox" type="checkbox" />
-              Consinto humor restrito nesta história
-            </label>
-          </div>
-          <button id="startChildPanelButton" class="primary-button" type="button" disabled>Iniciar painel da criança</button>
+
+          <details class="collapsible-panel" open>
+            <summary>Configurar jogo</summary>
+            <div class="adult-panel" aria-label="Configurações da sessão">
+              <label>
+                Tempo de hoje (30 min grátis)
+                <select id="timeLimitSelect">
+                  <option value="30" selected>30 min</option>
+                  <option value="45">45 min · 1 crédito</option>
+                  <option value="60">60 min · 2 créditos</option>
+                </select>
+              </label>
+              <label>
+                Estilo do mestre
+                <select id="narratorStyleSelect">
+                  <option value="theatrical" selected>Teatral e engraçado</option>
+                  <option value="gentle">Calmo e doce</option>
+                  <option value="epic">Épico leve</option>
+                  <option value="teacher">Professor gentil</option>
+                </select>
+              </label>
+              <label>
+                Cor do avatar
+                <select id="avatarColorSelect">
+                  <option value="violet" selected>Violeta mágico</option>
+                  <option value="mint">Verde folha</option>
+                  <option value="sun">Amarelo estrela</option>
+                  <option value="rose">Rosa aventura</option>
+                  <option value="sky">Azul céu</option>
+                </select>
+              </label>
+              <label>
+                Companheiro
+                <select id="avatarCompanionSelect">
+                  <option value="spark" selected>Fagulha</option>
+                  <option value="cloud">Nuvinha</option>
+                  <option value="bell">Sininho</option>
+                  <option value="leaf">Folhinha</option>
+                </select>
+              </label>
+              <label class="toggle-line">
+                <input id="soundToggle" type="checkbox" checked />
+                Sons e efeitos
+              </label>
+              <label class="toggle-line">
+                <input id="voiceOnlyToggle" type="checkbox" />
+                Modo só voz
+              </label>
+              <label class="toggle-line">
+                <input id="narrationToggle" type="checkbox" checked />
+                Voz do narrador
+              </label>
+              <label>
+                Ritmo da narração
+                <select id="narrationRateSelect">
+                  <option value="0.78">Bem calmo</option>
+                  <option value="0.9">Calmo</option>
+                  <option value="0.98" selected>Teatral</option>
+                  <option value="1">Normal</option>
+                </select>
+              </label>
+              <div class="toggle-help-row">
+                <label class="toggle-line">
+                  <input id="removeRestrictedHumorToggle" type="checkbox" checked />
+                  Remover humor restrito
+                </label>
+                <button class="help-bubble-trigger" type="button" aria-describedby="restrictedHumorHelp" aria-label="O que é humor restrito?">?</button>
+                <span id="restrictedHumorHelp" class="help-bubble" role="tooltip">
+                  Humor restrito é conteúdo que só aparece com revisão dos pais, como piadas leves de pum, cocô ou xixi. O padrão é remover.
+                </span>
+              </div>
+              <label class="toggle-line is-disabled">
+                <input id="paidExtensionToggle" type="checkbox" disabled />
+                Extensão extra no futuro
+              </label>
+            </div>
+          </details>
+
+          <button id="continueToApprovalButton" class="primary-button" type="button">Continuar</button>
         </section>
 
-        <div id="adventureGrid" class="adventure-grid"></div>
+        <section id="approvalPanel" class="approval-panel" hidden>
+          <section class="approval-note" aria-label="Aviso de aprovação">
+            <div>
+              <p class="eyebrow">Aprovação</p>
+              <h2>Escolha uma história validada</h2>
+              <p>Leia a história quando quiser. A criança só entra depois que você aprovar a aventura selecionada.</p>
+            </div>
+            <button id="backToSetupButton" class="ghost-button" type="button">Configurações</button>
+          </section>
+
+          <div id="adventureGrid" class="adventure-grid"></div>
+
+          <section class="parent-review" aria-labelledby="reviewTitle">
+            <div class="review-header">
+              <div>
+                <p class="eyebrow">Revisão</p>
+                <h2 id="reviewTitle">História selecionada</h2>
+              </div>
+              <span id="reviewStatus" class="review-status">Aguardando</span>
+            </div>
+            <p id="reviewSummary" class="review-summary">Escolha uma aventura para ver resumo, permissões e pontos de atenção.</p>
+            <div class="review-actions">
+              <button id="readFullStoryButton" class="ghost-button" type="button" disabled>Ler história inteira</button>
+              <button id="buySummaryButton" class="secondary-button" type="button" disabled>Gerar resumo · 1 crédito</button>
+              <button id="generateDraftButton" class="secondary-button" type="button">Gerar rascunho com IA</button>
+            </div>
+            <div id="fullStoryPanel" class="review-contexts" hidden></div>
+            <details id="reviewDetails" class="collapsible-panel review-details">
+              <summary>Pontos de atenção</summary>
+              <dl id="reviewMeta" class="review-meta"></dl>
+              <div id="reviewFlags" class="review-flags"></div>
+              <div id="reviewContexts" class="review-contexts"></div>
+              <div id="reviewSettings" class="review-settings"></div>
+            </details>
+            <div class="permission-list">
+              <label class="toggle-line">
+                <input id="approveStoryCheckbox" type="checkbox" />
+                Aprovo esta história
+              </label>
+              <label class="toggle-line" id="restrictedConsentLine">
+                <input id="restrictedHumorCheckbox" type="checkbox" />
+                Consinto humor restrito nesta história
+              </label>
+            </div>
+            <button id="startChildPanelButton" class="primary-button" type="button" disabled>Iniciar painel da criança</button>
+          </section>
+        </section>
       </section>
 
       <section id="sessionView" class="view" aria-labelledby="sessionTitle">
@@ -243,6 +264,35 @@
           <p id="diceResultText">O dado está girando.</p>
           <button id="diceCloseButton" class="primary-button" type="button">Continuar</button>
         </div>
+      </div>
+
+      <div id="profileModal" class="profile-modal" role="dialog" aria-modal="true" aria-labelledby="profileModalTitle" hidden>
+        <form id="profileForm" class="profile-card">
+          <p class="eyebrow">Primeiro passo</p>
+          <h2 id="profileModalTitle">Quem vai viver a aventura?</h2>
+          <label>
+            Nome ou apelido
+            <input id="childNameInput" type="text" autocomplete="off" maxlength="24" placeholder="Ex.: Eloah" required />
+          </label>
+          <label>
+            Tratamento
+            <select id="childGenderSelect">
+              <option value="girl" selected>Menina · aventureira</option>
+              <option value="boy">Menino · aventureiro</option>
+            </select>
+          </label>
+          <label>
+            Idade
+            <select id="childAgeSelect">
+              <option value="3">3 anos</option>
+              <option value="4" selected>4 anos</option>
+              <option value="5">5 anos</option>
+              <option value="6">6 anos</option>
+              <option value="7">7 anos</option>
+            </select>
+          </label>
+          <button class="primary-button" type="submit">Confirmar perfil</button>
+        </form>
       </div>
     </main>
 
