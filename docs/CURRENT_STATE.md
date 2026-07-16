@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 357ab85 Regenerate remaining bell city narration; 4b2cfc3 Fix bell city hub and dice flow
+Commit(s): 357ab85 Regenerate remaining bell city narration; 4b2cfc3 Fix bell city hub and dice flow; proximo commit corrige textos de rotas apos QA no navegador
 PR/Issues: n/a
 
 ## Resumo curto
@@ -240,6 +240,12 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Corrigido travamento após resultado do dado: a seta não aparece enquanto o modal/animação/narração do dado está ativo, `nextScene()` bloqueia avanço nesse estado e timers antigos do dado são invalidados.
 - Botão do diário foi movido para o canto superior direito do card da heroína e o título ganhou respiro para não ficar coberto.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-flow-audio-fixes-pwa`.
+- QA no Chrome headless/CDP percorreu onboarding, Portão Baixinho, dado, primeira Praça do Relógio Parado, escolha da Biblioteca e início da Biblioteca.
+- A primeira praça exibiu texto completo e mapa `3/8 caminhos`; a rota pela praça não pediu dado.
+- Encontrado bug narrativo: Biblioteca começava com `Depois da padaria` mesmo quando escolhida como primeira rota. Texto foi alterado para entrada neutra por hub.
+- Encontrado bug narrativo: Ponte da Nara falava `Quando três notas brilham`, mas a rota abre com 2 Notas de Sino. Texto foi alterado para `Quando novas Notas de Sino brilham`.
+- Regenerados com Gemini TTS os WAVs de cena de `sinos_vira_pagina` e `sinos_ponte_nara`.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-route-narration-pwa`.
 - O modal de aprovação da história ganhou seletor de microfone; se o navegador negar permissão, o seletor desmarca e a criança continua por toque.
 - A Praça do Relógio Parado passou a oferecer no máximo 3 caminhos disponíveis por vez, removendo rotas já concluídas e escondendo rotas bloqueadas da lista infantil.
 - Ao voltar para a praça, o texto/narração usa uma retomada curta: `Voltamos à praça redonda...`, sem repetir a introdução inteira.
@@ -457,6 +463,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Validação após regenerar áudios executada com `npm run check`, `node --check scripts/generate-audio.js` e `cmp` entre `public/` e `prototype/`.
 - Confirmado que os três WAVs regenerados existem e são idênticos em `public/assets/audio/` e `prototype/assets/audio/`.
 - Validação após correções de praça/dado/áudio curto executada com `npm run check`, `node --check scripts/generate-audio.js`, `cmp` entre `public/` e `prototype/`, confirmação do WAV `ui/jogue-um-dado/prompt.wav` e Chrome headless em `http://127.0.0.1:3000/`.
+- Validação após correção das narrativas de rota executada com `npm run check`, `node --check scripts/generate-audio.js`, `cmp` entre `public/` e `prototype/`, busca confirmando remoção de `Depois da padaria` e `Quando três notas`, e WAVs regenerados para Biblioteca/Ponte.
 
 ## O que falta fazer
 

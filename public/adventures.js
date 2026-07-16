@@ -1372,7 +1372,7 @@ window.RPG_KIDS_ADVENTURES = [
         image: { type: "approved_bitmap_asset", assetId: "umbrella_library", src: "assets/scenes/umbrella_library.webp", icon: "▤", alt: "Biblioteca silenciosa com guarda-chuvas abertos sobre livros." },
         theme: { palette: ["#b8a07a", "#d8a7c8"], template: "library" },
         narration:
-          "Depois da padaria, Luma leva você por uma rua silenciosa. As pedras parecem pedir passos pequenos. Na biblioteca, guarda-chuvas ficam abertos mesmo sem chuva. Dona Vira-Página cochicha que três livros fugiram para baixo dos guarda-chuvas porque estão espirrando poeira.",
+          "Luma leva você por uma rua silenciosa. As pedras parecem pedir passos pequenos. Na biblioteca, guarda-chuvas ficam abertos mesmo sem chuva. Dona Vira-Página cochicha que três livros fugiram para baixo dos guarda-chuvas porque estão espirrando poeira.",
         prompt: "Como você chama os livros de volta?",
         choices: ["Eu falo bem baixinho", "Eu procuro o livro pela capa", "Eu pergunto qual livro está com medo"],
         learningCriteria: "A quest treina escuta, classificação e cuidado com personagens sensíveis.",
@@ -1433,7 +1433,7 @@ window.RPG_KIDS_ADVENTURES = [
         image: { type: "approved_bitmap_asset", assetId: "cloth_bridge", src: "assets/scenes/cloth_bridge.webp", icon: "≋", alt: "Ponte mole feita de panos coloridos sobre riacho claro." },
         theme: { palette: ["#ff8fb3", "#80bfff"], template: "bridge" },
         narration:
-          "Quando três notas brilham na fonte, duas orelhas aparecem atrás de uma placa. Nara, guardiã com orelhas de cachorro, diz que ouviu a cidade chamando. Ela leva você até uma ponte de panos coloridos que treme quando alguém pisa sem ritmo.",
+          "Quando novas Notas de Sino brilham na fonte, duas orelhas aparecem atrás de uma placa. Nara, guardiã com orelhas de cachorro, diz que ouviu a cidade chamando. Ela leva você até uma ponte de panos coloridos que treme quando alguém pisa sem ritmo.",
         prompt: "Como você atravessa a ponte?",
         choices: ["Eu marcho devagar contando", "Eu peço ajuda para Nara", "Eu dou pulos pequenos quando a ponte pedir"],
         learningCriteria: "A quest treina coragem, ritmo, pedido de ajuda e movimento supervisionado.",
