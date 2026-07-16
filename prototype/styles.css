@@ -1788,6 +1788,12 @@ select {
   box-shadow: 0 22px 60px rgba(45, 36, 56, 0.34);
 }
 
+.dice-card.is-listening {
+  box-shadow:
+    0 0 0 8px rgba(120, 245, 255, 0.16),
+    0 22px 60px rgba(45, 36, 56, 0.34);
+}
+
 .dice-cube {
   display: grid;
   place-items: center;
@@ -1812,6 +1818,33 @@ select {
 .dice-cube.is-rolling {
   animation: diceSpin 0.54s linear infinite;
   filter: saturate(1.1);
+}
+
+.dice-listening {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 12px;
+  color: var(--brand-strong);
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.dice-listening::before,
+.dice-listening::after {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #78f5ff;
+  box-shadow: 0 0 16px rgba(120, 245, 255, 0.9);
+  animation: listenPulse 0.9s ease-in-out infinite;
+}
+
+.dice-listening::after {
+  animation-delay: 0.22s;
 }
 
 .dice-cube[data-result="high"] {
@@ -1845,6 +1878,67 @@ select {
   }
   to {
     transform: rotate(-8deg) scale(0.98);
+  }
+}
+
+@keyframes listenPulse {
+  0%,
+  100% {
+    opacity: 0.42;
+    transform: scale(0.72);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
+.reward-flight {
+  position: fixed;
+  left: 50%;
+  top: 56%;
+  z-index: 14;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 34% 22%, #fff, transparent 26%),
+    linear-gradient(135deg, #78f5ff, #ffcc66 52%, #ff8ff0);
+  color: #281d52;
+  font-size: 2.7rem;
+  font-weight: 1000;
+  pointer-events: none;
+  box-shadow:
+    0 0 0 8px rgba(255, 204, 102, 0.18),
+    0 0 42px rgba(255, 204, 102, 0.72),
+    0 18px 36px rgba(45, 36, 56, 0.22);
+  animation: rewardFlight 1.35s cubic-bezier(0.18, 0.86, 0.28, 1) forwards;
+}
+
+.reward-flight.is-bell-note {
+  color: #5f45cf;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.8);
+}
+
+@keyframes rewardFlight {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.48) rotate(-12deg);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.08) rotate(4deg);
+  }
+  72% {
+    opacity: 1;
+    transform: translate(74px, -210px) scale(0.92) rotate(11deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(112px, -260px) scale(0.44) rotate(18deg);
   }
 }
 

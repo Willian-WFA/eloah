@@ -61,11 +61,13 @@ const state = {
   activeDiceNarrationId: "",
   journalModalOpen: false,
   choiceRevealTimers: [],
+  choiceIdleTimers: [],
   choiceListening: false,
   microphoneConsent: false,
   movementConfirmTimer: null,
   movementListenTimer: null,
   movementSecondsRemaining: 0,
+  ambientCueTimers: [],
   wakeLock: null,
 };
 
@@ -967,6 +969,7 @@ function renderScene() {
     return;
   }
 
+  clearAmbientCueTimers();
   els.sessionKicker.textContent = state.adventure.title;
   els.sessionTitle.textContent = scene.title;
   renderSceneArt(scene);
@@ -1011,6 +1014,7 @@ function renderScene() {
   updateTimerUI();
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
+  scheduleSceneAmbience(scene);
   speakNarration(composeSceneNarration(scene, displayNarration), {
     quality: "premium",
     audioKey: scenePrebuiltAudioKey(scene),
@@ -1547,34 +1551,122 @@ function clearChoiceRevealTimers() {
   state.choiceRevealTimers = [];
 }
 
+function clearChoiceIdleTimers() {
+  state.choiceIdleTimers.forEach((timer) => window.clearTimeout(timer));
+  state.choiceIdleTimers = [];
+}
+
+function clearAmbientCueTimers() {
+  state.ambientCueTimers.forEach((timer) => window.clearTimeout(timer));
+  state.ambientCueTimers = [];
+}
+
+function scheduleSceneAmbience(scene) {
+  if (!scene) return;
+  const cue = ambienceCueForScene(scene);
+  if (!cue) return;
+  [2600, 7600, 15000].forEach((delay) => {
+    const timer = window.setTimeout(() => {
+      if (currentScene()?.id !== scene.id) return;
+      if (!els.diceModal.hidden || !els.movementModal.hidden) return;
+      playCue(cue);
+    }, delay);
+    state.ambientCueTimers.push(timer);
+  });
+}
+
+function ambienceCueForScene(scene) {
+  const id = scene?.id || "";
+  const theme = `${scene?.theme || ""} ${scene?.sound?.enter || ""} ${scene?.audiovisual?.enter || ""}`.toLowerCase();
+  if (id.includes("praca") || id.includes("sino") || theme.includes("bell")) return "bell_ambient_soft";
+  if (id.includes("biblioteca") || theme.includes("library")) return "library_umbrella_soft";
+  if (id.includes("ponte") || theme.includes("bridge")) return "bridge_soft_wave";
+  if (id.includes("oficina") || theme.includes("workshop") || theme.includes("hammer")) return "workshop_soft_tap";
+  if (id.includes("jardim") || theme.includes("garden") || theme.includes("clock")) return "garden_tick_soft";
+  if (id.includes("vento") || theme.includes("wind")) return "wind_soft_chime";
+  return "warm_ambient_soft";
+}
+
 function openChoiceModal(options = {}) {
   if (!els.choiceModal) return;
   clearChoiceRevealTimers();
+  clearChoiceIdleTimers();
   els.choiceModal.hidden = false;
+  els.choiceModal.classList.toggle("is-revealing", Boolean(options.stagger));
   const buttons = [...els.choicePanel.querySelectorAll(".choice-button")];
   buttons.forEach((button, index) => {
     button.classList.toggle("is-waiting-reveal", Boolean(options.stagger));
-    button.style.transitionDelay = options.stagger ? `${index * 110}ms` : "0ms";
+    button.disabled = Boolean(options.stagger);
+    button.style.transitionDelay = options.stagger ? `${index * 80}ms` : "0ms";
   });
   if (options.stagger) {
     buttons.forEach((button, index) => {
       const timer = window.setTimeout(() => {
         button.classList.remove("is-waiting-reveal");
         playCue(index === 0 ? "warm_chime" : "soft_step");
-      }, 220 + index * 700);
+      }, 180 + index * 280);
       state.choiceRevealTimers.push(timer);
     });
+    const unlockTimer = window.setTimeout(() => {
+      els.choiceModal.classList.remove("is-revealing");
+      buttons.forEach((button) => {
+        button.disabled = false;
+      });
+      scheduleChoiceIdlePrompts(currentScene());
+    }, 260 + Math.max(0, buttons.length - 1) * 280 + 220);
+    state.choiceRevealTimers.push(unlockTimer);
+  } else {
+    buttons.forEach((button) => {
+      button.disabled = false;
+    });
+    scheduleChoiceIdlePrompts(currentScene());
   }
   if (options.listen && state.microphoneConsent) {
-    const timer = window.setTimeout(() => startChoiceListening({ silent: true, auto: true }), 1200 + buttons.length * 650);
+    const timer = window.setTimeout(() => startChoiceListening({ silent: true, auto: true }), 900 + buttons.length * 360);
     state.choiceRevealTimers.push(timer);
   }
+}
+
+function scheduleChoiceIdlePrompts(scene) {
+  if (!scene || state.selectedChoice) return;
+  const sceneId = scene.id;
+  const prompts = idlePromptsForScene(scene);
+  [8000, 18000].forEach((delay, index) => {
+    const timer = window.setTimeout(() => {
+      if (els.choiceModal.hidden || currentScene()?.id !== sceneId || state.selectedChoice) return;
+      const text = prompts[index] || prompts[0];
+      playCue(index === 0 ? "soft_step" : "warm_chime");
+      speakNarration(text, { interrupt: false, quality: "premium" });
+    }, delay);
+    state.choiceIdleTimers.push(timer);
+  });
+}
+
+function idlePromptsForScene(scene) {
+  if (scene?.hub?.routes?.length) {
+    return [
+      "Luma segura o mapa bem quietinha. Quando quiser, toque em um caminho.",
+      "A praça espera sem pressa. Escolha um número para visitar um lugar.",
+    ];
+  }
+  if (scene?.dice) {
+    return [
+      "O mestre espera sua escolha. Toque em uma opção quando estiver pronta.",
+      "A cena está parada só para você decidir. Opção um, dois ou três.",
+    ];
+  }
+  return [
+    "A aventura fica quietinha esperando sua decisão.",
+    "Quando quiser continuar, toque em uma das opções.",
+  ];
 }
 
 function closeChoiceModal() {
   if (!els.choiceModal) return;
   clearChoiceRevealTimers();
+  clearChoiceIdleTimers();
   els.choiceModal.hidden = true;
+  els.choiceModal.classList.remove("is-revealing");
 }
 
 function resolveSpokenChoice(transcript) {
@@ -1721,6 +1813,7 @@ function applySceneProgress(scene, multiplier = 1, options = {}) {
     showFeedback(`Você ganhou: ${reward?.label || rewardId}!`, reward?.cue || scene.sound?.reward, scene.effects?.reward, {
       speak: options.speakReward !== false,
     });
+    animateRewardFlight(rewardId, reward);
   }
 
   renderProgress();
@@ -1744,6 +1837,7 @@ function openDiceModal() {
   els.diceCube.disabled = false;
   els.diceCube.dataset.result = "";
   els.diceCube.classList.remove("is-rolling");
+  els.diceCube.closest(".dice-card")?.classList.remove("is-listening");
   els.diceCube.textContent = "⚂";
   els.diceModalTitle.textContent = "Toque no dado";
   els.diceResultText.textContent = "Quando tocar, o dado vai girar e mostrar um número bem grande.";
@@ -2195,6 +2289,7 @@ function updateTimerUI() {
 
 function finishAdventure(timebox) {
   clearInterval(state.timer);
+  clearAmbientCueTimers();
   releaseWakeLock();
   const scene = currentScene();
   const rewardLabels = state.rewards.map((id) => state.adventure.rewards[id]?.label || id);
@@ -2384,6 +2479,7 @@ function showDiceResult(result, message, cue, effect) {
   els.diceModal.hidden = false;
   els.diceCube.dataset.result = "";
   els.diceCube.classList.add("is-rolling");
+  els.diceCube.closest(".dice-card")?.classList.remove("is-listening");
   els.diceModalTitle.textContent = "Rolando o dado...";
   els.diceResultText.textContent = "Escute o dado girando.";
 
@@ -2408,7 +2504,8 @@ function showDiceResult(result, message, cue, effect) {
       els.diceCube.setAttribute("aria-label", `Resultado do dado: ${result}`);
       els.diceCube.dataset.result = diceBand(result);
       els.diceModalTitle.textContent = `Resultado ${result}`;
-      els.diceResultText.textContent = displayMessage;
+      els.diceResultText.innerHTML = `${escapeHtml(displayMessage)}<span class="dice-listening">Escutando o resultado...</span>`;
+      els.diceCube.closest(".dice-card")?.classList.add("is-listening");
       els.diceCloseButton.hidden = true;
       state.diceRolling = false;
       if (effect) runSceneEffect(effect);
@@ -2421,6 +2518,7 @@ function showDiceResult(result, message, cue, effect) {
           window.setTimeout(() => {
             if (state.activeDiceNarrationId !== diceNarrationId) return;
             els.diceModal.hidden = true;
+            els.diceCube.closest(".dice-card")?.classList.remove("is-listening");
             state.diceModalReady = false;
             state.diceRolling = false;
             renderSceneControls();
@@ -2479,6 +2577,18 @@ function defaultDiceNarration(result, band) {
   if (band === "low") return `Resultado ${result}: algo engraçado complica o caminho, mas a aventura continua.`;
   if (band === "middle") return `Resultado ${result}: quase complicou, mas você passa por pouco.`;
   return `Resultado ${result}: sucesso brilhante!`;
+}
+
+function animateRewardFlight(rewardId, reward) {
+  if (!els.sessionView || !rewardId) return;
+  const badge = document.createElement("div");
+  const isBellNote = String(rewardId).startsWith("nota_") || /nota de sino/i.test(reward?.label || "");
+  badge.className = `reward-flight${isBellNote ? " is-bell-note" : ""}`;
+  badge.textContent = isBellNote ? "♪" : "★";
+  badge.setAttribute("aria-hidden", "true");
+  els.sessionView.appendChild(badge);
+  playCue(isBellNote ? "bell_note_flight" : "star_confetti_soft");
+  window.setTimeout(() => badge.remove(), 1450);
 }
 
 function capitalize(value) {
@@ -2727,6 +2837,7 @@ function stopNarrationPlayback() {
     state.diceAnimationTimer = null;
   }
   clearChoiceRevealTimers();
+  clearChoiceIdleTimers();
   els.sceneCopy?.classList.remove("is-reading");
   if (state.apiNarrationAudio) {
     state.apiNarrationAudio.pause();
@@ -2764,6 +2875,19 @@ function playSyntheticCue(audio, cue) {
 }
 
 function cuePattern(cue) {
+  if (cue.includes("ambient_soft")) {
+    return [
+      { frequency: 392, duration: 0.18, volume: 0.012, type: "sine" },
+      { frequency: 588, duration: 0.2, volume: 0.01, type: "sine" },
+    ];
+  }
+  if (cue.includes("bell_note_flight")) {
+    return [
+      { frequency: 660, duration: 0.08, volume: 0.034, type: "sine" },
+      { frequency: 990, duration: 0.12, volume: 0.03, type: "sine" },
+      { frequency: 1320, duration: 0.18, volume: 0.024, type: "sine" },
+    ];
+  }
   if (cue.includes("dice_tick")) {
     return [
       { frequency: 210, duration: 0.035, volume: 0.026, type: "triangle" },
@@ -2874,6 +2998,7 @@ function goLibrary() {
   clearInterval(state.timer);
   state.masterRequestId += 1;
   stopNarration();
+  clearAmbientCueTimers();
   releaseWakeLock();
   renderLibrary();
   renderParentReview();
