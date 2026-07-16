@@ -24,6 +24,7 @@ const state = {
   pendingOutcomeByScene: {},
   lastActionInsight: "",
   narrationQueue: [],
+  narrationRunId: 0,
   credits: 2,
   paidSummaries: new Set(),
   timeLimitSeconds: 30 * 60,
@@ -51,6 +52,8 @@ const state = {
   apiTtsCooldownUntil: 0,
   prebuiltAudioManifest: null,
   prebuiltAudioAvailable: null,
+  diceModalReady: false,
+  diceRolling: false,
 };
 
 const els = {
@@ -112,16 +115,21 @@ const els = {
   feedbackPanel: document.querySelector("#feedbackPanel"),
   feedbackText: document.querySelector("#feedbackText"),
   narratorLog: document.querySelector("#narratorLog"),
+  openChoiceModalButton: document.querySelector("#openChoiceModalButton"),
+  choiceModal: document.querySelector("#choiceModal"),
+  choiceModalCloseButton: document.querySelector("#choiceModalCloseButton"),
   choicePanel: document.querySelector("#choicePanel"),
-  freeActionLabel: document.querySelector("#freeActionLabel"),
-  freeActionInput: document.querySelector("#freeActionInput"),
   voiceActionButton: document.querySelector("#voiceActionButton"),
-  sendFreeActionButton: document.querySelector("#sendFreeActionButton"),
   actionInsightText: document.querySelector("#actionInsightText"),
   diceButton: document.querySelector("#diceButton"),
   luckButton: document.querySelector("#luckButton"),
   movementButton: document.querySelector("#movementButton"),
   skipButton: document.querySelector("#skipButton"),
+  movementModal: document.querySelector("#movementModal"),
+  movementModalTitle: document.querySelector("#movementModalTitle"),
+  movementInstructionText: document.querySelector("#movementInstructionText"),
+  movementReadyButton: document.querySelector("#movementReadyButton"),
+  movementFallbackButton: document.querySelector("#movementFallbackButton"),
   progressMeters: document.querySelector("#progressMeters"),
   avatarPreview: document.querySelector("#avatarPreview"),
   avatarTitle: document.querySelector("#avatarTitle"),
@@ -503,10 +511,10 @@ function renderFullStory(adventure) {
 
 function renderFullScene(scene, adventure) {
   const reviewChoices = scene.hub?.routes?.length
-    ? [...scene.hub.routes.map((route) => route.label), "Livre escolha"]
-    : scene.choices || [];
+    ? scene.hub.routes.map((route) => route.label)
+    : closedChoices(scene);
   const choices = reviewChoices.length ? `<p><strong>Escolhas:</strong> ${reviewChoices.join(" · ")}</p>` : "";
-  const movement = scene.movement
+  const movement = scene.movement && !scene.dice
     ? `<p><strong>Desafio físico:</strong> ${scene.movement.instruction} Alternativa: ${scene.movement.fallback}</p>`
     : "";
   const language = scene.language
@@ -628,7 +636,7 @@ function generateDraftAdventure() {
         narration:
           "No alto de uma torre torta, um sapo-rei esqueceu onde guardou sua coroa de papel. Uma porta pequena espirra confete sempre que alguem fala baixo.",
         prompt: "O que você faz?",
-        choices: ["Eu bato na porta", "Eu procuro pegadas", "Eu chamo o sapo-rei", "Livre escolha"],
+        choices: ["Eu bato na porta", "Eu procuro pegadas", "Eu chamo o sapo-rei"],
         movement: {
           label: "Passos de Sapo",
           instruction: "Dê 3 pulinhos pequenos como um sapo feliz.",
@@ -758,9 +766,15 @@ function sceneChoices(scene) {
   if (scene.hub?.routes?.length) {
     const routes = scene.hub.routes.filter((route) => isRouteAvailable(route));
     const labels = routes.map((route) => route.label);
-    return labels.length ? [...labels, "Livre escolha"] : scene.hub.emptyChoices || ["Eu peço ajuda para Luma", "Eu olho o mapa", "Livre escolha"];
+    return labels.length ? labels : closedChoices({ choices: scene.hub.emptyChoices || ["Eu peço ajuda para Luma", "Eu olho o mapa"] });
   }
-  return scene.choices || [];
+  return closedChoices(scene);
+}
+
+function closedChoices(scene) {
+  return (scene?.choices || [])
+    .filter((choice) => !String(choice).toLowerCase().includes("livre"))
+    .slice(0, 3);
 }
 
 function isRouteAvailable(route) {
@@ -804,7 +818,6 @@ function renderScene() {
   els.sceneNarration.textContent = genderedText(scene.narration);
   els.scenePrompt.textContent = genderedText(scene.prompt || "");
   els.choicePanel.innerHTML = "";
-  els.freeActionInput.value = "";
   els.actionInsightText.textContent = "";
   els.feedbackPanel.hidden = true;
   renderChildTerms();
@@ -819,18 +832,13 @@ function renderScene() {
     button.addEventListener("click", () => {
       [...els.choicePanel.children].forEach((child) => child.classList.remove("is-selected"));
       button.classList.add("is-selected");
-      if (choice.toLowerCase().includes("livre")) {
-        els.freeActionInput.focus();
-        showFeedback(`Pode inventar sua ação. Me diga o que ${childTerms().your} ${childTerms().hero} faz.`, "warm_chime");
-        return;
-      }
       handlePlayerAction(choice, "choice");
     });
     els.choicePanel.appendChild(button);
   });
 
   els.diceButton.hidden = !scene.dice;
-  els.movementButton.hidden = !scene.movement;
+  els.movementButton.hidden = !scene.movement || scene.dice;
   els.skipButton.hidden = false;
   renderSceneControls();
   els.nextButton.textContent = scene.hub ? "Seguir caminho" : scene.next ? "Avançar" : "Finalizar";
@@ -842,6 +850,7 @@ function renderScene() {
   runSceneEffect(scene.effects?.enter || scene.audiovisual?.enter);
   playCue(scene.sound?.enter || scene.audiovisual?.enter);
   speakNarration(composeSceneNarration(scene), { quality: "fast", audioKey: audioKeyForScene(scene, "scene") });
+  openChoiceModal();
 }
 
 function renderHubPanel(scene) {
@@ -916,12 +925,8 @@ function renderNarratorLog() {
 }
 
 function renderChildTerms() {
-  const terms = childTerms();
-  if (els.freeActionLabel) {
-    els.freeActionLabel.textContent = `Diga o que ${terms.your} ${terms.hero} faz`;
-  }
   if (els.avatarTitle) {
-    els.avatarTitle.textContent = terms.heroCap;
+    els.avatarTitle.textContent = childTerms().heroCap;
   }
 }
 
@@ -1023,26 +1028,20 @@ function composeSceneNarration(scene) {
   const terms = childTerms();
   const name = childCallName();
   const choices = sceneChoices(scene).filter(Boolean);
-  const spokenChoices = choices.filter((choice) => !choice.toLowerCase().includes("livre"));
-  const optionText = spokenChoices.length
+  const optionText = choices.length
     ? `Escute suas opções de aventura. ${choices
-        .filter((choice) => !choice.toLowerCase().includes("livre"))
         .map((choice, index) => `Opção ${index + 1}: ${choice}.`)
         .join(" ")}`
     : "";
-  const freeChoice = choices.some((choice) => choice.toLowerCase().includes("livre"))
-    ? "Mas você também pode inventar sua própria ação e falar para mim."
-    : "Você também pode dizer uma ideia sua.";
   const diceHint = scene.dice
-    ? `Quando decidir, fale o que ${terms.your} ${terms.hero} faz. Depois o dado conta a sorte.`
-    : `Quando decidir, fale o que ${terms.your} ${terms.hero} faz e a aventura continua.`;
+    ? `Quando decidir, diga o número da opção ou toque na tela. Depois o dado conta a sorte.`
+    : `Quando decidir, diga o número da opção ou toque na tela para continuar.`;
 
   return [
     `${name}, esta é a cena.`,
     scene.narration,
     scene.prompt || "O que você faz?",
     optionText,
-    freeChoice,
     diceHint,
   ]
     .filter(Boolean)
@@ -1063,38 +1062,40 @@ function handlePlayerAction(actionText, source) {
   const terms = childTerms();
   const action = actionText.trim();
   if (!scene || !action) {
-    showFeedback(narratorStyleProfile().silence, "warm_chime");
+    showFeedback("Escolha uma das opções da cena.", "warm_chime");
+    return;
+  }
+
+  const validChoices = sceneChoices(scene);
+  if (!validChoices.includes(action)) {
+    showFeedback("Essa opção não está disponível agora. Escolha 1, 2 ou 3.", "gentle_plop");
+    openChoiceModal();
     return;
   }
 
   state.selectedChoice = action;
-  const insight = evaluateAction(action, scene);
-  state.lastActionInsight = insight.message;
-  els.actionInsightText.textContent = insight.message;
-
-  if (!state.actionProgressScenes.has(scene.id)) {
-    state.actionProgressScenes.add(scene.id);
-    applyActionProgress(insight.progressDelta);
-  }
+  closeChoiceModal();
+  state.lastActionInsight = "";
+  els.actionInsightText.textContent = `Escolha confirmada: ${action}`;
 
   const origin = source === "voice" ? "Ouvi" : "Entendi";
-  const reaction = masterReaction(insight, action, scene);
   const diceHint = scene.dice
     ? ` ${narratorStyleProfile().diceLead}`
-    : " A cena escuta sua escolha, e o caminho abre para a próxima parte.";
-  addNarratorEntry("action", `${origin}: "${action}". ${reaction} ${insight.short}`);
-  showFeedback(`${origin}: ${action}. ${reaction} ${insight.short}${diceHint}`, insight.cue, insight.effect);
+    : scene.movement
+      ? " Agora faça o desafio físico para abrir o caminho."
+      : " A cena escuta sua escolha, e o caminho abre para a próxima parte.";
+  addNarratorEntry("action", `${origin}: "${action}".`);
+  showFeedback(`${origin}: ${action}.${diceHint}`, "warm_chime", "choice_confirmed", { speak: false });
   rememberAction(scene, action);
-  renderSceneControls();
-
-  if (!scene.dice) {
-    requestMasterNarration({
-      trigger: "action",
-      action,
-      insight,
-      localConsequence: `${reaction} ${insight.short}`,
-    });
+  if (!scene.dice && scene.movement) {
+    state.pendingMovementScenes.add(scene.id);
+    state.pendingOutcomeByScene[scene.id] = {
+      progressDelta: scene.progressDelta,
+      rewardId: scene.reward,
+    };
+    openMovementModal();
   }
+  renderSceneControls();
 }
 
 function rememberAction(scene, action) {
@@ -1309,13 +1310,43 @@ function applyActionProgress(progressDelta) {
   renderProgress();
 }
 
+function openChoiceModal() {
+  if (!els.choiceModal) return;
+  els.choiceModal.hidden = false;
+}
+
+function closeChoiceModal() {
+  if (!els.choiceModal) return;
+  els.choiceModal.hidden = true;
+}
+
+function resolveSpokenChoice(transcript) {
+  const text = normalizeActionText(transcript);
+  const choices = sceneChoices(currentScene());
+  const numberWords = [
+    ["1", "um", "uma", "primeira", "primeiro", "opcao um", "opcao 1"],
+    ["2", "dois", "duas", "segunda", "segundo", "opcao dois", "opcao 2"],
+    ["3", "tres", "terceira", "terceiro", "opcao tres", "opcao 3"],
+  ];
+  const numberIndex = numberWords.findIndex((signals) => signals.some((signal) => text.includes(signal)));
+  if (numberIndex >= 0 && choices[numberIndex]) return choices[numberIndex];
+
+  const scored = choices
+    .map((choice) => {
+      const normalizedChoice = normalizeActionText(choice);
+      const words = normalizedChoice.split(/\s+/).filter((word) => word.length > 3);
+      const score = words.reduce((total, word) => total + (text.includes(word) ? 1 : 0), 0);
+      return { choice, score };
+    })
+    .sort((a, b) => b.score - a.score);
+  return scored[0]?.score > 0 ? scored[0].choice : "";
+}
+
 function captureVoiceAction() {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
-    const example = "Eu procuro uma pista brilhante";
-    els.freeActionInput.value = example;
-    handlePlayerAction(example, "voice");
-    showFeedback("Este navegador ainda não liberou voz aqui. Usei uma ação de exemplo para testar.");
+    openChoiceModal();
+    showFeedback("Este navegador ainda não liberou voz aqui. Toque em uma opção na tela.", "gentle_plop", null, { speak: false });
     return;
   }
 
@@ -1330,21 +1361,31 @@ function captureVoiceAction() {
 
   recognition.onresult = (event) => {
     const transcript = event.results?.[0]?.[0]?.transcript || "";
-    els.freeActionInput.value = transcript;
-    handlePlayerAction(transcript, "voice");
+    const choice = resolveSpokenChoice(transcript);
+    if (!choice) {
+      openChoiceModal();
+      showFeedback(`Ouvi "${transcript}", mas preciso de opção 1, 2 ou 3.`, "gentle_plop", null, { speak: false });
+      return;
+    }
+    handlePlayerAction(choice, "voice");
   };
   recognition.onerror = () => {
-    showFeedback("Não consegui ouvir bem. Escreva a ação ou tente falar de novo.", "gentle_plop");
+    showFeedback("Não consegui ouvir bem. Diga opção 1, 2 ou 3, ou toque na tela.", "gentle_plop", null, { speak: false });
   };
   recognition.onend = () => {
     els.voiceActionButton.disabled = false;
-    els.voiceActionButton.textContent = "Falar ação";
+    els.voiceActionButton.textContent = "Falar opção";
   };
   recognition.start();
 }
 
 function prepareAdventureForChild(adventure) {
   const prepared = structuredClone(adventure);
+  prepared.scenes = (prepared.scenes || []).map((scene) => {
+    if (!scene.dice || !scene.movement) return scene;
+    const { movement, ...closedScene } = scene;
+    return closedScene;
+  });
   if (prepared.humorProfile?.restrictedPottyHumor && els.removeRestrictedHumorToggle.checked) {
     prepared.humorProfile.restrictedPottyHumor = false;
     prepared.contentReview = {
@@ -1410,7 +1451,7 @@ function applySceneProgress(scene, multiplier = 1, options = {}) {
   renderAvatar();
 }
 
-function rollDice() {
+function openDiceModal() {
   const scene = currentScene();
   if (!state.selectedChoice) {
     const terms = childTerms();
@@ -1421,6 +1462,28 @@ function rollDice() {
     showFeedback("O dado deste desafio já foi usado.");
     return;
   }
+
+  els.diceModal.hidden = false;
+  els.diceCloseButton.hidden = true;
+  els.diceCube.disabled = false;
+  els.diceCube.dataset.result = "";
+  els.diceCube.classList.remove("is-rolling");
+  els.diceCube.textContent = "⚂";
+  els.diceModalTitle.textContent = "Toque no dado";
+  els.diceResultText.textContent = "Quando tocar, o dado vai girar e mostrar um número bem grande.";
+  state.diceModalReady = true;
+  state.diceRolling = false;
+  speakNarration("Toque no dado para rolar.", { interrupt: true, quality: "fast" });
+}
+
+function rollDice() {
+  const scene = currentScene();
+  if (!state.diceModalReady || state.diceRolling || !scene) return;
+  if (!scene.dice || state.rolledScenes.has(scene.id)) return;
+
+  state.diceModalReady = false;
+  state.diceRolling = true;
+  els.diceCube.disabled = true;
 
   state.rolledScenes.add(scene.id);
   playCue(scene.sound?.diceRoll || scene.audiovisual?.diceRolling);
@@ -1456,12 +1519,7 @@ function rollDice() {
   state.useLuck = false;
   showDiceResult(result, message, cue, effect);
 
-  if (band === "middle" && scene.movement) {
-    state.pendingMovementScenes.add(scene.id);
-    state.pendingOutcomeByScene[scene.id] = { progressDelta: outcomeProgress, rewardId: outcomeReward };
-    addNarratorEntry("dice", `Dado ${result}: ${outcome?.narration || "um desafio apareceu."}`);
-    showFeedback(`${outcome?.narration || "Resultado 4: existe um desafio para abrir o caminho."} ${scene.movement.instruction}`, scene.sound?.middle, scene.effects?.diceMedium);
-  } else if (band === "low") {
+  if (band === "low") {
     addNarratorEntry("dice", `Dado ${result}: ${outcome?.narration || "algo complicou, mas a aventura continuou."}`);
     applySceneProgress(scene, 1, {
       progressDelta: outcomeProgress,
@@ -1474,7 +1532,6 @@ function rollDice() {
   }
 
   renderSceneControls();
-  window.setTimeout(() => requestMasterNarration(aiContext), 1450);
 }
 
 async function requestMasterNarration(context = {}) {
@@ -1560,6 +1617,22 @@ function masterEffectForContext(context = {}) {
   return "warm_glow";
 }
 
+function openMovementModal() {
+  const scene = currentScene();
+  if (!scene.movement) return;
+  els.movementModal.hidden = false;
+  els.movementModalTitle.textContent = scene.movement.label || "Desafio físico";
+  els.movementInstructionText.textContent = scene.movement.instruction;
+  speakNarration(`${scene.movement.label}. ${scene.movement.instruction}. Quando terminar, toque em Pronto.`, {
+    interrupt: true,
+    quality: "fast",
+  });
+}
+
+function closeMovementModal() {
+  if (els.movementModal) els.movementModal.hidden = true;
+}
+
 function completeMovement() {
   const scene = currentScene();
   if (!scene.movement) return;
@@ -1567,8 +1640,9 @@ function completeMovement() {
     state.pendingMovementScenes.delete(scene.id);
     const pendingOutcome = state.pendingOutcomeByScene[scene.id] || {};
     delete state.pendingOutcomeByScene[scene.id];
+    closeMovementModal();
     addNarratorEntry("challenge", `${scene.movement.label} completo. O caminho abriu.`);
-    showFeedback(`${scene.movement.label} completo. O caminho abriu e a aventura continua!`, scene.sound?.success || scene.audiovisual?.reward, scene.effects?.reward);
+    showFeedback(`${scene.movement.label} completo. O caminho abriu e a aventura continua!`, scene.sound?.success || scene.audiovisual?.reward, scene.effects?.reward, { interrupt: true });
     applySceneProgress(scene, 1, {
       progressDelta: pendingOutcome.progressDelta,
       rewardId: pendingOutcome.rewardId,
@@ -1576,8 +1650,9 @@ function completeMovement() {
     renderSceneControls();
     return;
   }
-  addNarratorEntry("challenge", `${scene.movement.label}: ${scene.movement.instruction}`);
-  showFeedback(`${scene.movement.label}: ${scene.movement.instruction}`, scene.sound?.movement || scene.audiovisual?.reward, scene.effects?.movement);
+  state.pendingMovementScenes.add(scene.id);
+  openMovementModal();
+  renderSceneControls();
 }
 
 function skipChallenge() {
@@ -1594,6 +1669,7 @@ function skipChallenge() {
     });
     renderSceneControls();
   }
+  closeMovementModal();
   addNarratorEntry("challenge", `Desafio adaptado: ${fallback}`);
   showFeedback(fallback, scene.sound?.softFallback || "gentle_plop", scene.effects?.softFallback);
 }
@@ -1624,7 +1700,17 @@ function nextScene() {
   const nextIndex = state.adventure.scenes.findIndex((item) => item.id === nextSceneId);
   state.sceneIndex = nextIndex >= 0 ? nextIndex : state.sceneIndex + 1;
   state.selectedChoice = null;
+  playSceneTransition();
   renderScene();
+}
+
+function playSceneTransition() {
+  if (!els.sceneStage) return;
+  els.sceneStage.classList.remove("is-transitioning");
+  void els.sceneStage.offsetWidth;
+  els.sceneStage.classList.add("is-transitioning");
+  window.setTimeout(() => els.sceneStage.classList.remove("is-transitioning"), 680);
+  playCue("page_turn_magic");
 }
 
 function renderProgress() {
@@ -1880,7 +1966,7 @@ function showFeedback(message, cue, effect, options = {}) {
   if (effect) runSceneEffect(effect);
   playCue(cue);
   if (options.speak !== false) {
-    speakNarration(feedback, { interrupt: false, quality: options.quality || "auto" });
+    speakNarration(feedback, { interrupt: options.interrupt ?? true, quality: options.quality || "auto" });
   }
 }
 
@@ -1893,23 +1979,23 @@ function renderSceneControls() {
   if (els.roundHint) {
     if (waitingAction) {
       const terms = childTerms();
-      els.roundHint.textContent = `1. Escolha ou fale o que ${terms.your} ${terms.hero} faz.`;
+      els.roundHint.textContent = `1. Escolha uma opção ou fale o número.`;
     } else if (scene.dice && !alreadyRolled) {
-      els.roundHint.textContent = "2. Agora role o dado para ver o que acontece.";
+      els.roundHint.textContent = "2. Agora abra o dado e toque para rolar.";
     } else if (pendingMovement) {
-      els.roundHint.textContent = "3. Faça o desafio para abrir o caminho.";
+      els.roundHint.textContent = "2. Faça o desafio e toque em Pronto.";
     } else {
       els.roundHint.textContent = scene.next ? "Pronto. Você pode avançar." : "Pronto. Você pode finalizar a aventura.";
     }
   }
   els.diceButton.disabled = Boolean(scene.dice && (alreadyRolled || waitingAction));
-  els.diceButton.textContent = waitingAction ? "Escolha uma ação" : alreadyRolled ? "Dado usado" : "⚂ Rolar D6";
+  els.diceButton.textContent = waitingAction ? "Escolha uma opção" : alreadyRolled ? "Dado usado" : "⚂ Abrir dado";
   els.luckButton.hidden = !scene.dice || alreadyRolled;
   els.luckButton.disabled = !scene.dice || alreadyRolled || waitingAction || state.luckPoints <= 0;
   els.luckButton.textContent = state.luckPoints > 0 ? `Usar sorte (${state.luckPoints})` : "Sem sorte";
   els.luckButton.classList.toggle("is-active", state.useLuck);
-  els.movementButton.disabled = waitingAction;
-  els.movementButton.textContent = pendingMovement ? "Fiz o desafio" : "Ver desafio";
+  els.movementButton.disabled = waitingAction || scene.dice;
+  els.movementButton.textContent = pendingMovement ? "Ver desafio" : "Desafio físico";
   els.nextButton.disabled = Boolean(waitingAction || (scene.dice && (!alreadyRolled || pendingMovement)));
 }
 
@@ -1938,6 +2024,8 @@ function showDiceResult(result, message, cue, effect) {
       els.diceCube.dataset.result = diceBand(result);
       els.diceModalTitle.textContent = `Resultado ${result}`;
       els.diceResultText.textContent = displayMessage;
+      els.diceCloseButton.hidden = false;
+      state.diceRolling = false;
       if (effect) runSceneEffect(effect);
       playCue(cue);
       speakNarration(displayMessage, { quality: "premium", audioKey: audioKeyForDice(currentScene(), result) });
@@ -1971,7 +2059,7 @@ function diceResultReaction(result) {
 
 function defaultDiceNarration(result, band) {
   if (band === "low") return `Resultado ${result}: algo engraçado complica o caminho, mas a aventura continua.`;
-  if (band === "middle") return `Resultado ${result}: você consegue, mas precisa cumprir um desafio curto.`;
+  if (band === "middle") return `Resultado ${result}: quase complicou, mas você passa por pouco.`;
   return `Resultado ${result}: sucesso brilhante!`;
 }
 
@@ -1992,16 +2080,20 @@ function speakNarration(text, options = {}) {
   state.lastNarration = cleanText;
   if (!state.narrationEnabled) return;
 
+  const shouldInterrupt = options.interrupt !== false;
+  if (shouldInterrupt) stopNarrationPlayback();
+  if (shouldInterrupt) state.narrationRunId += 1;
+  const runId = state.narrationRunId;
   const utteranceId = `utt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const chunks = narrationChunks(cleanText).map((chunk, index) => ({
     text: chunk,
     quality: options.quality || "auto",
     audioKey: index === 0 ? options.audioKey : "",
     utteranceId,
+    runId,
   }));
 
-  if (options.interrupt !== false) {
-    stopNarrationPlayback();
+  if (shouldInterrupt) {
     state.narrationQueue = chunks;
   } else {
     state.narrationQueue.push(...chunks);
@@ -2034,11 +2126,17 @@ async function speakNextNarrationChunk() {
   const quality = typeof item === "string" ? "auto" : item.quality;
   const audioKey = typeof item === "string" ? "" : item.audioKey;
   const utteranceId = typeof item === "string" ? "" : item.utteranceId;
+  const runId = typeof item === "string" ? state.narrationRunId : item.runId;
+  if (runId !== state.narrationRunId) {
+    window.setTimeout(speakNextNarrationChunk, 0);
+    return;
+  }
   state.narrationPlaying = true;
 
   if (audioKey) {
     try {
       await playPrebuiltNarration(audioKey);
+      if (runId !== state.narrationRunId) return;
       if (utteranceId) {
         state.narrationQueue = state.narrationQueue.filter((queued) => queued.utteranceId !== utteranceId);
       }
@@ -2052,6 +2150,7 @@ async function speakNextNarrationChunk() {
   if (shouldUseApiTts(chunk, quality)) {
     try {
       await playApiNarrationChunk(chunk);
+      if (runId !== state.narrationRunId) return;
       window.setTimeout(speakNextNarrationChunk, chunk.includes("Opção") ? 160 : 130);
       return;
     } catch (error) {
@@ -2060,7 +2159,7 @@ async function speakNextNarrationChunk() {
     }
   }
 
-  speakBrowserNarrationChunk(chunk);
+  speakBrowserNarrationChunk(chunk, runId);
 }
 
 function shouldUseApiTts(chunk, quality) {
@@ -2141,7 +2240,7 @@ function audioKeyForDice(scene, result) {
   return audioKeyForScene(scene, `dice-${result}`);
 }
 
-function speakBrowserNarrationChunk(chunk) {
+function speakBrowserNarrationChunk(chunk, runId = state.narrationRunId) {
   if (!("speechSynthesis" in window)) {
     state.narrationPlaying = false;
     return;
@@ -2155,6 +2254,7 @@ function speakBrowserNarrationChunk(chunk) {
   const voice = preferredNarrationVoice();
   if (voice) utterance.voice = voice;
   utterance.onend = () => {
+    if (runId !== state.narrationRunId) return;
     const pause = chunk.includes("Opção") ? 190 : 160;
     window.setTimeout(speakNextNarrationChunk, pause);
   };
@@ -2186,6 +2286,7 @@ function stopNarration() {
 }
 
 function stopNarrationPlayback() {
+  state.narrationRunId += 1;
   state.narrationQueue = [];
   state.narrationPlaying = false;
   if (state.apiNarrationAudio) {
@@ -2399,24 +2500,20 @@ els.readFullStoryButton.addEventListener("click", () => {
 els.buySummaryButton.addEventListener("click", buySummary);
 els.repeatNarrationButton.addEventListener("click", repeatLastNarration);
 els.stopNarrationButton.addEventListener("click", stopNarration);
-els.sendFreeActionButton.addEventListener("click", () => {
-  handlePlayerAction(els.freeActionInput.value, "text");
-});
-els.freeActionInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") {
-    event.preventDefault();
-    handlePlayerAction(els.freeActionInput.value, "text");
-  }
-});
+els.openChoiceModalButton.addEventListener("click", openChoiceModal);
+els.choiceModalCloseButton.addEventListener("click", closeChoiceModal);
 els.voiceActionButton.addEventListener("click", captureVoiceAction);
-els.diceButton.addEventListener("click", rollDice);
+els.diceButton.addEventListener("click", openDiceModal);
+els.diceCube.addEventListener("click", rollDice);
 els.luckButton.addEventListener("click", () => {
   if (state.luckPoints <= 0 || state.rolledScenes.has(currentScene().id)) return;
   state.useLuck = !state.useLuck;
   renderSceneControls();
   showFeedback(state.useLuck ? "Sorte preparada: role dois dados e fique com o melhor." : "Sorte guardada para depois.");
 });
-els.movementButton.addEventListener("click", completeMovement);
+els.movementButton.addEventListener("click", openMovementModal);
+els.movementReadyButton.addEventListener("click", completeMovement);
+els.movementFallbackButton.addEventListener("click", skipChallenge);
 els.skipButton.addEventListener("click", skipChallenge);
 els.nextButton.addEventListener("click", nextScene);
 els.checkpointButton.addEventListener("click", () => {
@@ -2429,6 +2526,8 @@ els.checkpointButton.addEventListener("click", () => {
 els.endingLibraryButton.addEventListener("click", goLibrary);
 els.diceCloseButton.addEventListener("click", () => {
   els.diceModal.hidden = true;
+  state.diceModalReady = false;
+  state.diceRolling = false;
 });
 
 if ("speechSynthesis" in window) {

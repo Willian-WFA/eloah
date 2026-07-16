@@ -187,6 +187,14 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Configurações da sessão agora ficam em painel retrátil, e a revisão de história ficou mais compacta com pontos de atenção recolhíveis.
 - Cards de aventura passaram a usar a primeira imagem aprovada da história como miniatura e exibem cenas, modelo e idade no próprio card.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-15-parent-onboarding-pwa`.
+- Fluxo infantil voltou para modo fechado/controlado: removidos campo de ação livre, botão de texto livre e opções `Livre escolha` dos dados jogáveis.
+- Voz da criança agora escolhe apenas uma opção existente por número ou por correspondência com o texto da opção; toque na tela continua funcionando.
+- Opções da cena passaram para modal com botões numerados em estilo neon; o modal abre automaticamente ao entrar na cena.
+- Dado passou para modal próprio: o botão abre o modal e a criança toca no dado grande para rolar; resultado é falado e exibido com número grande.
+- Desafio físico passou para modal próprio com instrução e botão `Pronto` colorido/3D; cenas com dado não exibem desafio físico no runtime.
+- Narração ganhou controle de execução por `narrationRunId`, descartando filas antigas para reduzir voz duplicada.
+- Avanço de capítulo ganhou transição visual curta e cue de virada mágica.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-15-closed-choice-flow-pwa`.
 
 ## Decisoes tomadas
 

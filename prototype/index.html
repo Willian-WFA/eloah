@@ -208,20 +208,14 @@
           <ol id="narratorLog" class="narrator-log" aria-live="polite"></ol>
         </section>
 
-        <section class="free-action-panel" aria-label="Escolha livre">
-          <label id="freeActionLabel" for="freeActionInput">Diga o que sua heroína faz</label>
-          <div class="free-action-row">
-            <input id="freeActionInput" type="text" autocomplete="off" placeholder="Fale ou escreva o que você faz" />
-            <button id="voiceActionButton" class="primary-button voice-main-button" type="button">Falar ação</button>
-          </div>
-          <button id="sendFreeActionButton" class="ghost-button" type="button">Usar ação escrita</button>
+        <section class="closed-choice-launcher" aria-label="Escolha da criança">
+          <button id="openChoiceModalButton" class="primary-button voice-main-button" type="button">Escolher resposta</button>
+          <button id="voiceActionButton" class="secondary-button voice-main-button" type="button">Falar opção</button>
           <p id="actionInsightText" class="action-insight" aria-live="polite"></p>
         </section>
 
-        <section id="choicePanel" class="choice-panel" aria-label="Opções sugeridas"></section>
-
         <section class="tool-row" aria-label="Ferramentas da cena">
-          <button id="diceButton" class="primary-button dice-trigger" type="button" aria-label="Rolar dado D6">⚂ Rolar D6</button>
+          <button id="diceButton" class="primary-button dice-trigger" type="button" aria-label="Abrir dado D6">⚂ Abrir dado</button>
           <button id="luckButton" class="secondary-button luck-button" type="button">Usar sorte</button>
           <button id="movementButton" class="secondary-button" type="button">Desafio</button>
           <button id="skipButton" class="ghost-button" type="button">Pular</button>
@@ -259,10 +253,29 @@
       <div id="diceModal" class="dice-modal" role="dialog" aria-modal="true" aria-labelledby="diceModalTitle" hidden>
         <div class="dice-card">
           <p class="eyebrow">Desafio de sorte</p>
-          <h2 id="diceModalTitle">Rolando o dado...</h2>
-          <div id="diceCube" class="dice-cube" aria-live="polite">⚂</div>
-          <p id="diceResultText">O dado está girando.</p>
+          <h2 id="diceModalTitle">Toque no dado</h2>
+          <button id="diceCube" class="dice-cube" type="button" aria-live="polite" aria-label="Tocar para rolar o dado">⚂</button>
+          <p id="diceResultText">Quando o mestre pedir, toque para rolar.</p>
           <button id="diceCloseButton" class="primary-button" type="button">Continuar</button>
+        </div>
+      </div>
+
+      <div id="choiceModal" class="choice-modal" role="dialog" aria-modal="true" aria-labelledby="choiceModalTitle" hidden>
+        <div class="choice-card">
+          <p class="eyebrow">Sua vez</p>
+          <h2 id="choiceModalTitle">Escolha uma opção</h2>
+          <div id="choicePanel" class="choice-panel" aria-label="Opções da cena"></div>
+          <button id="choiceModalCloseButton" class="ghost-button" type="button">Voltar para cena</button>
+        </div>
+      </div>
+
+      <div id="movementModal" class="movement-modal" role="dialog" aria-modal="true" aria-labelledby="movementModalTitle" hidden>
+        <div class="movement-card">
+          <p class="eyebrow">Desafio físico</p>
+          <h2 id="movementModalTitle">Movimento da aventura</h2>
+          <p id="movementInstructionText"></p>
+          <button id="movementReadyButton" class="ready-word-button" type="button">Pronto</button>
+          <button id="movementFallbackButton" class="ghost-button" type="button">Adaptar desafio</button>
         </div>
       </div>
 

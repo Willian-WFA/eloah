@@ -87,7 +87,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Luma, uma estrelinha pequena, caiu dentro de uma folha enorme e perdeu três brilhos do seu mapa: o brilho da coragem, o brilho das palavras e o brilho do carinho. Sem eles, o Portal das Estrelinhas não abre.",
         prompt: "O que você faz?",
-        choices: ["Eu ajudo Luma", "Eu pergunto o que aconteceu", "Eu procuro o primeiro brilho", "Livre escolha"],
+        choices: ["Eu ajudo Luma", "Eu pergunto o que aconteceu", "Eu procuro o primeiro brilho"],
         learningCriteria:
           "Ganha gentileza porque a cena mede acolhimento: ouvir Luma, perguntar o que aconteceu ou começar a ajudar antes de correr para o prêmio.",
         actionRubric: [
@@ -133,7 +133,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "O primeiro brilho caiu numa ponte de cristais. A ponte está apagada e só acende quando alguém demonstra coragem sem correr demais.",
         prompt: "O que você faz?",
-        choices: ["Eu atravesso a ponte", "Eu pulo como estrela", "Eu peço ajuda para Luma", "Livre escolha"],
+        choices: ["Eu atravesso a ponte", "Eu pulo como estrela", "Eu peço ajuda para Luma"],
         movement: {
           label: "Pulos de Estrela",
           instruction: "Pule 5 vezes como uma estrelinha.",
@@ -228,7 +228,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "O segundo brilho está na Cidade dos Sinos, mas os sinos esqueceram a ordem da música. Sem ritmo, ninguém consegue dizer a palavra que chama o portal.",
         prompt: "O que você faz?",
-        choices: ["Eu toco o sino azul", "Eu marcho contando", "Eu escuto o ritmo", "Livre escolha"],
+        choices: ["Eu toco o sino azul", "Eu marcho contando", "Eu escuto o ritmo"],
         movement: {
           label: "Marcha dos Sinos",
           instruction: "Marche contando até 10.",
@@ -325,7 +325,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "O terceiro brilho está preso no travesseiro da Nuvem Dorminhoca. Ela dormiu na frente do portal e abraçou o brilho sem perceber.",
         prompt: "O que você faz?",
-        choices: ["Eu falo baixinho", "Eu respiro fundo", "Eu uso um item", "Livre escolha"],
+        choices: ["Eu falo baixinho", "Eu respiro fundo", "Eu uso um item"],
         movement: {
           label: "Espreguiço de Nuvem",
           instruction: "Levante os braços e espreguice 3 vezes devagar.",
@@ -420,7 +420,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Com os três brilhos no mapa, o portal acende em forma de estrela. Luma volta para o céu e manda uma chuva de brilhinhos para seu herói.",
         prompt: "O que você faz para se despedir?",
-        choices: ["Eu abraço Luma", "Eu digo obrigado", "Eu faço uma dança", "Livre escolha"],
+        choices: ["Eu abraço Luma", "Eu digo obrigado", "Eu faço uma dança"],
         progressDelta: { coragem: 1 },
         reward: null,
         language: {
@@ -501,7 +501,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Você sai da estrada, caminha por alguns minutos e acha a entrada de uma caverna escura. Lá dentro, alguma coisa pisca bem fraquinho, como se a própria caverna estivesse chamando por um aventureiro curioso.",
         prompt: "O que você faz?",
-        choices: ["Eu entro na caverna", "Eu acendo uma tocha", "Eu volto para a estrada", "Livre escolha"],
+        choices: ["Eu entro na caverna", "Eu acendo uma tocha", "Eu volto para a estrada"],
         learningCriteria:
           "Ganha coragem e pensamento esperto porque a cena trabalha decisão diante do desconhecido: entrar, preparar luz, pedir ajuda ou recuar com segurança.",
         actionRubric: [
@@ -580,7 +580,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "A sala é redonda e cheia de desenhos no chão: lua, estrela, cogumelo e uma bota muito séria. No centro há uma caixa fechada. Uma voz de eco diz: quem vencer o desafio ganha um prêmio; quem resolver o quebra-cabeça ganha um presente especial.",
         prompt: "Como você começa?",
-        choices: ["Eu olho os desenhos", "Eu sigo os vagalumes", "Eu pergunto para o eco", "Livre escolha"],
+        choices: ["Eu olho os desenhos", "Eu sigo os vagalumes", "Eu pergunto para o eco"],
         learningCriteria:
           "Ganha pensamento esperto e cooperação porque a criança precisa observar pistas, escutar ajuda e escolher uma estratégia antes de abrir a caixa.",
         actionRubric: [
@@ -657,7 +657,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Atrás da caixa há uma porta baixinha. Ao lado dela, três peças aparecem no chão: uma lua, uma estrela e um peixe. Um coelho barrigudo, usando capacete de panela, cochicha: só uma peça abre a porta sem fazer barulho.",
         prompt: "Qual peça você tenta encaixar?",
-        choices: ["A lua", "A estrela", "O peixe", "Livre escolha"],
+        choices: ["A lua", "A estrela", "O peixe"],
         learningCriteria:
           "Ganha criatividade e linguagem porque a cena incentiva explicar o motivo da escolha, imaginar usos para objetos absurdos e nomear formas.",
         actionRubric: [
@@ -740,7 +740,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Com os vagalumes iluminando o caminho, você volta para a estrada. A mulher com orelhas de cachorro acena de longe, o coelho barrigudo bate continência com o capacete de panela e a caverna fica menos assustadora do que parecia.",
         prompt: "Como você termina a aventura de hoje?",
-        choices: ["Eu agradeço os vagalumes", "Eu mostro meu item novo", "Eu volto para a estrada", "Livre escolha"],
+        choices: ["Eu agradeço os vagalumes", "Eu mostro meu item novo", "Eu volto para a estrada"],
         learningCriteria:
           "Ganha gentileza porque a cena fecha a aventura com gratidão, despedida e cuidado ao sair.",
         progressDelta: { coragem: 1, gentileza: 1 },
@@ -801,7 +801,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "No alto do céu existe um porto feito de nuvens fofas. A Baleia Chaleira perdeu o apito que esquenta o chá das nuvens, e sem esse chá a chuva boa não chega ao jardim das crianças.",
         prompt: "Como você ajuda o capitão do navio?",
-        choices: ["Eu pergunto onde o apito caiu", "Eu subo no navio com cuidado", "Eu olho as fitas de vento", "Livre escolha"],
+        choices: ["Eu pergunto onde o apito caiu", "Eu subo no navio com cuidado", "Eu olho as fitas de vento"],
         learningCriteria:
           "A cena valoriza cooperação e observação: perguntar, entrar com cuidado ou investigar as fitas antes de zarpar.",
         actionRubric: [
@@ -853,7 +853,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "No meio do caminho, uma colher gigante mexe as nuvens rápido demais. Ela não é malvada; só acha que chá bom precisa de vento bagunçado. O navio balança e o apito brilha preso na ponta da colher.",
         prompt: "O que você faz para pegar o apito?",
-        choices: ["Eu peço para a colher mexer devagar", "Eu conto o ritmo do vento", "Eu seguro a corda do navio", "Livre escolha"],
+        choices: ["Eu peço para a colher mexer devagar", "Eu conto o ritmo do vento", "Eu seguro a corda do navio"],
         movement: {
           label: "Balanço de Marinheiro",
           instruction: "Balance os braços 6 vezes como ondas calmas.",
@@ -922,7 +922,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "A Baleia Chaleira está triste porque todo mundo quer chuva, mas ninguém pergunta se ela está cansada. Para fazer o chá das nuvens, ela precisa ouvir uma palavra gentil e um sopro bem calmo.",
         prompt: "Como você convence a Baleia Chaleira?",
-        choices: ["Eu digo please", "Eu pergunto se ela quer descansar", "Eu sopro devagar", "Livre escolha"],
+        choices: ["Eu digo please", "Eu pergunto se ela quer descansar", "Eu sopro devagar"],
         movement: {
           label: "Sopro de Chá",
           instruction: "Sopre devagar 3 vezes, como se esfriasse uma xícara.",
@@ -1025,7 +1025,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "O jardim parou no mesmo minuto. As abelhas estão congeladas no ar, as flores esqueceram de abrir e uma girafa de pescoço curto não alcança o relógio pendurado no portão.",
         prompt: "O que você faz primeiro?",
-        choices: ["Eu pergunto para a girafa", "Eu olho o relógio de flores", "Eu procuro uma escada", "Livre escolha"],
+        choices: ["Eu pergunto para a girafa", "Eu olho o relógio de flores", "Eu procuro uma escada"],
         learningCriteria:
           "A cena valoriza observar o problema real antes de tentar consertar tudo.",
         actionRubric: [
@@ -1049,7 +1049,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Para chegar ao relógio, você precisa passar por sementes pulantes. Elas só ficam quietas quando alguém pisa no ritmo certo: pequeno, pequeno, grande.",
         prompt: "Como você atravessa a trilha?",
-        choices: ["Eu conto o ritmo", "Eu pulo pequeno, pequeno, grande", "Eu peço ajuda à girafa", "Livre escolha"],
+        choices: ["Eu conto o ritmo", "Eu pulo pequeno, pequeno, grande", "Eu peço ajuda à girafa"],
         movement: { label: "Ritmo das Sementes", instruction: "Faça 2 pulinhos pequenos e 1 pulão grande.", fallback: "Bata palmas: fraco, fraco, forte." },
         dice: true,
         diceOutcomes: {
@@ -1078,7 +1078,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "O chefão do jardim é um Caracol Cronômetro. Ele guardou o ponteiro do relógio porque ninguém respeitava o tempo de andar devagar. Para devolver, ele quer ver paciência, ritmo e uma palavra nova.",
         prompt: "Como você enfrenta esse desafio final?",
-        choices: ["Eu espero ele terminar de falar", "Eu digo hua", "Eu uso o ritmo das sementes", "Livre escolha"],
+        choices: ["Eu espero ele terminar de falar", "Eu digo hua", "Eu uso o ritmo das sementes"],
         movement: { label: "Passo de Caracol", instruction: "Dê 5 passos bem lentos.", fallback: "Conte até 5 bem devagar." },
         dice: true,
         diceOutcomes: {
@@ -1144,7 +1144,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "A biblioteca da vila está fazendo shhh sozinha. Lá dentro mora Doro, um dragão bibliotecário que tenta dormir, mas os livros estão pulando das prateleiras e contando histórias todos ao mesmo tempo.",
         prompt: "Como você entra sem assustar Doro?",
-        choices: ["Eu bato de leve", "Eu digo hello bem baixinho", "Eu olho pela fechadura", "Livre escolha"],
+        choices: ["Eu bato de leve", "Eu digo hello bem baixinho", "Eu olho pela fechadura"],
         learningCriteria:
           "A cena mede autocontrole e cuidado com um personagem sensível ao barulho.",
         actionRubric: [
@@ -1168,7 +1168,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Os livros pulam das prateleiras porque perderam seus marcadores. Um livro de receitas quer ficar na seção de foguetes, e um atlas tenta dormir dentro de uma panela.",
         prompt: "Como você organiza os livros?",
-        choices: ["Eu separo por desenhos", "Eu escuto cada livro", "Eu faço uma pilha macia", "Livre escolha"],
+        choices: ["Eu separo por desenhos", "Eu escuto cada livro", "Eu faço uma pilha macia"],
         movement: { label: "Passos de Biblioteca", instruction: "Dê 4 passos silenciosos.", fallback: "Faça 4 toques suaves na mesa." },
         dice: true,
         diceOutcomes: {
@@ -1197,7 +1197,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "O desafio final é o Livro Espirro. Ele não quer atrapalhar Doro, mas toda vez que tenta ficar quieto solta letras voando pela sala. Para acalmá-lo, você precisa encontrar a palavra que fecha a capa sem prender a história.",
         prompt: "Qual plano você tenta?",
-        choices: ["Eu digo quiet, please", "Eu seguro as letras com a capa", "Eu respiro junto com o livro", "Livre escolha"],
+        choices: ["Eu digo quiet, please", "Eu seguro as letras com a capa", "Eu respiro junto com o livro"],
         movement: { label: "Respiração do Livro", instruction: "Respire fundo 3 vezes, abrindo e fechando as mãos.", fallback: "Conte 1, 2, 3 em voz baixa." },
         dice: true,
         diceOutcomes: {
@@ -1282,7 +1282,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Você chega por uma estrada de pedrinhas lisas. No fim dela existe um portão azul, baixinho, feito para aventureiros que gostam de olhar detalhes. Do outro lado, a Cidade dos Sinos Claros deveria tocar plim, plom, plim, mas hoje está quieta. Luma aparece com um mapa dobrado e diz: o Relógio-Coração parou. Para acordar o festival, precisamos encontrar cinco Notas de Sino ajudando moradores da cidade.",
         prompt: "O que você faz ao chegar no portão?",
-        choices: ["Eu olho o portão com cuidado", "Eu pergunto para Luma o que aconteceu", "Eu bato de leve no portão", "Livre escolha"],
+        choices: ["Eu olho o portão com cuidado", "Eu pergunto para Luma o que aconteceu", "Eu bato de leve no portão"],
         learningCriteria: "A cena mede observação, cuidado e coragem inicial antes de entrar em um lugar novo.",
         actionRubric: [
           { progress: "pensamento_esperto", signals: ["olho", "cuidado", "placa", "detalhe", "observo"], short: "Você olhou antes de agir.", message: "Critério da cena: observar o portão antes de empurrar. Progresso: pensar +1." },
@@ -1310,7 +1310,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "A praça é redonda. No centro, a torre do Relógio-Coração tem janelas em forma de sino. Na fonte existem cinco espaços vazios. Luma aponta para três ruas: a Rua dos Biscoitos Redondos, a Biblioteca dos Guarda-Chuvas e o Jardim da Girafa Pequena. Ela explica que cada ajuda pode acordar uma Nota de Sino.",
         prompt: "Para onde você quer olhar primeiro?",
-        choices: ["Rua dos Biscoitos Redondos", "Biblioteca dos Guarda-Chuvas", "Jardim da Girafa Pequena", "Livre escolha"],
+        choices: ["Rua dos Biscoitos Redondos", "Biblioteca dos Guarda-Chuvas", "Jardim da Girafa Pequena"],
         hub: {
           routes: [
             { label: "Rua dos Biscoitos Redondos", target: "sinos_tico_biscoitos", signals: ["biscoito", "padaria", "tico"], hideWhenCompleted: true },
@@ -1322,7 +1322,7 @@ window.RPG_KIDS_ADVENTURES = [
             { label: "Colina do Vento Devagar", target: "sinos_iara_vento", signals: ["colina", "vento", "iara", "fita"], requiresProgress: { notas_sino: 3 }, hideWhenCompleted: true },
             { label: "Subir a Torre do Relógio-Coração", target: "sinos_torre_final", signals: ["torre", "relogio", "relógio", "final", "silencio", "silêncio"], requiresProgress: { notas_sino: 5 } },
           ],
-          emptyChoices: ["Eu olho as Notas de Sino", "Eu peço uma dica para Luma", "Livre escolha"],
+          emptyChoices: ["Eu olho as Notas de Sino", "Eu peço uma dica para Luma"],
         },
         learningCriteria: "A cena organiza objetivo, escolhas e memória de missão central.",
         actionRubric: [
@@ -1344,7 +1344,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "A rua cheira a massa quente. Cada janela tem um paninho colorido, e cada paninho balança como se cumprimentasse. Tico, o padeiro baixinho, olha três bandejas: estrela, lua e sino. Ele diz que a ordem do festival escorregou do pensamento.",
         prompt: "Como você ajuda Tico?",
-        choices: ["Eu pergunto qual vem primeiro", "Eu olho as marcas na mesa", "Eu monto a sequência estrela, lua, sino", "Livre escolha"],
+        choices: ["Eu pergunto qual vem primeiro", "Eu olho as marcas na mesa", "Eu monto a sequência estrela, lua, sino"],
         learningCriteria: "A quest treina sequência, escuta e reconhecimento de padrão.",
         language: { language: "en", word: "bell", phrase: "Bell!", meaning: "Sino!" },
         actionRubric: [
@@ -1374,7 +1374,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Depois da padaria, Luma leva você por uma rua silenciosa. As pedras parecem pedir passos pequenos. Na biblioteca, guarda-chuvas ficam abertos mesmo sem chuva. Dona Vira-Página cochicha que três livros fugiram para baixo dos guarda-chuvas porque estão espirrando poeira.",
         prompt: "Como você chama os livros de volta?",
-        choices: ["Eu falo bem baixinho", "Eu procuro o livro pela capa", "Eu pergunto qual livro está com medo", "Livre escolha"],
+        choices: ["Eu falo bem baixinho", "Eu procuro o livro pela capa", "Eu pergunto qual livro está com medo"],
         learningCriteria: "A quest treina escuta, classificação e cuidado com personagens sensíveis.",
         language: { language: "zh", word: "shu", phrase: "Shu", meaning: "Livro" },
         actionRubric: [
@@ -1404,7 +1404,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "O jardim tem flores que abrem e fecham como relógios. No meio delas está Pipoca, uma girafa de pescoço curto usando um banquinho amarelo. Ela quer ver se as flores altas estão tristes, mas não quer puxar nenhuma flor e machucar o jardim.",
         prompt: "Como você ajuda Pipoca a ver as flores altas?",
-        choices: ["Eu procuro um jeito de subir sem quebrar nada", "Eu pergunto se a flor pode abaixar", "Eu chamo Luma para segurar o banquinho", "Livre escolha"],
+        choices: ["Eu procuro um jeito de subir sem quebrar nada", "Eu pergunto se a flor pode abaixar", "Eu chamo Luma para segurar o banquinho"],
         learningCriteria: "A quest treina empatia, criatividade e solução sem estragar o ambiente.",
         language: { language: "zh", word: "hua", phrase: "Hua", meaning: "Flor" },
         movement: { label: "Árvore Calma", instruction: "Fique com os dois pés parados e braços abertos contando até 5.", fallback: "Faça uma árvore com os dedos e conte até 5." },
@@ -1435,7 +1435,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Quando três notas brilham na fonte, duas orelhas aparecem atrás de uma placa. Nara, guardiã com orelhas de cachorro, diz que ouviu a cidade chamando. Ela leva você até uma ponte de panos coloridos que treme quando alguém pisa sem ritmo.",
         prompt: "Como você atravessa a ponte?",
-        choices: ["Eu marcho devagar contando", "Eu peço ajuda para Nara", "Eu dou pulos pequenos quando a ponte pedir", "Livre escolha"],
+        choices: ["Eu marcho devagar contando", "Eu peço ajuda para Nara", "Eu dou pulos pequenos quando a ponte pedir"],
         learningCriteria: "A quest treina coragem, ritmo, pedido de ajuda e movimento supervisionado.",
         language: { language: "en", word: "jump", phrase: "Jump", meaning: "Pular" },
         movement: { label: "Marcha dos Panos", instruction: "Marche contando até 6.", fallback: "Bata 6 palmas devagar." },
@@ -1461,7 +1461,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "A oficina de Mestre Bolim fica numa rua que faz toc-toc em vez de eco. Um sino pequeno perdeu o plim. Bolim avisa: se bater forte, ele fica mais quieto; se escutar primeiro, talvez conte onde o som ficou.",
         prompt: "O que você faz com o sino sem plim?",
-        choices: ["Eu escuto antes de tocar", "Eu procuro uma rachadura", "Eu pego o martelo mais macio", "Livre escolha"],
+        choices: ["Eu escuto antes de tocar", "Eu procuro uma rachadura", "Eu pego o martelo mais macio"],
         learningCriteria: "A quest treina causa e efeito, cuidado com objeto e planejamento.",
         language: { language: "en", word: "open", phrase: "Open", meaning: "Abrir" },
         actionRubric: [
@@ -1491,7 +1491,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "Luma aponta para um caminho fora da cidade. Ele não parece perigoso; parece quieto. As folhas fazem fuf quando alguém pisa com pressa e fii quando alguém pisa devagar. Bento, o coelho barrigudo carteiro, perdeu três cartas pequenas.",
         prompt: "Onde você procura primeiro?",
-        choices: ["Perto da pedra redonda", "Perto da flor azul", "Perto do riacho barulhento", "Livre escolha"],
+        choices: ["Perto da pedra redonda", "Perto da flor azul", "Perto do riacho barulhento"],
         learningCriteria: "A quest treina memória espacial, observação e ajuda a um NPC preocupado.",
         language: { language: "en", word: "thank you", phrase: "Thank you", meaning: "Obrigado ou obrigada" },
         actionRubric: [
@@ -1521,7 +1521,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "A colina fica depois de uma escada de grama. No alto, fitas coloridas estão presas em postes. Elas não balançam forte; elas esperam. Iara precisa mandar uma fita até a torre, mas o vento só leva mensagens quando alguém respira calmo.",
         prompt: "Como você chama o vento?",
-        choices: ["Eu respiro fundo três vezes", "Eu falo com o vento bem calmo", "Eu seguro uma fita e espero", "Livre escolha"],
+        choices: ["Eu respiro fundo três vezes", "Eu falo com o vento bem calmo", "Eu seguro uma fita e espero"],
         learningCriteria: "A quest treina respiração, autocontrole, paciência e coragem calma.",
         language: { language: "zh", word: "feng", phrase: "Feng", meaning: "Vento" },
         movement: { label: "Respiração do Vento", instruction: "Respire fundo 3 vezes com calma.", fallback: "Sopre de leve na mão 3 vezes." },
@@ -1547,7 +1547,7 @@ window.RPG_KIDS_ADVENTURES = [
         narration:
           "As Notas de Sino brilham na fonte e a água sobe formando degraus pequenos. No alto da torre, a sala não está quebrada: está cheia de almofadas. No meio delas existe uma nuvem redonda, cinza clara, segurando potinhos de sons: plim, tac, risadinha, vento, livro fechando e pão saindo do forno. Ela diz: eu sou o Grande Silêncio Macio. Guardei os sons porque achei que ninguém queria mais ficar quietinho comigo.",
         prompt: "O que você faz com o Grande Silêncio Macio?",
-        choices: ["Eu escuto primeiro", "Eu explico que a cidade gosta de sons e silêncio", "Eu mostro uma Nota de Sino", "Livre escolha"],
+        choices: ["Eu escuto primeiro", "Eu explico que a cidade gosta de sons e silêncio", "Eu mostro uma Nota de Sino"],
         learningCriteria: "O final mede escuta, reparação, cooperação e uso das conquistas da jornada.",
         actionRubric: [
           { progress: "gentileza", signals: ["escuto", "silêncio", "silencio", "ouço", "calma"], short: "Você escutou antes de resolver.", message: "Critério final: ouvir o personagem que guardou os sons. Progresso: gentileza +1." },
