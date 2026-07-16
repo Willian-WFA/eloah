@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA; f81aba8 Add bell city idle effects; 8e6452d Shorten bell city hub narration; e263787 Add bell city touch map modal
+Commit(s): 4b2cfc3 Fix bell city hub and dice flow; 9a9309a Fix bell city route narration after QA; f81aba8 Add bell city idle effects; 8e6452d Shorten bell city hub narration; e263787 Add bell city touch map modal; dd70520 Fix bell city map flow and option voice
 PR/Issues: n/a
 
 ## Resumo curto
@@ -274,6 +274,12 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Tocar em um ponto aberto confirma a rota, fecha mapa/modal de opções e libera a seta para seguir até a missão.
 - Pontos bloqueados/concluídos não avançam a história, preservando a progressão aprovada.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-map-modal-pwa`.
+- A Praça do Relógio agora abre o mapa automaticamente ao fim da fala do narrador, sem depender do botão manual.
+- Tocar em uma rota aberta no mapa agora leva direto para a cena escolhida, sem exigir a seta intermediária.
+- Rotas abertas fora das 3 opções narradas passam a ser aceitas quando tocadas no mapa, preservando bloqueios por progresso.
+- A narração passou a juntar frases curtas em blocos maiores, reduzindo pausas longas na praça.
+- Textos premium contendo `Opção` voltaram a ser elegíveis para Gemini TTS, evitando cair direto na voz do navegador quando não há WAV pré-gerado.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-map-flow-voice-pwa`.
 
 ## Decisoes tomadas
 
@@ -489,6 +495,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Chrome headless/CDP com checkpoint direto na Praça do Relógio confirmou fala inicial curta, modal de 3 opções aberto e primeira fala ociosa entrando após espera sem escolha.
 - Validação após mapa tocável executada com `npm run check`, `node --check prototype/app.js` e `cmp` entre `public/` e `prototype/`.
 - Chrome headless/CDP confirmou mapa da Praça com 8 pontos, 3 abertos e 5 bloqueados no início; tocar em `Rua dos Biscoitos Redondos` fechou o mapa, confirmou a escolha e liberou a seta.
+- Validação após correção do fluxo do mapa/voz executada com `npm run check`, `node --check prototype/app.js` e `cmp` entre `public/` e `prototype/`.
+- Chrome headless/CDP confirmou que a fala inicial da Praça virou um único bloco, `Opção` com `quality=premium` usa API TTS, o mapa abre automaticamente, tocar na rota entra direto em `Tico e a Ordem dos Biscoitos`, e escolher uma opção da cena abre o modal do dado.
 
 ## O que falta fazer
 
