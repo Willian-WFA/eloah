@@ -17,6 +17,10 @@ const limit = Number(process.argv.find((arg) => arg.startsWith("--limit="))?.spl
 const continueOnError = process.argv.includes("--continue-on-error");
 const force = process.argv.includes("--force");
 const selectedKind = process.argv.find((arg) => arg.startsWith("--kind="))?.split("=")[1] || "";
+const selectedSceneIds = new Set((process.argv.find((arg) => arg.startsWith("--scene="))?.split("=")[1] || "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean));
 const delayMs = Number(process.argv.find((arg) => arg.startsWith("--delay-ms="))?.split("=")[1] || 2500);
 
 main().catch((error) => {
@@ -31,7 +35,8 @@ async function main() {
   const adventures = await loadAdventures();
   const jobs = buildAudioJobs(adventures).filter((job) => (
     (!selectedAdventureId || job.adventureId === selectedAdventureId) &&
-    (!selectedKind || job.kind === selectedKind)
+    (!selectedKind || job.kind === selectedKind) &&
+    (!selectedSceneIds.size || selectedSceneIds.has(job.sceneId))
   ));
   const selectedJobs = limit > 0 ? jobs.slice(0, limit) : jobs;
   const manifest = await readJson(join(outDir, "manifest.json"));
@@ -83,6 +88,7 @@ function buildAudioJobs(adventures) {
       jobs.push({
         key: `${adventure.id}/${scene.id}/scene`,
         adventureId: adventure.id,
+        sceneId: scene.id,
         kind: "scene",
         text: sceneText(scene),
       });
@@ -94,6 +100,7 @@ function buildAudioJobs(adventures) {
           jobs.push({
             key: `${adventure.id}/${scene.id}/dice-${result}`,
             adventureId: adventure.id,
+            sceneId: scene.id,
             kind: "dice",
             text: `Você tirou ${result}. ${diceResultReaction(result)} ${outcome?.narration || defaultDiceNarration(result, bandByRoll[result])}`,
           });

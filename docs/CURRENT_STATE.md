@@ -4,7 +4,7 @@ Projeto: RPG Kids
 Atualizado em: 2026-07-16
 Agente/sessao: The Creator / Codex
 Branch: main
-Commit(s): c88fb39 Focus bell city campaign flow; 107ee1b Polish bell city dice and ending flow
+Commit(s): c88fb39 Focus bell city campaign flow; 107ee1b Polish bell city dice and ending flow; proximo commit desta sessao regenera os WAVs restantes da campanha
 PR/Issues: n/a
 
 ## Resumo curto
@@ -226,6 +226,11 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Encerramento final ganhou fala de parabéns com nome da criança, Notas de Sino, itens guardados e domínio de progresso mais forte.
 - Sons sintéticos de final ganharam sequência de fanfarra/sinos/confete (`victory_fanfare`, `bell_wave`, `star_confetti_soft`).
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-celebration-pwa`.
+- Gerador de áudio ganhou filtro `--scene=` para regenerar cenas específicas sem gastar chamadas em toda a aventura.
+- A tentativa com `gemini-3.1-flash-tts-preview` retornou quota `429`; os três WAVs restantes foram regenerados com `TTS_MODEL=gemini-2.5-flash-preview-tts`.
+- Regenerados os WAVs de cena de `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final` em `public/` e `prototype/`.
+- `scenePrebuiltAudioKey()` passou a liberar esses três IDs, então a campanha `A Cidade dos Sinos Claros` voltou a usar áudio pregerado para todas as cenas não-hub.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-regenerated-audio-pwa`.
 - O modal de aprovação da história ganhou seletor de microfone; se o navegador negar permissão, o seletor desmarca e a criança continua por toque.
 - A Praça do Relógio Parado passou a oferecer no máximo 3 caminhos disponíveis por vez, removendo rotas já concluídas e escondendo rotas bloqueadas da lista infantil.
 - Ao voltar para a praça, o texto/narração usa uma retomada curta: `Voltamos à praça redonda...`, sem repetir a introdução inteira.
@@ -234,7 +239,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Recompensas recebidas após dado não disparam mais uma segunda narração por cima do resultado.
 - O gerador de áudio ganhou `--force` e `--kind=scene`.
 - Foram regenerados com Gemini 7 WAVs de cena da campanha: portão, praça, Tico, biblioteca, ponte, oficina e Iara.
-- Por quota Gemini 429, não foram regenerados nesta rodada: `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final`; o app bloqueia o uso dos WAVs antigos dessas cenas para evitar frases antigas de escolha livre.
+- Na rodada anterior, a quota Gemini 429 impediu regenerar `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final`; estes WAVs foram regenerados depois com `gemini-2.5-flash-preview-tts`.
 - Cache do service worker atualizado para `rpg-kids-v2026-07-16-bell-city-focus-fixes-pwa`.
 
 ## Decisoes tomadas
@@ -440,11 +445,12 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Validação após polimento de dado/hub/final executada com `npm run check`, `node --check public/app.js` e `cmp` entre `public/` e `prototype/`.
 - Busca em `public/`, `prototype/` e `scripts/` não encontrou frases antigas de escolha livre (`pode inventar`, `própria escolha`, `própria ação`, `contar algo diferente`, `livre escolha`).
 - Chrome headless em `http://127.0.0.1:3000/` carregou o DOM inicial sem erro de sintaxe/runtime e gerou captura mobile em `/tmp/rpg-kids-polish.png`.
+- Validação após regenerar áudios executada com `npm run check`, `node --check scripts/generate-audio.js` e `cmp` entre `public/` e `prototype/`.
+- Confirmado que os três WAVs regenerados existem e são idênticos em `public/assets/audio/` e `prototype/assets/audio/`.
 
 ## O que falta fazer
 
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
-- Regenerar com Gemini, quando a quota permitir, os WAVs de cena restantes: `sinos_pipoca_jardim`, `sinos_bento_bosque` e `sinos_torre_final`.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
 - Gerar ou pregerar áudio Gemini específico para encerramento final da `A Cidade dos Sinos Claros`, se a fala dinâmica do browser/API ainda não ficar teatral o suficiente.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
@@ -494,4 +500,4 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 
 ## Proximo prompt recomendado
 
-Atue como The Creator no projeto RPG Kids. Abra/teste a versão publicada e local em `http://localhost:3000`, foque na campanha `A Cidade dos Sinos Claros`, valide no celular o loop fechado de opções, microfone, dado, desafio físico, hub com rotas restantes, diário no card da heroína e encerramento com parabéns. Se o fluxo estiver estável, o próximo passo é regenerar os WAVs restantes da campanha e criar áudio pregerado para o final.
+Atue como The Creator no projeto RPG Kids. Abra/teste a versão publicada e local em `http://localhost:3000`, foque na campanha `A Cidade dos Sinos Claros`, valide no celular o loop fechado de opções, microfone, dado, desafio físico, hub com rotas restantes, diário no card da heroína, cenas com WAV pregerado e encerramento com parabéns. Se o fluxo estiver estável, o próximo passo é criar áudio pregerado especial para o final da aventura e refinar o conteúdo pedagógico.

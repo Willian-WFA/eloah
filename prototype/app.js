@@ -1055,9 +1055,12 @@ function scenePrebuiltAudioKey(scene) {
       "sinos_praca_relogio",
       "sinos_tico_biscoitos",
       "sinos_vira_pagina",
+      "sinos_pipoca_jardim",
       "sinos_ponte_nara",
       "sinos_bolim_oficina",
+      "sinos_bento_bosque",
       "sinos_iara_vento",
+      "sinos_torre_final",
     ]);
     if (!regeneratedSceneIds.has(scene.id)) return "";
   }
