@@ -511,9 +511,12 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 - Servidor convertido para Express para compatibilidade com preset/framework da Hostinger. `package.json` agora declara `main`, `build` e dependência `express`; `package-lock.json` foi gerado.
 - Validação local do servidor Express confirmou `/health`, `/` e `/assets/audio/manifest.json` respondendo `200`.
+- Criado backlog GitHub inicial para evoluir a Adventure Engine declarativa: issues #1 a #8.
+- Iniciada execucao da issue #1 com `docs/ADVENTURE_ENGINE_CONTRACT.md`, definindo separacao entre engine fixa e pacote de aventura, campos principais, hub, dado, movimento, desafio visual, audio, recompensas, progresso e guardrails da IA mestre.
 
 ## O que falta fazer
 
+- Revisar e mergear PR da issue #1.
 - Quando a quota Gemini liberar, completar os 5 WAVs complementares pendentes: `route-sinos_bolim_oficina`, `route-sinos_bento_bosque`, `route-sinos_iara_vento`, `route-sinos_torre_final` e `sinos_tico_biscoitos/visual-success`.
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
