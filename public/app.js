@@ -1486,7 +1486,7 @@ function handlePlayerAction(actionText, source) {
   const origin = source === "voice" ? "Ouvi" : "Entendi";
   const diceHint = scene.movement
       ? " Agora faça o desafio físico para abrir o caminho."
-      : scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)
+      : sceneNeedsVisualChallenge(scene)
         ? " Agora resolva o desafio da cena para abrir o dado."
       : scene.dice
         ? ` ${narratorStyleProfile().diceLead}`
@@ -1501,7 +1501,7 @@ function handlePlayerAction(actionText, source) {
       rewardId: scene.reward,
     };
     openMovementModal();
-  } else if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
+  } else if (sceneNeedsVisualChallenge(scene)) {
     openVisualChallengeModal(scene);
   } else if (scene.dice) {
     window.setTimeout(openDiceModal, 320);
@@ -2204,6 +2204,33 @@ function masterEffectForContext(context = {}) {
   return "warm_glow";
 }
 
+const CHALLENGE_TEMPLATE_REGISTRY = {
+  visual_sequence_pick: {
+    title: "Escolha",
+    instruction: "Toque nos objetos certos.",
+    wrongText: "Tente outro objeto.",
+    successText: "Muito bem. O desafio abriu o caminho.",
+  },
+};
+
+function challengeForScene(scene, allowedTemplateIds = []) {
+  const challenge = scene?.challenge || scene?.visualChallenge;
+  if (!challenge) return null;
+  const templateId = challenge.templateId || (challenge.type === "sequence_pick" ? "visual_sequence_pick" : challenge.type);
+  if (allowedTemplateIds.length && !allowedTemplateIds.includes(templateId)) return null;
+  const template = CHALLENGE_TEMPLATE_REGISTRY[templateId];
+  if (!template) return null;
+  return { ...template, ...challenge, templateId };
+}
+
+function visualChallengeForScene(scene = currentScene()) {
+  return challengeForScene(scene, ["visual_sequence_pick"]);
+}
+
+function sceneNeedsVisualChallenge(scene = currentScene()) {
+  return Boolean(visualChallengeForScene(scene) && !state.completedVisualChallenges.has(scene.id));
+}
+
 function openMovementModal() {
   const scene = currentScene();
   if (!scene.movement) return;
@@ -2229,7 +2256,7 @@ function closeMovementModal() {
 }
 
 function openVisualChallengeModal(scene = currentScene()) {
-  const challenge = scene?.visualChallenge;
+  const challenge = visualChallengeForScene(scene);
   if (!challenge || !els.visualChallengeModal) return;
   state.visualChallengeProgress = [];
   renderVisualChallenge(scene);
@@ -2249,7 +2276,7 @@ function closeVisualChallengeModal() {
 }
 
 function renderVisualChallenge(scene = currentScene()) {
-  const challenge = scene?.visualChallenge;
+  const challenge = visualChallengeForScene(scene);
   if (!challenge) return;
   els.visualChallengeTitle.textContent = challenge.title || "Escolha";
   els.visualChallengeInstruction.textContent = challenge.instruction || "Toque nos objetos certos.";
@@ -2276,7 +2303,7 @@ function renderVisualChallenge(scene = currentScene()) {
 
 function chooseVisualObject(optionId, button) {
   const scene = currentScene();
-  const challenge = scene?.visualChallenge;
+  const challenge = visualChallengeForScene(scene);
   if (!challenge) return;
   const expected = challenge.targets?.[state.visualChallengeProgress.length];
   if (optionId !== expected) {
@@ -2298,7 +2325,7 @@ function chooseVisualObject(optionId, button) {
 }
 
 function completeVisualChallenge(scene = currentScene()) {
-  const challenge = scene?.visualChallenge;
+  const challenge = visualChallengeForScene(scene);
   if (!challenge) return;
   state.completedVisualChallenges.add(scene.id);
   addNarratorEntry("challenge", challenge.successText || `${scene.title}: desafio resolvido.`);
@@ -2436,7 +2463,7 @@ function nextScene() {
     showFeedback("Antes de avançar, escolha uma das opções do mestre.", "warm_chime");
     return;
   }
-  if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
+  if (sceneNeedsVisualChallenge(scene)) {
     showFeedback("Resolva o desafio da cena primeiro.", "warm_chime", undefined, { speak: false });
     openVisualChallengeModal(scene);
     return;

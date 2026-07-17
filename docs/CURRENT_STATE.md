@@ -511,6 +511,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 - Servidor convertido para Express para compatibilidade com preset/framework da Hostinger. `package.json` agora declara `main`, `build` e dependência `express`; `package-lock.json` foi gerado.
 - Validação local do servidor Express confirmou `/health`, `/` e `/assets/audio/manifest.json` respondendo `200`.
+- O desafio visual passou a ser resolvido por uma registry de templates em runtime. A cena `Tico e a Ordem dos Biscoitos` agora declara `challenge.templateId = visual_sequence_pick`, enquanto o legado `visualChallenge` continua aceito para compatibilidade.
 
 ## O que falta fazer
 
