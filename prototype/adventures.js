@@ -1348,7 +1348,8 @@ window.RPG_KIDS_ADVENTURES = [
         choices: ["Eu pergunto qual vem primeiro", "Eu olho as marcas na mesa", "Eu monto a sequência estrela, lua, sino"],
         visualChallenge: {
           type: "sequence_pick",
-          title: "Ordem dos Biscoitos",
+          theme: "cookie_sequence",
+          title: "Forno de Sequência",
           instruction: "Toque na estrela, depois na lua e depois no sino para montar a ordem do festival.",
           targets: ["estrela", "lua", "sino"],
           successText: "Muito bem. A sequência estrela, lua e sino voltou para a bandeja de Tico, e a Nota Amarela acordou na fonte.",

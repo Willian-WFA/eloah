@@ -526,10 +526,18 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Biblioteca, Jardim, Oficina, Bosque e Torre final foram ajustados para usar `challenge template` em vez de misturar desafio com dado.
 - Bento deixou de entregar Nota Verde duplicada e passou a entregar `Selo de Carteiro`; Oficina virou rota de item (`Martelo Macio`), sem Nota duplicada.
 - Validação após auditoria narrativa executada com `npm run check`, `cmp` entre `public/` e `prototype/`, `node --check public/app.js public/adventures.js` e Chrome headless em `http://127.0.0.1:3133/`. Resultado do check: 203 chaves esperadas, 184 obrigatórias, 19 opcionais, 227 entradas no manifesto e 0 obrigatórias faltando.
+- Teste automatizado via Chrome DevTools confirmou o fluxo de `Tico e a Ordem dos Biscoitos`: ao escolher uma opção, abre o modal visual, o dado permanece fechado, a seta fica escondida, os objetos aparecem embaralhados e o desafio concede `nota_amarela`/`notas_sino +1` sem rolagem.
+- Desafio do Tico ganhou tema visual `cookie_sequence`, com visual de bandeja/forno de biscoitos e rótulos nos objetos para diferenciar melhor do grid genérico anterior.
+- Corrigido controle de avanço: a seta não aparece enquanto `visualChallenge`, `templateChallenge` ou desafio físico estiverem abertos/pendentes.
+- Adicionado fallback de fechamento para sucesso de `visualChallenge`/`templateChallenge`, evitando travar o modal quando o WAV opcional ainda não existe ou quando a narração está desligada.
+- Mapa da cidade passou a marcar cada rota como `Nota`, `Item` ou `Final`; teste automatizado confirmou Biscoitos/Biblioteca/Jardim/Ponte/Colina como Nota, Oficina/Bosque como Item e Torre como Final.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-17-cookie-challenge-flow-pwa`.
+- Tentativa de gerar os WAVs opcionais com `npm run generate:audio:missing` foi bloqueada pelo revisor automático por enviar texto privado da história para serviço externo Gemini TTS. A alternativa segura aplicada foi o fallback de fechamento do modal.
+- Validação após ajustes do Tico/mapa/cache executada com `npm run check`, `cmp` entre `public/` e `prototype/`, teste CDP do desafio do Tico e teste CDP do mapa.
 
 ## O que falta fazer
 
-- Quando a quota Gemini liberar, completar os WAVs complementares pendentes: 4 falas de rota da Praca, `sinos_tico_biscoitos/visual-success` e os pares `challenge`/`challenge-success` dos mini-desafios de Biblioteca, Jardim, Oficina, Bosque e Torre.
+- Completar os WAVs complementares pendentes somente com aprovação explícita para enviar textos da história à Gemini TTS: 4 falas de rota da Praca, `sinos_tico_biscoitos/visual-success` e os pares `challenge`/`challenge-success` dos mini-desafios de Biblioteca, Jardim, Oficina, Bosque e Torre.
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
