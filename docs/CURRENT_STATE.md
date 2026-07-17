@@ -534,10 +534,12 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Cache do service worker atualizado para `rpg-kids-v2026-07-17-cookie-challenge-flow-pwa`.
 - Tentativa de gerar os WAVs opcionais com `npm run generate:audio:missing` foi bloqueada pelo revisor automático por enviar texto privado da história para serviço externo Gemini TTS. A alternativa segura aplicada foi o fallback de fechamento do modal.
 - Validação após ajustes do Tico/mapa/cache executada com `npm run check`, `cmp` entre `public/` e `prototype/`, teste CDP do desafio do Tico e teste CDP do mapa.
+- Após aprovação explícita do usuário para enviar texto privado da história à Gemini TTS, `npm run generate:audio:missing` gerou os 15 WAVs complementares restantes em modo teatral.
+- Cobertura de áudio agora está completa também para opcionais: `npm run check` retornou 203 chaves esperadas, 184 obrigatórias, 19 opcionais, 242 entradas no manifesto, 0 obrigatórias faltando e 0 opcionais faltando.
+- Conferido que os 15 WAVs novos e `assets/audio/manifest.json` estão sincronizados entre `public/` e `prototype/`.
 
 ## O que falta fazer
 
-- Completar os WAVs complementares pendentes somente com aprovação explícita para enviar textos da história à Gemini TTS: 4 falas de rota da Praca, `sinos_tico_biscoitos/visual-success` e os pares `challenge`/`challenge-success` dos mini-desafios de Biblioteca, Jardim, Oficina, Bosque e Torre.
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
