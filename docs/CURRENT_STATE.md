@@ -511,6 +511,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 - Servidor convertido para Express para compatibilidade com preset/framework da Hostinger. `package.json` agora declara `main`, `build` e dependência `express`; `package-lock.json` foi gerado.
 - Validação local do servidor Express confirmou `/health`, `/` e `/assets/audio/manifest.json` respondendo `200`.
+- Criado o primeiro pacote declarativo jogavel em `content/adventures/cidade-dos-sinos-claros.json`, gerado a partir da campanha atual de `public/adventures.js`.
+- Adicionado `scripts/check-declarative-adventures.js` ao `npm run check`, garantindo equivalencia entre o JSON declarativo da Cidade dos Sinos e a aventura runtime enquanto a engine ainda consome `adventures.js`.
 
 ## O que falta fazer
 
@@ -544,6 +546,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Trocar os placeholders CSS restantes das aventuras antigas por arquivos reais e evoluir sons/camadas de avatar quando o pacote de aventura for normalizado.
 - Transformar dados de `prototype/adventures.js` em manifest JSON real.
 - Revisar fluxo de checkpoint/continuar com a crianca.
+- Fazer a engine carregar `content/adventures/cidade-dos-sinos-claros.json`/pacote publicado diretamente quando os PRs de manifest e pacote forem consolidados.
 
 ## Pendencias fora do commit
 
