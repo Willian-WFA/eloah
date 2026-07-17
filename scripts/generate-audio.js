@@ -157,6 +157,23 @@ function buildAudioJobs(adventures) {
         });
       }
 
+      if (scene.challenge?.templateId) {
+        jobs.push({
+          key: `${adventure.id}/${scene.id}/challenge`,
+          adventureId: adventure.id,
+          sceneId: scene.id,
+          kind: "challenge",
+          text: `${scene.challenge.title || "Desafio"}. ${scene.challenge.prompt || scene.challenge.instruction || ""}`,
+        });
+        jobs.push({
+          key: `${adventure.id}/${scene.id}/challenge-success`,
+          adventureId: adventure.id,
+          sceneId: scene.id,
+          kind: "challenge",
+          text: scene.challenge.successText || "Muito bem. O desafio abriu o caminho.",
+        });
+      }
+
       if (scene.hub?.routes?.length) {
         jobs.push({
           key: `${adventure.id}/${scene.id}/hub-return`,

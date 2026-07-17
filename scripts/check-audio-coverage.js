@@ -73,6 +73,11 @@ function buildExpectedKeys(adventures) {
         optionalKeys.push(`${adventure.id}/${scene.id}/visual-success`);
       }
 
+      if (scene.challenge?.templateId) {
+        optionalKeys.push(`${adventure.id}/${scene.id}/challenge`);
+        optionalKeys.push(`${adventure.id}/${scene.id}/challenge-success`);
+      }
+
       if (scene.hub?.routes?.length) {
         requiredKeys.push(`${adventure.id}/${scene.id}/hub-return`);
         for (const route of scene.hub.routes) {

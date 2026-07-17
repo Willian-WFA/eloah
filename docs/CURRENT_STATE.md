@@ -511,6 +511,9 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 - Servidor convertido para Express para compatibilidade com preset/framework da Hostinger. `package.json` agora declara `main`, `build` e dependência `express`; `package-lock.json` foi gerado.
 - Validação local do servidor Express confirmou `/health`, `/` e `/assets/audio/manifest.json` respondendo `200`.
+- Adicionado modal genérico de desafios ligados ao narrador, com suporte inicial a `language_repeat`, `counting_sort` e `memory_echo`.
+- A campanha `A Cidade dos Sinos Claros` passou a usar novos desafios: palavra `shu` na biblioteca, contagem das 3 cartas no bosque e memória dos potinhos no final.
+- `scripts/generate-audio.js` e `scripts/check-audio-coverage.js` passaram a reconhecer chaves opcionais `challenge` e `challenge-success` para cenas com `scene.challenge`.
 
 ## O que falta fazer
 
@@ -544,6 +547,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Trocar os placeholders CSS restantes das aventuras antigas por arquivos reais e evoluir sons/camadas de avatar quando o pacote de aventura for normalizado.
 - Transformar dados de `prototype/adventures.js` em manifest JSON real.
 - Revisar fluxo de checkpoint/continuar com a crianca.
+- Gerar WAVs Gemini para `challenge` e `challenge-success` das cenas com novos mini-desafios, caso a experiência no celular aprove o texto.
 
 ## Pendencias fora do commit
 

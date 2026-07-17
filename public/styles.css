@@ -1675,6 +1675,7 @@ select {
 .choice-modal,
 .movement-modal,
 .visual-challenge-modal,
+.template-challenge-modal,
 .city-map-modal,
 .journal-modal,
 .story-action-modal {
@@ -1691,6 +1692,7 @@ select {
 .choice-modal[hidden],
 .movement-modal[hidden],
 .visual-challenge-modal[hidden],
+.template-challenge-modal[hidden],
 .city-map-modal[hidden],
 .journal-modal[hidden],
 .story-action-modal[hidden] {
@@ -1700,6 +1702,7 @@ select {
 .choice-card,
 .movement-card,
 .visual-challenge-card,
+.template-challenge-card,
 .city-map-card,
 .journal-card,
 .story-action-card {
@@ -1809,6 +1812,138 @@ select {
   font-size: 0.94rem;
   font-weight: 900;
   text-align: center;
+}
+
+.template-challenge-card {
+  width: min(100%, 430px);
+  background:
+    radial-gradient(circle at 18% 10%, rgba(120, 245, 255, 0.24), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8f0ff 58%, #fff3d4 100%);
+}
+
+.template-challenge-card h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.8rem, 8vw, 2.7rem);
+  line-height: 0.98;
+  text-align: center;
+}
+
+.template-challenge-card p {
+  margin: 0;
+}
+
+.template-challenge-stage {
+  display: grid;
+  gap: 12px;
+}
+
+.language-word-card,
+.memory-sequence,
+.counting-target {
+  display: grid;
+  place-items: center;
+  min-height: 96px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.82), transparent 28%),
+    linear-gradient(135deg, #78f5ff, #ffcc66 52%, #ff8ff0);
+  color: #2d2438;
+  box-shadow:
+    inset 0 -12px 20px rgba(45, 36, 56, 0.16),
+    0 0 0 8px rgba(120, 245, 255, 0.14);
+}
+
+.language-word {
+  font-size: clamp(2.4rem, 14vw, 4.2rem);
+  font-weight: 1000;
+  line-height: 0.95;
+}
+
+.language-meaning {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.memory-sequence {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.memory-sequence span {
+  display: grid;
+  min-height: 58px;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.52);
+  font-size: 1.5rem;
+  font-weight: 1000;
+}
+
+.counting-target {
+  min-height: 88px;
+  font-size: clamp(3rem, 18vw, 5rem);
+  font-weight: 1000;
+}
+
+.template-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.template-choice-button {
+  display: grid;
+  min-height: 76px;
+  place-items: center;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #2d2438;
+  font-size: 1rem;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(45, 36, 56, 0.12);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.template-choice-symbol {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.template-choice-button:hover,
+.template-choice-button:focus-visible {
+  outline: 0;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.16), 0 10px 24px rgba(45, 36, 56, 0.12);
+}
+
+.template-choice-button:active {
+  transform: scale(0.94);
+}
+
+.template-choice-button.is-picked {
+  background: #dffff4;
+  box-shadow: inset 0 0 0 3px rgba(0, 99, 72, 0.32);
+}
+
+.template-choice-button.is-wrong {
+  animation: visualWrong 0.32s ease;
+}
+
+.template-challenge-feedback {
+  min-height: 1.4em;
+  color: var(--brand-strong);
+  font-size: 0.96rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.template-ready-button {
+  min-height: 74px;
+  font-size: clamp(1.8rem, 10vw, 3rem);
 }
 
 @keyframes visualWrong {

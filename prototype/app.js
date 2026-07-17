@@ -15,6 +15,7 @@ const state = {
   pendingMovementScenes: new Set(),
   completedVisualChallenges: new Set(),
   visualChallengeProgress: [],
+  templateChallengeProgress: [],
   completedScenes: new Set(),
   actionProgressScenes: new Set(),
   actionHistory: [],
@@ -173,6 +174,12 @@ const els = {
   visualChallengeSlots: document.querySelector("#visualChallengeSlots"),
   visualChallengeGrid: document.querySelector("#visualChallengeGrid"),
   visualChallengeFeedback: document.querySelector("#visualChallengeFeedback"),
+  templateChallengeModal: document.querySelector("#templateChallengeModal"),
+  templateChallengeEyebrow: document.querySelector("#templateChallengeEyebrow"),
+  templateChallengeTitle: document.querySelector("#templateChallengeTitle"),
+  templateChallengeInstruction: document.querySelector("#templateChallengeInstruction"),
+  templateChallengeStage: document.querySelector("#templateChallengeStage"),
+  templateChallengeFeedback: document.querySelector("#templateChallengeFeedback"),
   progressMeters: document.querySelector("#progressMeters"),
   avatarPreview: document.querySelector("#avatarPreview"),
   avatarTitle: document.querySelector("#avatarTitle"),
@@ -1486,6 +1493,8 @@ function handlePlayerAction(actionText, source) {
   const origin = source === "voice" ? "Ouvi" : "Entendi";
   const diceHint = scene.movement
       ? " Agora faça o desafio físico para abrir o caminho."
+      : sceneNeedsTemplateChallenge(scene)
+        ? " Agora resolva o desafio que o mestre pediu."
       : scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)
         ? " Agora resolva o desafio da cena para abrir o dado."
       : scene.dice
@@ -1501,6 +1510,8 @@ function handlePlayerAction(actionText, source) {
       rewardId: scene.reward,
     };
     openMovementModal();
+  } else if (sceneNeedsTemplateChallenge(scene)) {
+    openTemplateChallengeModal(scene);
   } else if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
     openVisualChallengeModal(scene);
   } else if (scene.dice) {
@@ -2204,6 +2215,167 @@ function masterEffectForContext(context = {}) {
   return "warm_glow";
 }
 
+const TEMPLATE_CHALLENGE_LABELS = {
+  language_repeat: "Palavra mágica",
+  memory_echo: "Memória do mestre",
+  counting_sort: "Contagem",
+};
+
+function challengeForScene(scene = currentScene()) {
+  return scene?.challenge || null;
+}
+
+function sceneNeedsTemplateChallenge(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  return Boolean(challenge?.templateId && !state.completedVisualChallenges.has(scene.id));
+}
+
+function openTemplateChallengeModal(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  if (!challenge || !els.templateChallengeModal) return;
+  state.templateChallengeProgress = [];
+  renderTemplateChallenge(scene);
+  els.templateChallengeModal.hidden = false;
+  playCue("warm_chime");
+  speakNarration(`${challenge.title || TEMPLATE_CHALLENGE_LABELS[challenge.templateId] || "Desafio"}. ${challenge.prompt || challenge.instruction || ""}`, {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "challenge"),
+  });
+}
+
+function closeTemplateChallengeModal() {
+  if (!els.templateChallengeModal) return;
+  els.templateChallengeModal.hidden = true;
+  state.templateChallengeProgress = [];
+}
+
+function renderTemplateChallenge(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  if (!challenge) return;
+  els.templateChallengeEyebrow.textContent = TEMPLATE_CHALLENGE_LABELS[challenge.templateId] || "Desafio da cena";
+  els.templateChallengeTitle.textContent = challenge.title || "Desafio";
+  els.templateChallengeInstruction.textContent = challenge.instruction || challenge.prompt || "";
+  els.templateChallengeFeedback.textContent = "";
+  els.templateChallengeStage.innerHTML = "";
+
+  if (challenge.templateId === "language_repeat") {
+    renderLanguageChallenge(challenge);
+  } else if (challenge.templateId === "memory_echo") {
+    renderMemoryChallenge(challenge);
+  } else if (challenge.templateId === "counting_sort") {
+    renderCountingChallenge(challenge);
+  }
+}
+
+function renderLanguageChallenge(challenge) {
+  const word = challenge.word || challenge.phrase || "";
+  const meaning = challenge.translation || challenge.meaning || "";
+  els.templateChallengeStage.innerHTML = `
+    <div class="language-word-card">
+      <span class="language-word">${escapeHtml(word)}</span>
+      <span class="language-meaning">${escapeHtml(meaning)}</span>
+    </div>
+    <button class="ready-word-button template-ready-button" type="button" data-template-complete="language">Pronto</button>
+  `;
+  els.templateChallengeStage.querySelector("[data-template-complete]").addEventListener("click", () => completeTemplateChallenge());
+}
+
+function renderMemoryChallenge(challenge) {
+  const sequence = challenge.sequence || [];
+  els.templateChallengeStage.innerHTML = `
+    <div class="memory-sequence">${sequence.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>
+    <div class="template-choice-grid">
+      ${(challenge.options || []).map((option) => `
+        <button class="template-choice-button" type="button" data-memory-choice="${escapeHtml(option.id || option.label)}">
+          ${escapeHtml(option.label || option.id)}
+        </button>
+      `).join("")}
+    </div>
+  `;
+  els.templateChallengeStage.querySelectorAll("[data-memory-choice]").forEach((button) => {
+    button.addEventListener("click", () => chooseMemoryItem(button.dataset.memoryChoice, button));
+  });
+}
+
+function renderCountingChallenge(challenge) {
+  const picked = new Set(state.templateChallengeProgress);
+  els.templateChallengeStage.innerHTML = `
+    <div class="counting-target">${escapeHtml(String(challenge.targetCount || 1))}</div>
+    <div class="template-choice-grid">
+      ${(challenge.items || []).map((item) => `
+        <button class="template-choice-button ${picked.has(item.id) ? "is-picked" : ""}" type="button" data-counting-choice="${escapeHtml(item.id)}">
+          <span class="template-choice-symbol">${escapeHtml(item.symbol || "•")}</span>
+          <span>${escapeHtml(item.label || item.id)}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+  els.templateChallengeStage.querySelectorAll("[data-counting-choice]").forEach((button) => {
+    button.addEventListener("click", () => chooseCountingItem(button.dataset.countingChoice, button));
+  });
+}
+
+function chooseMemoryItem(optionId, button) {
+  const challenge = challengeForScene();
+  const expected = challenge.sequence?.[state.templateChallengeProgress.length];
+  if (optionId !== expected) {
+    markTemplateButtonWrong(button, challenge.wrongText || "Quase. Tente seguir a ordem que o mestre falou.");
+    return;
+  }
+  state.templateChallengeProgress.push(optionId);
+  button.classList.add("is-picked");
+  playCue("bright_chime");
+  els.templateChallengeFeedback.textContent = `${state.templateChallengeProgress.length}/${challenge.sequence.length}`;
+  if (state.templateChallengeProgress.length >= (challenge.sequence || []).length) completeTemplateChallenge();
+}
+
+function chooseCountingItem(optionId, button) {
+  const challenge = challengeForScene();
+  const item = (challenge.items || []).find((candidate) => candidate.id === optionId);
+  if (!item || item.tag !== challenge.targetTag) {
+    markTemplateButtonWrong(button, challenge.wrongText || "Esse não é o objeto pedido. Tente outro.");
+    return;
+  }
+  if (state.templateChallengeProgress.includes(optionId)) return;
+  state.templateChallengeProgress.push(optionId);
+  button.classList.add("is-picked");
+  playCue("bright_chime");
+  els.templateChallengeFeedback.textContent = `${state.templateChallengeProgress.length}/${challenge.targetCount}`;
+  if (state.templateChallengeProgress.length >= Number(challenge.targetCount || 1)) completeTemplateChallenge();
+}
+
+function markTemplateButtonWrong(button, message) {
+  button.classList.remove("is-wrong");
+  void button.offsetWidth;
+  button.classList.add("is-wrong");
+  els.templateChallengeFeedback.textContent = message;
+  playCue("gentle_plop");
+}
+
+function completeTemplateChallenge(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  if (!challenge) return;
+  state.completedVisualChallenges.add(scene.id);
+  addNarratorEntry("challenge", challenge.successText || `${scene.title}: desafio resolvido.`);
+  els.templateChallengeFeedback.textContent = challenge.successText || "Muito bem. O desafio abriu o caminho.";
+  playCue(scene.sound?.success || scene.sound?.reward || "bell_wave");
+  runSceneEffect(scene.effects?.reward || "item_pop_glow");
+  speakNarration(challenge.successText || "Muito bem. O desafio abriu o caminho.", {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "challenge-success"),
+    onComplete: () => {
+      closeTemplateChallengeModal();
+      if (scene.dice && !state.rolledScenes.has(scene.id)) {
+        openDiceModal();
+      } else {
+        renderSceneControls();
+      }
+    },
+  });
+}
+
 function openMovementModal() {
   const scene = currentScene();
   if (!scene.movement) return;
@@ -2434,6 +2606,11 @@ function nextScene() {
   }
   if (!state.selectedChoice) {
     showFeedback("Antes de avançar, escolha uma das opções do mestre.", "warm_chime");
+    return;
+  }
+  if (sceneNeedsTemplateChallenge(scene)) {
+    showFeedback("Resolva o desafio que o mestre pediu primeiro.", "warm_chime", undefined, { speak: false });
+    openTemplateChallengeModal(scene);
     return;
   }
   if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
