@@ -225,5 +225,20 @@
   "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_vira_pagina": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_vira_pagina.wav",
   "cidade-dos-sinos-claros/sinos_tico_biscoitos/visual-challenge": "assets/audio/cidade-dos-sinos-claros/sinos_tico_biscoitos/visual-challenge.wav",
   "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_pipoca_jardim": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_pipoca_jardim.wav",
-  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_ponte_nara": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_ponte_nara.wav"
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_ponte_nara": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_ponte_nara.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_bolim_oficina": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_bolim_oficina.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_bento_bosque": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_bento_bosque.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_iara_vento": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_iara_vento.wav",
+  "cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_torre_final": "assets/audio/cidade-dos-sinos-claros/sinos_praca_relogio/route-sinos_torre_final.wav",
+  "cidade-dos-sinos-claros/sinos_tico_biscoitos/visual-success": "assets/audio/cidade-dos-sinos-claros/sinos_tico_biscoitos/visual-success.wav",
+  "cidade-dos-sinos-claros/sinos_vira_pagina/challenge": "assets/audio/cidade-dos-sinos-claros/sinos_vira_pagina/challenge.wav",
+  "cidade-dos-sinos-claros/sinos_vira_pagina/challenge-success": "assets/audio/cidade-dos-sinos-claros/sinos_vira_pagina/challenge-success.wav",
+  "cidade-dos-sinos-claros/sinos_pipoca_jardim/challenge": "assets/audio/cidade-dos-sinos-claros/sinos_pipoca_jardim/challenge.wav",
+  "cidade-dos-sinos-claros/sinos_pipoca_jardim/challenge-success": "assets/audio/cidade-dos-sinos-claros/sinos_pipoca_jardim/challenge-success.wav",
+  "cidade-dos-sinos-claros/sinos_bolim_oficina/challenge": "assets/audio/cidade-dos-sinos-claros/sinos_bolim_oficina/challenge.wav",
+  "cidade-dos-sinos-claros/sinos_bolim_oficina/challenge-success": "assets/audio/cidade-dos-sinos-claros/sinos_bolim_oficina/challenge-success.wav",
+  "cidade-dos-sinos-claros/sinos_bento_bosque/challenge": "assets/audio/cidade-dos-sinos-claros/sinos_bento_bosque/challenge.wav",
+  "cidade-dos-sinos-claros/sinos_bento_bosque/challenge-success": "assets/audio/cidade-dos-sinos-claros/sinos_bento_bosque/challenge-success.wav",
+  "cidade-dos-sinos-claros/sinos_torre_final/challenge": "assets/audio/cidade-dos-sinos-claros/sinos_torre_final/challenge.wav",
+  "cidade-dos-sinos-claros/sinos_torre_final/challenge-success": "assets/audio/cidade-dos-sinos-claros/sinos_torre_final/challenge-success.wav"
 }

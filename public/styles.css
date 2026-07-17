@@ -1675,6 +1675,7 @@ select {
 .choice-modal,
 .movement-modal,
 .visual-challenge-modal,
+.template-challenge-modal,
 .city-map-modal,
 .journal-modal,
 .story-action-modal {
@@ -1691,6 +1692,7 @@ select {
 .choice-modal[hidden],
 .movement-modal[hidden],
 .visual-challenge-modal[hidden],
+.template-challenge-modal[hidden],
 .city-map-modal[hidden],
 .journal-modal[hidden],
 .story-action-modal[hidden] {
@@ -1700,6 +1702,7 @@ select {
 .choice-card,
 .movement-card,
 .visual-challenge-card,
+.template-challenge-card,
 .city-map-card,
 .journal-card,
 .story-action-card {
@@ -1719,7 +1722,14 @@ select {
   width: min(100%, 420px);
   background:
     radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.32), transparent 28%),
-    linear-gradient(180deg, #fff6df 0%, #f3bd68 100%);
+    linear-gradient(180deg, #fff6df 0%, #eba64d 100%);
+}
+
+.visual-challenge-card--cookie_sequence {
+  border-color: rgba(117, 63, 13, 0.34);
+  background:
+    radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.38), transparent 26%),
+    linear-gradient(180deg, #fff4d8 0%, #eaa24c 58%, #b96a2b 100%);
 }
 
 .visual-challenge-card h2 {
@@ -1753,6 +1763,24 @@ select {
   font-weight: 950;
 }
 
+.visual-challenge-card--cookie_sequence .visual-challenge-slots {
+  padding: 10px;
+  border-radius: 22px;
+  background:
+    linear-gradient(90deg, rgba(100, 51, 16, 0.18), transparent 18%, transparent 82%, rgba(100, 51, 16, 0.18)),
+    #c98236;
+  box-shadow: inset 0 -8px 0 rgba(90, 48, 14, 0.18);
+}
+
+.visual-challenge-card--cookie_sequence .visual-slot {
+  border: 2px dashed rgba(90, 48, 14, 0.42);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.42), transparent 34%),
+    #f4c177;
+  color: #5a300e;
+}
+
 .visual-slot.is-filled {
   border-style: solid;
   border-color: rgba(0, 99, 72, 0.58);
@@ -1766,21 +1794,67 @@ select {
   gap: 12px;
   padding: 8px;
   border-radius: 20px;
-  background: rgba(162, 103, 35, 0.16);
+  background: rgba(104, 60, 20, 0.16);
 }
 
 .visual-object-button {
   display: grid;
+  gap: 6px;
   min-height: 74px;
   place-items: center;
-  border: 0;
+  border: 2px solid rgba(0, 80, 57, 0.16);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.18);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.74), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.42), rgba(255, 242, 168, 0.22));
   color: #006348;
-  font-size: 2.7rem;
   font-weight: 950;
   cursor: pointer;
   transition: transform 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.visual-challenge-card--cookie_sequence .visual-object-button {
+  border-color: rgba(90, 48, 14, 0.18);
+  background:
+    radial-gradient(circle at 50% 43%, #f6ca82 0 34%, #d8893b 35% 50%, transparent 51%),
+    linear-gradient(180deg, rgba(255, 250, 232, 0.5), rgba(255, 216, 137, 0.22));
+}
+
+.visual-object-symbol {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border-radius: 16px;
+  background: #006348;
+  color: #fff6df;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.45rem;
+  font-weight: 950;
+  line-height: 1;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
+  box-shadow:
+    inset 0 -5px 0 rgba(0, 0, 0, 0.14),
+    0 10px 18px rgba(0, 80, 57, 0.22);
+}
+
+.visual-challenge-card--cookie_sequence .visual-object-symbol {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 24%, rgba(255, 255, 255, 0.42), transparent 24%),
+    #7b4215;
+  color: #fff4d8;
+  box-shadow:
+    inset 0 -6px 0 rgba(0, 0, 0, 0.16),
+    0 10px 16px rgba(90, 48, 14, 0.24);
+}
+
+.visual-object-label {
+  color: #4a2a10;
+  font-size: 0.78rem;
+  font-weight: 950;
 }
 
 .visual-object-button:active {
@@ -1799,6 +1873,10 @@ select {
   box-shadow: inset 0 0 0 3px rgba(0, 99, 72, 0.38);
 }
 
+.visual-object-button.is-picked .visual-object-symbol {
+  background: #4b3edb;
+}
+
 .visual-object-button.is-wrong {
   animation: visualWrong 0.32s ease;
 }
@@ -1809,6 +1887,138 @@ select {
   font-size: 0.94rem;
   font-weight: 900;
   text-align: center;
+}
+
+.template-challenge-card {
+  width: min(100%, 430px);
+  background:
+    radial-gradient(circle at 18% 10%, rgba(120, 245, 255, 0.24), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f8f0ff 58%, #fff3d4 100%);
+}
+
+.template-challenge-card h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: clamp(1.8rem, 8vw, 2.7rem);
+  line-height: 0.98;
+  text-align: center;
+}
+
+.template-challenge-card p {
+  margin: 0;
+}
+
+.template-challenge-stage {
+  display: grid;
+  gap: 12px;
+}
+
+.language-word-card,
+.memory-sequence,
+.counting-target {
+  display: grid;
+  place-items: center;
+  min-height: 96px;
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.82), transparent 28%),
+    linear-gradient(135deg, #78f5ff, #ffcc66 52%, #ff8ff0);
+  color: #2d2438;
+  box-shadow:
+    inset 0 -12px 20px rgba(45, 36, 56, 0.16),
+    0 0 0 8px rgba(120, 245, 255, 0.14);
+}
+
+.language-word {
+  font-size: clamp(2.4rem, 14vw, 4.2rem);
+  font-weight: 1000;
+  line-height: 0.95;
+}
+
+.language-meaning {
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.memory-sequence {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 10px;
+}
+
+.memory-sequence span {
+  display: grid;
+  min-height: 58px;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.52);
+  font-size: 1.5rem;
+  font-weight: 1000;
+}
+
+.counting-target {
+  min-height: 88px;
+  font-size: clamp(3rem, 18vw, 5rem);
+  font-weight: 1000;
+}
+
+.template-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.template-choice-button {
+  display: grid;
+  min-height: 76px;
+  place-items: center;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  color: #2d2438;
+  font-size: 1rem;
+  font-weight: 950;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(45, 36, 56, 0.12);
+  transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+}
+
+.template-choice-symbol {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.template-choice-button:hover,
+.template-choice-button:focus-visible {
+  outline: 0;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.16), 0 10px 24px rgba(45, 36, 56, 0.12);
+}
+
+.template-choice-button:active {
+  transform: scale(0.94);
+}
+
+.template-choice-button.is-picked {
+  background: #dffff4;
+  box-shadow: inset 0 0 0 3px rgba(0, 99, 72, 0.32);
+}
+
+.template-choice-button.is-wrong {
+  animation: visualWrong 0.32s ease;
+}
+
+.template-challenge-feedback {
+  min-height: 1.4em;
+  color: var(--brand-strong);
+  font-size: 0.96rem;
+  font-weight: 950;
+  text-align: center;
+}
+
+.template-ready-button {
+  min-height: 74px;
+  font-size: clamp(1.8rem, 10vw, 3rem);
 }
 
 @keyframes visualWrong {
@@ -1952,6 +2162,32 @@ select {
   color: #5f4b12;
 }
 
+.city-map-point.gives-item {
+  background:
+    radial-gradient(circle at 34% 18%, rgba(255, 255, 255, 0.9), transparent 25%),
+    linear-gradient(135deg, #c6a7ff, #78f5ff);
+}
+
+.city-map-point.gives-note {
+  background:
+    radial-gradient(circle at 34% 18%, rgba(255, 255, 255, 0.9), transparent 25%),
+    linear-gradient(135deg, #fff2a8, #ffcc66);
+}
+
+.city-map-point.gives-final {
+  background:
+    radial-gradient(circle at 34% 18%, rgba(255, 255, 255, 0.9), transparent 25%),
+    linear-gradient(135deg, #c6a7ff, #2d2438);
+  color: #fff;
+}
+
+.city-map-point.is-complete.gives-item,
+.city-map-point.is-complete.gives-note,
+.city-map-point.is-complete.gives-final {
+  background: linear-gradient(135deg, #fff2a8, #ffd66b);
+  color: #5f4b12;
+}
+
 .city-map-point.is-locked {
   background: rgba(255, 255, 255, 0.72);
   color: rgba(45, 36, 56, 0.58);
@@ -1979,6 +2215,28 @@ select {
   padding: 2px 5px;
   font-size: 0.56rem;
   line-height: 1;
+}
+
+.point-kind {
+  border-radius: 999px;
+  background: rgba(45, 36, 56, 0.82);
+  color: #fff;
+  padding: 2px 5px;
+  font-size: 0.54rem;
+  line-height: 1;
+}
+
+.city-map-point.gives-note .point-kind {
+  background: #7b4215;
+}
+
+.city-map-point.gives-item .point-kind {
+  background: #4b3edb;
+}
+
+.city-map-point.gives-final .point-kind {
+  background: #ffcc66;
+  color: #2d2438;
 }
 
 .city-map-hint {
@@ -2012,6 +2270,14 @@ select {
 
 .legend-open {
   background: #78f5ff;
+}
+
+.legend-note {
+  background: #ffcc66;
+}
+
+.legend-item {
+  background: #c6a7ff;
 }
 
 .legend-complete {

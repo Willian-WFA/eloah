@@ -15,6 +15,7 @@ const state = {
   pendingMovementScenes: new Set(),
   completedVisualChallenges: new Set(),
   visualChallengeProgress: [],
+  templateChallengeProgress: [],
   completedScenes: new Set(),
   actionProgressScenes: new Set(),
   actionHistory: [],
@@ -173,6 +174,12 @@ const els = {
   visualChallengeSlots: document.querySelector("#visualChallengeSlots"),
   visualChallengeGrid: document.querySelector("#visualChallengeGrid"),
   visualChallengeFeedback: document.querySelector("#visualChallengeFeedback"),
+  templateChallengeModal: document.querySelector("#templateChallengeModal"),
+  templateChallengeEyebrow: document.querySelector("#templateChallengeEyebrow"),
+  templateChallengeTitle: document.querySelector("#templateChallengeTitle"),
+  templateChallengeInstruction: document.querySelector("#templateChallengeInstruction"),
+  templateChallengeStage: document.querySelector("#templateChallengeStage"),
+  templateChallengeFeedback: document.querySelector("#templateChallengeFeedback"),
   progressMeters: document.querySelector("#progressMeters"),
   avatarPreview: document.querySelector("#avatarPreview"),
   avatarTitle: document.querySelector("#avatarTitle"),
@@ -655,6 +662,9 @@ function renderFullScene(scene, adventure) {
   const movement = scene.movement && !scene.dice
     ? `<p><strong>Desafio físico:</strong> ${scene.movement.instruction} Alternativa: ${scene.movement.fallback}</p>`
     : "";
+  const templateChallenge = scene.challenge?.templateId
+    ? renderTemplateChallengeReview(scene.challenge)
+    : "";
   const language = scene.language
     ? `<p><strong>Idioma:</strong> ${scene.language.phrase || scene.language.word || scene.language.original} = ${scene.language.meaning || scene.language.meaning_pt}</p>`
     : "";
@@ -683,6 +693,7 @@ function renderFullScene(scene, adventure) {
       <p><strong>Pergunta:</strong> ${scene.prompt || "O que você faz?"}</p>
       ${choices}
       ${movement}
+      ${templateChallenge}
       ${language}
       ${learningCriteria}
       ${media}
@@ -691,6 +702,17 @@ function renderFullScene(scene, adventure) {
       ${progress}
     </li>
   `;
+}
+
+function renderTemplateChallengeReview(challenge) {
+  const typeLabel = TEMPLATE_CHALLENGE_LABELS[challenge.templateId] || "Desafio da cena";
+  const details = [
+    challenge.instruction,
+    challenge.word ? `Palavra: ${challenge.word}${challenge.translation ? ` = ${challenge.translation}` : ""}` : "",
+    challenge.targetCount ? `Quantidade: ${challenge.targetCount}` : "",
+    challenge.sequence?.length ? `Sequência: ${challenge.sequence.join(" → ")}` : "",
+  ].filter(Boolean).join(" ");
+  return `<p><strong>${typeLabel}:</strong> ${details}</p>`;
 }
 
 function renderOutcomeReview(label, outcome, scene, adventure) {
@@ -1200,22 +1222,40 @@ function renderCityMapPoint(route, index) {
   const complete = state.completedScenes.has(route.target);
   const open = isRouteAvailable(route);
   const status = complete ? "complete" : open ? "open" : "locked";
+  const rewardKind = routeRewardKind(route);
+  const kindLabel = routeRewardKindLabel(rewardKind);
   const disabled = complete || !open;
   const statusText = complete ? "feito" : open ? "aberto" : routeLockReason(route);
   return `
     <button
-      class="city-map-point is-${status}"
+      class="city-map-point is-${status} gives-${rewardKind}"
       type="button"
       data-map-route="${index}"
       style="--x:${meta.x}%; --y:${meta.y}%"
       ${disabled ? "disabled" : ""}
-      aria-label="${escapeHtml(`${route.label}, ${statusText}`)}"
+      aria-label="${escapeHtml(`${route.label}, ${kindLabel}, ${statusText}`)}"
     >
       <span class="point-symbol">${meta.symbol}</span>
       <span class="point-label">${escapeHtml(meta.shortLabel)}</span>
+      <span class="point-kind">${escapeHtml(kindLabel)}</span>
       <span class="point-status">${escapeHtml(statusText)}</span>
     </button>
   `;
+}
+
+function routeRewardKind(route) {
+  const targetScene = state.adventure?.scenes?.find((scene) => scene.id === route.target);
+  if (!targetScene) return "item";
+  if (!targetScene.next) return "final";
+  if ((targetScene.progressDelta?.notas_sino || 0) > 0) return "note";
+  if (String(targetScene.reward || "").startsWith("nota_")) return "note";
+  return "item";
+}
+
+function routeRewardKindLabel(kind) {
+  if (kind === "note") return "Nota";
+  if (kind === "final") return "Final";
+  return "Item";
 }
 
 function selectCityMapRoute(route) {
@@ -1460,6 +1500,18 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function stableHash(value) {
+  return String(value).split("").reduce((hash, char) => ((hash << 5) - hash + char.charCodeAt(0)) | 0, 0);
+}
+
+function stableShuffledItems(items, seed) {
+  return [...items].sort((a, b) => {
+    const hashA = stableHash(`${seed}:${a.id || a.label}`);
+    const hashB = stableHash(`${seed}:${b.id || b.label}`);
+    return hashA - hashB;
+  });
+}
+
 function handlePlayerAction(actionText, source) {
   const scene = currentScene();
   const action = actionText.trim();
@@ -1486,9 +1538,11 @@ function handlePlayerAction(actionText, source) {
   const origin = source === "voice" ? "Ouvi" : "Entendi";
   const diceHint = scene.movement
       ? " Agora faça o desafio físico para abrir o caminho."
+      : sceneNeedsTemplateChallenge(scene)
+        ? " Agora resolva o desafio que o mestre pediu."
       : scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)
-        ? " Agora resolva o desafio da cena para abrir o dado."
-      : scene.dice
+        ? " Agora resolva o desafio da cena para abrir o caminho."
+      : scene.dice && !sceneUsesChallengeResolution(scene)
         ? ` ${narratorStyleProfile().diceLead}`
       : " A cena escuta sua escolha, e o caminho abre para a próxima parte.";
   addNarratorEntry("action", `${origin}: "${action}".`);
@@ -1501,9 +1555,11 @@ function handlePlayerAction(actionText, source) {
       rewardId: scene.reward,
     };
     openMovementModal();
+  } else if (sceneNeedsTemplateChallenge(scene)) {
+    openTemplateChallengeModal(scene);
   } else if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
     openVisualChallengeModal(scene);
-  } else if (scene.dice) {
+  } else if (scene.dice && !sceneUsesChallengeResolution(scene)) {
     window.setTimeout(openDiceModal, 320);
   }
   renderSceneControls();
@@ -2204,6 +2260,183 @@ function masterEffectForContext(context = {}) {
   return "warm_glow";
 }
 
+const TEMPLATE_CHALLENGE_LABELS = {
+  language_repeat: "Palavra mágica",
+  memory_echo: "Memória do mestre",
+  counting_sort: "Contagem",
+};
+
+function challengeForScene(scene = currentScene()) {
+  return scene?.challenge || null;
+}
+
+function sceneNeedsTemplateChallenge(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  return Boolean(challenge?.templateId && !state.completedVisualChallenges.has(scene.id));
+}
+
+function sceneUsesChallengeResolution(scene = currentScene()) {
+  return Boolean(scene?.challenge?.templateId || scene?.visualChallenge);
+}
+
+function openTemplateChallengeModal(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  if (!challenge || !els.templateChallengeModal) return;
+  state.templateChallengeProgress = [];
+  renderTemplateChallenge(scene);
+  els.templateChallengeModal.hidden = false;
+  playCue("warm_chime");
+  speakNarration(`${challenge.title || TEMPLATE_CHALLENGE_LABELS[challenge.templateId] || "Desafio"}. ${challenge.prompt || challenge.instruction || ""}`, {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "challenge"),
+  });
+}
+
+function closeTemplateChallengeModal() {
+  if (!els.templateChallengeModal) return;
+  els.templateChallengeModal.hidden = true;
+  state.templateChallengeProgress = [];
+}
+
+function renderTemplateChallenge(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  if (!challenge) return;
+  els.templateChallengeEyebrow.textContent = TEMPLATE_CHALLENGE_LABELS[challenge.templateId] || "Desafio da cena";
+  els.templateChallengeTitle.textContent = challenge.title || "Desafio";
+  els.templateChallengeInstruction.textContent = challenge.instruction || challenge.prompt || "";
+  els.templateChallengeFeedback.textContent = "";
+  els.templateChallengeStage.innerHTML = "";
+
+  if (challenge.templateId === "language_repeat") {
+    renderLanguageChallenge(challenge);
+  } else if (challenge.templateId === "memory_echo") {
+    renderMemoryChallenge(challenge);
+  } else if (challenge.templateId === "counting_sort") {
+    renderCountingChallenge(challenge);
+  }
+}
+
+function renderLanguageChallenge(challenge) {
+  const word = challenge.word || challenge.phrase || "";
+  const meaning = challenge.translation || challenge.meaning || "";
+  els.templateChallengeStage.innerHTML = `
+    <div class="language-word-card">
+      <span class="language-word">${escapeHtml(word)}</span>
+      <span class="language-meaning">${escapeHtml(meaning)}</span>
+    </div>
+    <button class="ready-word-button template-ready-button" type="button" data-template-complete="language">Pronto</button>
+  `;
+  els.templateChallengeStage.querySelector("[data-template-complete]").addEventListener("click", () => completeTemplateChallenge());
+}
+
+function renderMemoryChallenge(challenge) {
+  const sequence = challenge.sequence || [];
+  const picked = state.templateChallengeProgress;
+  const options = challenge.shuffle === false
+    ? challenge.options || []
+    : stableShuffledItems(challenge.options || [], `memory:${sequence.join("-")}`);
+  els.templateChallengeStage.innerHTML = `
+    <div class="memory-sequence">${sequence.map((_, index) => `<span>${escapeHtml(picked[index] || "?")}</span>`).join("")}</div>
+    <div class="template-choice-grid">
+      ${options.map((option) => `
+        <button class="template-choice-button" type="button" data-memory-choice="${escapeHtml(option.id || option.label)}">
+          ${escapeHtml(option.label || option.id)}
+        </button>
+      `).join("")}
+    </div>
+  `;
+  els.templateChallengeStage.querySelectorAll("[data-memory-choice]").forEach((button) => {
+    button.addEventListener("click", () => chooseMemoryItem(button.dataset.memoryChoice, button));
+  });
+}
+
+function renderCountingChallenge(challenge) {
+  const picked = new Set(state.templateChallengeProgress);
+  const items = challenge.shuffle === false
+    ? challenge.items || []
+    : stableShuffledItems(challenge.items || [], `counting:${challenge.targetTag}:${challenge.targetCount}`);
+  els.templateChallengeStage.innerHTML = `
+    <div class="counting-target">${escapeHtml(String(challenge.targetCount || 1))}</div>
+    <div class="template-choice-grid">
+      ${items.map((item) => `
+        <button class="template-choice-button ${picked.has(item.id) ? "is-picked" : ""}" type="button" data-counting-choice="${escapeHtml(item.id)}">
+          <span class="template-choice-symbol">${escapeHtml(item.symbol || "•")}</span>
+          <span>${escapeHtml(item.label || item.id)}</span>
+        </button>
+      `).join("")}
+    </div>
+  `;
+  els.templateChallengeStage.querySelectorAll("[data-counting-choice]").forEach((button) => {
+    button.addEventListener("click", () => chooseCountingItem(button.dataset.countingChoice, button));
+  });
+}
+
+function chooseMemoryItem(optionId, button) {
+  const challenge = challengeForScene();
+  const expected = challenge.sequence?.[state.templateChallengeProgress.length];
+  if (optionId !== expected) {
+    markTemplateButtonWrong(button, challenge.wrongText || "Quase. Tente seguir a ordem que o mestre falou.");
+    return;
+  }
+  state.templateChallengeProgress.push(optionId);
+  playCue("bright_chime");
+  renderTemplateChallenge(currentScene());
+  els.templateChallengeFeedback.textContent = `${state.templateChallengeProgress.length}/${challenge.sequence.length}`;
+  if (state.templateChallengeProgress.length >= (challenge.sequence || []).length) completeTemplateChallenge();
+}
+
+function chooseCountingItem(optionId, button) {
+  const challenge = challengeForScene();
+  const item = (challenge.items || []).find((candidate) => candidate.id === optionId);
+  if (!item || item.tag !== challenge.targetTag) {
+    markTemplateButtonWrong(button, challenge.wrongText || "Esse não é o objeto pedido. Tente outro.");
+    return;
+  }
+  if (state.templateChallengeProgress.includes(optionId)) return;
+  state.templateChallengeProgress.push(optionId);
+  button.classList.add("is-picked");
+  playCue("bright_chime");
+  els.templateChallengeFeedback.textContent = `${state.templateChallengeProgress.length}/${challenge.targetCount}`;
+  if (state.templateChallengeProgress.length >= Number(challenge.targetCount || 1)) completeTemplateChallenge();
+}
+
+function markTemplateButtonWrong(button, message) {
+  button.classList.remove("is-wrong");
+  void button.offsetWidth;
+  button.classList.add("is-wrong");
+  els.templateChallengeFeedback.textContent = message;
+  playCue("gentle_plop");
+}
+
+function completeTemplateChallenge(scene = currentScene()) {
+  const challenge = challengeForScene(scene);
+  if (!challenge) return;
+  const sceneId = scene.id;
+  const closeAfterSuccess = () => {
+    if (currentScene()?.id !== sceneId) return;
+    closeTemplateChallengeModal();
+    renderSceneControls();
+  };
+  state.completedVisualChallenges.add(scene.id);
+  addNarratorEntry("challenge", challenge.successText || `${scene.title}: desafio resolvido.`);
+  els.templateChallengeFeedback.textContent = challenge.successText || "Muito bem. O desafio abriu o caminho.";
+  playCue(scene.sound?.success || scene.sound?.reward || "bell_wave");
+  runSceneEffect(scene.effects?.success || scene.effects?.reward || "item_pop_glow");
+  applySceneProgress(scene, 1, { progressDelta: scene.progressDelta, rewardId: scene.reward, speakReward: false });
+  renderSceneControls();
+  const fallbackTimer = window.setTimeout(closeAfterSuccess, 6200);
+  speakNarration(challenge.successText || "Muito bem. O desafio abriu o caminho.", {
+    interrupt: true,
+    quality: "premium",
+    audioKey: audioKeyForScene(scene, "challenge-success"),
+    onComplete: () => {
+      window.clearTimeout(fallbackTimer);
+      closeAfterSuccess();
+    },
+  });
+}
+
 function openMovementModal() {
   const scene = currentScene();
   if (!scene.movement) return;
@@ -2251,6 +2484,10 @@ function closeVisualChallengeModal() {
 function renderVisualChallenge(scene = currentScene()) {
   const challenge = scene?.visualChallenge;
   if (!challenge) return;
+  const card = els.visualChallengeModal.querySelector(".visual-challenge-card");
+  if (card) {
+    card.className = `visual-challenge-card visual-challenge-card--${challenge.theme || challenge.type || "default"}`;
+  }
   els.visualChallengeTitle.textContent = challenge.title || "Escolha";
   els.visualChallengeInstruction.textContent = challenge.instruction || "Toque nos objetos certos.";
   els.visualChallengeFeedback.textContent = "";
@@ -2262,10 +2499,14 @@ function renderVisualChallenge(scene = currentScene()) {
       return `<span class="visual-slot ${picked ? "is-filled" : ""}">${picked ? escapeHtml(option?.symbol || "✓") : "?"}</span>`;
     })
     .join("");
-  els.visualChallengeGrid.innerHTML = (challenge.options || [])
+  const options = challenge.shuffle === false
+    ? challenge.options || []
+    : stableShuffledItems(challenge.options || [], `${scene.id}:${(challenge.targets || []).join("-")}`);
+  els.visualChallengeGrid.innerHTML = options
     .map((option) => `
       <button class="visual-object-button" type="button" data-visual-object="${escapeHtml(option.id)}" aria-label="${escapeHtml(option.label)}">
-        ${escapeHtml(option.symbol)}
+        <span class="visual-object-symbol" aria-hidden="true">${escapeHtml(option.symbol)}</span>
+        <span class="visual-object-label">${escapeHtml(option.label)}</span>
       </button>
     `)
     .join("");
@@ -2300,22 +2541,27 @@ function chooseVisualObject(optionId, button) {
 function completeVisualChallenge(scene = currentScene()) {
   const challenge = scene?.visualChallenge;
   if (!challenge) return;
+  const sceneId = scene.id;
+  const closeAfterSuccess = () => {
+    if (currentScene()?.id !== sceneId) return;
+    closeVisualChallengeModal();
+    renderSceneControls();
+  };
   state.completedVisualChallenges.add(scene.id);
   addNarratorEntry("challenge", challenge.successText || `${scene.title}: desafio resolvido.`);
   els.visualChallengeFeedback.textContent = challenge.successText || "Muito bem.";
   playCue(scene.sound?.success || scene.sound?.reward || "bell_wave");
-  runSceneEffect(scene.effects?.reward || "item_pop_glow");
+  runSceneEffect(scene.effects?.success || scene.effects?.reward || "item_pop_glow");
+  applySceneProgress(scene, 1, { progressDelta: scene.progressDelta, rewardId: scene.reward, speakReward: false });
+  renderSceneControls();
+  const fallbackTimer = window.setTimeout(closeAfterSuccess, 6200);
   speakNarration(challenge.successText || "Muito bem. O desafio abriu o caminho.", {
     interrupt: true,
     quality: "premium",
     audioKey: audioKeyForScene(scene, "visual-success"),
     onComplete: () => {
-      closeVisualChallengeModal();
-      if (scene.dice && !state.rolledScenes.has(scene.id)) {
-        openDiceModal();
-      } else {
-        renderSceneControls();
-      }
+      window.clearTimeout(fallbackTimer);
+      closeAfterSuccess();
     },
   });
 }
@@ -2436,12 +2682,17 @@ function nextScene() {
     showFeedback("Antes de avançar, escolha uma das opções do mestre.", "warm_chime");
     return;
   }
+  if (sceneNeedsTemplateChallenge(scene)) {
+    showFeedback("Resolva o desafio que o mestre pediu primeiro.", "warm_chime", undefined, { speak: false });
+    openTemplateChallengeModal(scene);
+    return;
+  }
   if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
     showFeedback("Resolva o desafio da cena primeiro.", "warm_chime", undefined, { speak: false });
     openVisualChallengeModal(scene);
     return;
   }
-  if (scene.dice && !state.rolledScenes.has(scene.id)) {
+  if (scene.dice && !state.rolledScenes.has(scene.id) && !sceneUsesChallengeResolution(scene)) {
     showFeedback("O mestre pediu um dado para descobrir o que acontece.");
     return;
   }
@@ -2775,9 +3026,11 @@ function renderSceneControls() {
   const alreadyRolled = state.rolledScenes.has(scene.id);
   const pendingMovement = state.pendingMovementScenes.has(scene.id);
   const diceModalOpen = !els.diceModal.hidden || state.diceRolling;
+  const challengeModalOpen = !els.visualChallengeModal.hidden || !els.templateChallengeModal.hidden || !els.movementModal.hidden;
   const waitingAction = !state.selectedChoice;
-  const needsDice = Boolean(scene.dice && !alreadyRolled);
-  const readyToAdvance = Boolean(!waitingAction && !needsDice && !pendingMovement && !diceModalOpen);
+  const needsDice = Boolean(scene.dice && !alreadyRolled && !sceneUsesChallengeResolution(scene));
+  const needsSceneChallenge = sceneNeedsTemplateChallenge(scene) || Boolean(scene.visualChallenge && !state.completedVisualChallenges.has(scene.id));
+  const readyToAdvance = Boolean(!waitingAction && !needsDice && !pendingMovement && !diceModalOpen && !challengeModalOpen && !needsSceneChallenge);
   els.roundHint.textContent = "";
   els.diceButton.hidden = true;
   els.luckButton.hidden = true;
@@ -2928,9 +3181,15 @@ function playCue(cue) {
 
 function speakNarration(text, options = {}) {
   const cleanText = genderedText(text).replace(/\s+/g, " ").trim();
-  if (!cleanText) return;
+  if (!cleanText) {
+    if (typeof options.onComplete === "function") window.setTimeout(options.onComplete, 0);
+    return;
+  }
   state.lastNarration = cleanText;
-  if (!state.narrationEnabled) return;
+  if (!state.narrationEnabled) {
+    if (typeof options.onComplete === "function") window.setTimeout(options.onComplete, 0);
+    return;
+  }
 
   const shouldInterrupt = options.interrupt !== false;
   if (shouldInterrupt) stopNarrationPlayback();

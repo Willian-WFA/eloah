@@ -511,10 +511,35 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 - Servidor convertido para Express para compatibilidade com preset/framework da Hostinger. `package.json` agora declara `main`, `build` e dependência `express`; `package-lock.json` foi gerado.
 - Validação local do servidor Express confirmou `/health`, `/` e `/assets/audio/manifest.json` respondendo `200`.
+- Adicionado modal genérico de desafios ligados ao narrador, com suporte inicial a `language_repeat`, `counting_sort` e `memory_echo`.
+- A campanha `A Cidade dos Sinos Claros` passou a usar novos desafios: palavra `shu` na biblioteca, contagem das 3 cartas no bosque e memória dos potinhos no final.
+- `scripts/generate-audio.js` e `scripts/check-audio-coverage.js` passaram a reconhecer chaves opcionais `challenge` e `challenge-success` para cenas com `scene.challenge`.
+- Decisao de fluxo: uma cena deve ter um unico mecanismo de resolucao principal por vez (`visualChallenge`, `challenge`, `movement` ou `dice`). No sucesso de `visualChallenge`, o jogo aplica progresso/recompensa e libera a seta, sem abrir dado em seguida.
+- A cena `Tico e a Ordem dos Biscoitos` agora e resolvida apenas pelo desafio visual, sem dado; a grade de objetos foi embaralhada de forma estavel e os simbolos ficaram em estilo visual uniforme.
+- Protocolo de uso de efeitos especiais: usar em viradas de cena, sucesso, conquista, selecao de rota ou recompensa. Evitar efeito persistente durante leitura normal para nao esconder/competir com heroina, progresso, diario e controles de ouvir novamente.
+- Validacao apos ajuste do Tico executada com `npm run check`: 232 chaves esperadas, 217 obrigatorias, 15 opcionais, 227 entradas no manifesto, 0 obrigatorias faltando e 11 opcionais faltando.
+- Auditoria narrativa/gamificacao da campanha encontrou furos de coerencia: cenas com `challenge` ainda abriam dado depois; o hub falava em cinco espacos mas varias rotas geravam Notas duplicadas; o desafio de memoria mostrava a resposta inteira; e algumas propostas boas estavam apenas dentro de texto de dado.
+- Motor ajustado: `challenge`/`visualChallenge` agora contam como mecanismo principal de resolucao. Ao concluir template challenge, o jogo aplica progresso/recompensa e libera a seta sem abrir dado.
+- Leitura completa dos pais passou a exibir desafios de template (`language_repeat`, `counting_sort`, `memory_echo`) junto da cena.
+- `memory_echo` agora mostra slots com `?` e preenche conforme a crianca acerta; opcoes de memoria e contagem sao embaralhadas de forma estavel.
+- `A Cidade dos Sinos Claros` ficou mais coerente: a Praca explica cinco espacos de Notas coloridas e diferencia Notas de Sino de itens auxiliares.
+- Biblioteca, Jardim, Oficina, Bosque e Torre final foram ajustados para usar `challenge template` em vez de misturar desafio com dado.
+- Bento deixou de entregar Nota Verde duplicada e passou a entregar `Selo de Carteiro`; Oficina virou rota de item (`Martelo Macio`), sem Nota duplicada.
+- Validação após auditoria narrativa executada com `npm run check`, `cmp` entre `public/` e `prototype/`, `node --check public/app.js public/adventures.js` e Chrome headless em `http://127.0.0.1:3133/`. Resultado do check: 203 chaves esperadas, 184 obrigatórias, 19 opcionais, 227 entradas no manifesto e 0 obrigatórias faltando.
+- Teste automatizado via Chrome DevTools confirmou o fluxo de `Tico e a Ordem dos Biscoitos`: ao escolher uma opção, abre o modal visual, o dado permanece fechado, a seta fica escondida, os objetos aparecem embaralhados e o desafio concede `nota_amarela`/`notas_sino +1` sem rolagem.
+- Desafio do Tico ganhou tema visual `cookie_sequence`, com visual de bandeja/forno de biscoitos e rótulos nos objetos para diferenciar melhor do grid genérico anterior.
+- Corrigido controle de avanço: a seta não aparece enquanto `visualChallenge`, `templateChallenge` ou desafio físico estiverem abertos/pendentes.
+- Adicionado fallback de fechamento para sucesso de `visualChallenge`/`templateChallenge`, evitando travar o modal quando o WAV opcional ainda não existe ou quando a narração está desligada.
+- Mapa da cidade passou a marcar cada rota como `Nota`, `Item` ou `Final`; teste automatizado confirmou Biscoitos/Biblioteca/Jardim/Ponte/Colina como Nota, Oficina/Bosque como Item e Torre como Final.
+- Cache do service worker atualizado para `rpg-kids-v2026-07-17-cookie-challenge-flow-pwa`.
+- Tentativa de gerar os WAVs opcionais com `npm run generate:audio:missing` foi bloqueada pelo revisor automático por enviar texto privado da história para serviço externo Gemini TTS. A alternativa segura aplicada foi o fallback de fechamento do modal.
+- Validação após ajustes do Tico/mapa/cache executada com `npm run check`, `cmp` entre `public/` e `prototype/`, teste CDP do desafio do Tico e teste CDP do mapa.
+- Após aprovação explícita do usuário para enviar texto privado da história à Gemini TTS, `npm run generate:audio:missing` gerou os 15 WAVs complementares restantes em modo teatral.
+- Cobertura de áudio agora está completa também para opcionais: `npm run check` retornou 203 chaves esperadas, 184 obrigatórias, 19 opcionais, 242 entradas no manifesto, 0 obrigatórias faltando e 0 opcionais faltando.
+- Conferido que os 15 WAVs novos e `assets/audio/manifest.json` estão sincronizados entre `public/` e `prototype/`.
 
 ## O que falta fazer
 
-- Quando a quota Gemini liberar, completar os 5 WAVs complementares pendentes: `route-sinos_bolim_oficina`, `route-sinos_bento_bosque`, `route-sinos_iara_vento`, `route-sinos_torre_final` e `sinos_tico_biscoitos/visual-success`.
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
@@ -544,6 +569,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Trocar os placeholders CSS restantes das aventuras antigas por arquivos reais e evoluir sons/camadas de avatar quando o pacote de aventura for normalizado.
 - Transformar dados de `prototype/adventures.js` em manifest JSON real.
 - Revisar fluxo de checkpoint/continuar com a crianca.
+- Gerar WAVs Gemini para `challenge` e `challenge-success` das cenas com novos mini-desafios, caso a experiência no celular aprove o texto.
 
 ## Pendencias fora do commit
 
