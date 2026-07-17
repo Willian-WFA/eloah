@@ -31,6 +31,7 @@ Ele roda direto no navegador e inclui biblioteca por dados de aventura, uma aven
 - Aventuras editaveis ficam em `content/adventures/`.
 - Templates de aventura ficam em `content/templates/`.
 - Aventura longa em desenvolvimento: `content/adventures/cidade-dos-sinos-claros.md`.
+- Primeiro pacote declarativo jogavel: `content/adventures/cidade-dos-sinos-claros.json`.
 - Template para aventura longa ramificada: `content/templates/long-branching-adventure-template-v1.json`.
 - Imagens aprovadas do prototipo ficam em `prototype/assets/scenes/` e sao copiadas para `public/assets/scenes/` para hospedagem.
 - Icones PWA ficam em `prototype/assets/icons/` e `public/assets/icons/`.
@@ -88,10 +89,11 @@ Mais detalhes em `docs/GITHUB_PUBLISH.md`.
 3. `docs/CHILD_DEVELOPMENT_LEARNING_MAP.md`
 4. `docs/STORY_PROTOCOL_V0.md`
 5. `content/adventures/cidade-dos-sinos-claros.md`
-6. `content/adventures/portal-das-estrelinhas.md`
-7. `prototype/index.html`
-8. `docs/HOSTINGER_DEPLOY.md`
-9. `docs/GITHUB_PUBLISH.md`
-10. `PROJECT_CONTEXT.md`
-11. `AGENTS.md`
-12. `docs/CURRENT_STATE.md`
+6. `content/adventures/cidade-dos-sinos-claros.json`
+7. `content/adventures/portal-das-estrelinhas.md`
+8. `prototype/index.html`
+9. `docs/HOSTINGER_DEPLOY.md`
+10. `docs/GITHUB_PUBLISH.md`
+11. `PROJECT_CONTEXT.md`
+12. `AGENTS.md`
+13. `docs/CURRENT_STATE.md`
