@@ -1467,6 +1467,18 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function stableHash(value) {
+  return String(value).split("").reduce((hash, char) => ((hash << 5) - hash + char.charCodeAt(0)) | 0, 0);
+}
+
+function stableShuffledItems(items, seed) {
+  return [...items].sort((a, b) => {
+    const hashA = stableHash(`${seed}:${a.id || a.label}`);
+    const hashB = stableHash(`${seed}:${b.id || b.label}`);
+    return hashA - hashB;
+  });
+}
+
 function handlePlayerAction(actionText, source) {
   const scene = currentScene();
   const action = actionText.trim();
@@ -1496,7 +1508,7 @@ function handlePlayerAction(actionText, source) {
       : sceneNeedsTemplateChallenge(scene)
         ? " Agora resolva o desafio que o mestre pediu."
       : scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)
-        ? " Agora resolva o desafio da cena para abrir o dado."
+        ? " Agora resolva o desafio da cena para abrir o caminho."
       : scene.dice
         ? ` ${narratorStyleProfile().diceLead}`
       : " A cena escuta sua escolha, e o caminho abre para a próxima parte.";
@@ -2434,10 +2446,13 @@ function renderVisualChallenge(scene = currentScene()) {
       return `<span class="visual-slot ${picked ? "is-filled" : ""}">${picked ? escapeHtml(option?.symbol || "✓") : "?"}</span>`;
     })
     .join("");
-  els.visualChallengeGrid.innerHTML = (challenge.options || [])
+  const options = challenge.shuffle === false
+    ? challenge.options || []
+    : stableShuffledItems(challenge.options || [], `${scene.id}:${(challenge.targets || []).join("-")}`);
+  els.visualChallengeGrid.innerHTML = options
     .map((option) => `
       <button class="visual-object-button" type="button" data-visual-object="${escapeHtml(option.id)}" aria-label="${escapeHtml(option.label)}">
-        ${escapeHtml(option.symbol)}
+        <span class="visual-object-symbol" aria-hidden="true">${escapeHtml(option.symbol)}</span>
       </button>
     `)
     .join("");
@@ -2476,18 +2491,15 @@ function completeVisualChallenge(scene = currentScene()) {
   addNarratorEntry("challenge", challenge.successText || `${scene.title}: desafio resolvido.`);
   els.visualChallengeFeedback.textContent = challenge.successText || "Muito bem.";
   playCue(scene.sound?.success || scene.sound?.reward || "bell_wave");
-  runSceneEffect(scene.effects?.reward || "item_pop_glow");
+  runSceneEffect(scene.effects?.success || scene.effects?.reward || "item_pop_glow");
+  applySceneProgress(scene, 1, { progressDelta: scene.progressDelta, rewardId: scene.reward, speakReward: false });
   speakNarration(challenge.successText || "Muito bem. O desafio abriu o caminho.", {
     interrupt: true,
     quality: "premium",
     audioKey: audioKeyForScene(scene, "visual-success"),
     onComplete: () => {
       closeVisualChallengeModal();
-      if (scene.dice && !state.rolledScenes.has(scene.id)) {
-        openDiceModal();
-      } else {
-        renderSceneControls();
-      }
+      renderSceneControls();
     },
   });
 }

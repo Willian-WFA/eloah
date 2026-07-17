@@ -1347,7 +1347,7 @@ window.RPG_KIDS_ADVENTURES = [
         choices: ["Eu pergunto qual vem primeiro", "Eu olho as marcas na mesa", "Eu monto a sequência estrela, lua, sino"],
         visualChallenge: {
           type: "sequence_pick",
-          title: "Escolha",
+          title: "Ordem dos Biscoitos",
           instruction: "Toque na estrela, depois na lua e depois no sino para montar a ordem do festival.",
           targets: ["estrela", "lua", "sino"],
           successText: "Muito bem. A sequência estrela, lua e sino voltou para a bandeja de Tico.",
@@ -1355,7 +1355,7 @@ window.RPG_KIDS_ADVENTURES = [
           options: [
             { id: "estrela", label: "Estrela", symbol: "★" },
             { id: "lua", label: "Lua", symbol: "☾" },
-            { id: "sino", label: "Sino", symbol: "🔔" },
+            { id: "sino", label: "Sino", symbol: "♪" },
             { id: "arvore", label: "Árvore", symbol: "♣" },
             { id: "circulo", label: "Círculo", symbol: "●" },
             { id: "folha", label: "Folha", symbol: "◆" },
@@ -1368,16 +1368,10 @@ window.RPG_KIDS_ADVENTURES = [
           { progress: "pensamento_esperto", signals: ["marcas", "mesa", "sequência", "sequencia", "estrela", "lua", "sino"], short: "Você procurou o padrão dos biscoitos.", message: "Critério da cena: completar sequência. Progresso: pensar +1." },
           { progress: "palavras_novas", signals: ["bell", "sino", "ingles"], short: "Você usou a palavra bell.", message: "Critério da cena: palavra nova conectada ao sino. Progresso: palavras +1." },
         ],
-        dice: true,
-        diceOutcomes: {
-          low: { narration: "Tico troca uma bandeja sem querer, e os biscoitos fazem uma pequena roda. Com ajuda de Luma, você percebe que depois de estrela e lua vem sino.", progressDelta: { pensamento_esperto: 1, notas_sino: 1 }, reward: "nota_amarela" },
-          middle: { narration: "A massa pede uma palavra mágica. Diga bell, que significa sino, para chamar o biscoito certo.", progressDelta: { palavras_novas: 1, pensamento_esperto: 1, notas_sino: 1 }, reward: "nota_amarela" },
-          high: { narration: "Você percebe migalhas em forma de sino, resolve a sequência e Tico bate palmas com farinha no avental. A Nota Amarela acorda na fonte.", progressDelta: { pensamento_esperto: 1, palavras_novas: 1, notas_sino: 1 }, reward: "nota_amarela" },
-        },
         progressDelta: { pensamento_esperto: 1, notas_sino: 1 },
         reward: "nota_amarela",
-        sound: { enter: "warm_chime", diceRoll: "dice_soft_roll", low: "gentle_plop", middle: "bell_wave", high: "bright_chime", reward: "bell_wave" },
-        effects: { enter: "warm_glow", diceLow: "soft_plop", diceMedium: "bell_wave", diceHigh: "gold_glow", reward: "item_pop_glow" },
+        sound: { enter: "warm_chime", success: "bright_chime", reward: "bell_wave" },
+        effects: { enter: "warm_glow", success: "bell_wave", reward: "item_pop_glow" },
         next: "sinos_praca_relogio",
       },
       {

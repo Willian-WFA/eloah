@@ -514,10 +514,14 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Adicionado modal genérico de desafios ligados ao narrador, com suporte inicial a `language_repeat`, `counting_sort` e `memory_echo`.
 - A campanha `A Cidade dos Sinos Claros` passou a usar novos desafios: palavra `shu` na biblioteca, contagem das 3 cartas no bosque e memória dos potinhos no final.
 - `scripts/generate-audio.js` e `scripts/check-audio-coverage.js` passaram a reconhecer chaves opcionais `challenge` e `challenge-success` para cenas com `scene.challenge`.
+- Decisao de fluxo: uma cena deve ter um unico mecanismo de resolucao principal por vez (`visualChallenge`, `challenge`, `movement` ou `dice`). No sucesso de `visualChallenge`, o jogo aplica progresso/recompensa e libera a seta, sem abrir dado em seguida.
+- A cena `Tico e a Ordem dos Biscoitos` agora e resolvida apenas pelo desafio visual, sem dado; a grade de objetos foi embaralhada de forma estavel e os simbolos ficaram em estilo visual uniforme.
+- Protocolo de uso de efeitos especiais: usar em viradas de cena, sucesso, conquista, selecao de rota ou recompensa. Evitar efeito persistente durante leitura normal para nao esconder/competir com heroina, progresso, diario e controles de ouvir novamente.
+- Validacao apos ajuste do Tico executada com `npm run check`: 232 chaves esperadas, 217 obrigatorias, 15 opcionais, 227 entradas no manifesto, 0 obrigatorias faltando e 11 opcionais faltando.
 
 ## O que falta fazer
 
-- Quando a quota Gemini liberar, completar os 5 WAVs complementares pendentes: `route-sinos_bolim_oficina`, `route-sinos_bento_bosque`, `route-sinos_iara_vento`, `route-sinos_torre_final` e `sinos_tico_biscoitos/visual-success`.
+- Quando a quota Gemini liberar, completar os WAVs complementares pendentes: 4 falas de rota da Praca, `sinos_tico_biscoitos/visual-success` e os pares `challenge`/`challenge-success` dos novos mini-desafios.
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.
