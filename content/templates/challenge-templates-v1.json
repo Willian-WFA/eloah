@@ -1,0 +1,146 @@
+{
+  "schema": "rpg-kids.challenge-templates.v1",
+  "version": "1.0.0",
+  "templates": [
+    {
+      "id": "dice_check",
+      "label": "Dado de sorte",
+      "runtime": "dice_modal",
+      "ageRange": "4-7",
+      "inputs": ["prompt", "outcomes", "audioKeys", "reward"],
+      "requiredAudioSlots": ["prompt", "dice-1", "dice-2", "dice-3", "dice-4", "dice-5", "dice-6"],
+      "defaultConfig": {
+        "sides": 6,
+        "rollsPerChallenge": 1,
+        "showLargeNumber": true,
+        "playRollSfx": true,
+        "bands": {
+          "low": [1, 2],
+          "middle": [3, 4],
+          "high": [5, 6]
+        },
+        "reactions": {
+          "1": "Ih... o dado caiu no cantinho do azar.",
+          "2": "Ah não, o dado fez uma curva esquisita.",
+          "3": "Quase deu certo.",
+          "4": "Por pouco. A sorte sorriu de ladinho.",
+          "5": "Sorte grande!",
+          "6": "Seis! Sorte máxima."
+        }
+      }
+    },
+    {
+      "id": "movement_timer",
+      "label": "Desafio do corpo",
+      "runtime": "movement_modal",
+      "ageRange": "4-7",
+      "inputs": ["label", "instruction", "durationSeconds", "confirmationQuestion", "successText", "fallbackText", "audioKeys"],
+      "requiredAudioSlots": ["movement", "movement-question"],
+      "optionalAudioSlots": ["movement-fallback"],
+      "defaultConfig": {
+        "durationSeconds": 20,
+        "confirmationQuestion": "Você já cumpriu o desafio?",
+        "acceptVoice": ["sim", "não"],
+        "buttonLabel": "Pronto",
+        "safety": {
+          "requiresAdultNearby": true,
+          "allowSeatedFallback": true,
+          "maxRepetitions": 10
+        }
+      }
+    },
+    {
+      "id": "visual_sequence_pick",
+      "label": "Sequência visual",
+      "runtime": "visual_challenge_modal",
+      "ageRange": "4-7",
+      "inputs": ["title", "instruction", "targets", "options", "wrongText", "successText", "audioKeys"],
+      "requiredAudioSlots": ["visual-challenge"],
+      "optionalAudioSlots": ["visual-success"],
+      "defaultConfig": {
+        "showQuestionSlots": true,
+        "shuffleOptions": true,
+        "allowRetry": true,
+        "maxTargetsForAge4": 3
+      },
+      "example": {
+        "title": "Escolha",
+        "instruction": "Toque na estrela, depois na lua e depois no sino.",
+        "targets": ["star", "moon", "bell"],
+        "options": [
+          { "id": "star", "label": "estrela", "symbol": "★" },
+          { "id": "moon", "label": "lua", "symbol": "☾" },
+          { "id": "bell", "label": "sino", "symbol": "🔔" },
+          { "id": "tree", "label": "árvore", "symbol": "♣" }
+        ]
+      }
+    },
+    {
+      "id": "language_repeat",
+      "label": "Palavra nova",
+      "runtime": "language_modal",
+      "ageRange": "4-7",
+      "inputs": ["language", "word", "translation", "prompt", "instruction", "successText", "fallbackText", "audioKeys"],
+      "requiredAudioSlots": ["language-prompt"],
+      "optionalAudioSlots": ["language-success", "language-fallback"],
+      "defaultConfig": {
+        "acceptApproximation": true,
+        "allowTouchFallback": true,
+        "maxEnglishWordsPerQuest": 2,
+        "maxMandarinWordsPerQuest": 1,
+        "mandarinNotation": "pinyin"
+      }
+    },
+    {
+      "id": "memory_echo",
+      "label": "Memória sonora",
+      "runtime": "memory_modal",
+      "ageRange": "4-7",
+      "inputs": ["sequence", "options", "instruction", "successText", "fallbackText", "audioKeys"],
+      "requiredAudioSlots": ["memory-prompt"],
+      "optionalAudioSlots": ["memory-repeat", "memory-success"],
+      "defaultConfig": {
+        "maxSequenceForAge4": 3,
+        "allowReplay": true,
+        "allowRetry": true
+      }
+    },
+    {
+      "id": "counting_sort",
+      "label": "Contagem",
+      "runtime": "counting_modal",
+      "ageRange": "4-7",
+      "inputs": ["instruction", "targetCount", "targetTag", "items", "successText", "audioKeys"],
+      "requiredAudioSlots": ["counting-prompt"],
+      "optionalAudioSlots": ["counting-success"],
+      "defaultConfig": {
+        "showLargeNumberOnSuccess": true,
+        "allowRetry": true,
+        "maxCountForAge4": 5
+      }
+    },
+    {
+      "id": "map_route_choice",
+      "label": "Mapa de caminhos",
+      "runtime": "hub_map_modal",
+      "ageRange": "4-7",
+      "inputs": ["hubSceneId", "routes", "maxNarratedRoutes", "audioKeys"],
+      "requiredAudioSlots": ["scene", "hub-return"],
+      "optionalAudioSlots": ["route-*"],
+      "defaultConfig": {
+        "maxNarratedRoutes": 3,
+        "showAllRoutesOnMap": true,
+        "allowTapOpenRoute": true,
+        "hideCompletedFromNarratedOptions": true,
+        "showLockedRoutes": true
+      }
+    }
+  ],
+  "safetyRules": [
+    "A criança nunca perde a aventura por falhar em movimento, idioma ou memória.",
+    "Desafios físicos devem ter fallback sentado ou falado.",
+    "Fala livre não é necessária para avançar no MVP fechado.",
+    "Todo desafio precisa ser aprovado pelo adulto junto com a história.",
+    "Áudios de narração devem priorizar WAV pré-gerado e não cair automaticamente na voz do navegador em falas premium."
+  ]
+}
