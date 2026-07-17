@@ -92,6 +92,7 @@ Mais detalhes em `docs/GITHUB_PUBLISH.md`.
 7. `prototype/index.html`
 8. `docs/HOSTINGER_DEPLOY.md`
 9. `docs/GITHUB_PUBLISH.md`
-10. `PROJECT_CONTEXT.md`
-11. `AGENTS.md`
-12. `docs/CURRENT_STATE.md`
+10. `docs/ADDING_NEW_ADVENTURE.md`
+11. `PROJECT_CONTEXT.md`
+12. `AGENTS.md`
+13. `docs/CURRENT_STATE.md`
