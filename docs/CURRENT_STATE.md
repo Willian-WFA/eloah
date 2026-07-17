@@ -511,6 +511,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 - Servidor convertido para Express para compatibilidade com preset/framework da Hostinger. `package.json` agora declara `main`, `build` e dependência `express`; `package-lock.json` foi gerado.
 - Validação local do servidor Express confirmou `/health`, `/` e `/assets/audio/manifest.json` respondendo `200`.
+- Adicionado loader de biblioteca por `adventures.manifest.json`: o app carrega fontes declaradas em manifest, suporta fonte legada `script-global` e fonte futura `json`, com fallback seguro para `window.RPG_KIDS_ADVENTURES`.
+- Scripts de áudio/cobertura passaram a ler o mesmo manifest de aventuras, mantendo `public/` e `prototype/` sincronizados.
 
 ## O que falta fazer
 
@@ -544,6 +546,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Trocar os placeholders CSS restantes das aventuras antigas por arquivos reais e evoluir sons/camadas de avatar quando o pacote de aventura for normalizado.
 - Transformar dados de `prototype/adventures.js` em manifest JSON real.
 - Revisar fluxo de checkpoint/continuar com a crianca.
+- Migrar fontes do `adventures.manifest.json` de `script-global` para pacotes JSON por aventura, sem quebrar fallback legado.
 
 ## Pendencias fora do commit
 

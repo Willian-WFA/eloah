@@ -81,11 +81,38 @@ async function main() {
 }
 
 async function loadAdventures() {
-  const source = await readFile(resolve("public/adventures.js"), "utf8");
+  const manifest = await readJson(resolve("public/adventures.manifest.json"));
+  const loaded = [];
+  for (const sourceConfig of manifest.sources || [{ type: "script-global", src: "./adventures.js", global: "RPG_KIDS_ADVENTURES" }]) {
+    if (sourceConfig.type === "script-global") {
+      loaded.push(...await loadScriptGlobalAdventures(sourceConfig));
+    } else if (sourceConfig.type === "json" && sourceConfig.src) {
+      const payload = await readJson(publicPath(sourceConfig.src));
+      loaded.push(...(Array.isArray(payload) ? payload : payload.adventures || []));
+    }
+  }
+  return dedupeAdventures(loaded);
+}
+
+async function loadScriptGlobalAdventures(sourceConfig) {
+  const source = await readFile(publicPath(sourceConfig.src || "./adventures.js"), "utf8");
   const sandbox = { window: {} };
   vm.createContext(sandbox);
   vm.runInContext(source, sandbox);
-  return sandbox.window.RPG_KIDS_ADVENTURES || [];
+  return sandbox.window[sourceConfig.global || "RPG_KIDS_ADVENTURES"] || [];
+}
+
+function publicPath(src) {
+  return resolve("public", src.replace(/^\.\//, ""));
+}
+
+function dedupeAdventures(items = []) {
+  const seen = new Set();
+  return items.filter((adventure) => {
+    if (!adventure?.id || seen.has(adventure.id)) return false;
+    seen.add(adventure.id);
+    return true;
+  });
 }
 
 function buildAudioJobs(adventures) {

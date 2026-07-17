@@ -1,0 +1,13 @@
+{
+  "schema": "rpg-kids.adventure-library.v1",
+  "version": "1.0.0",
+  "sources": [
+    {
+      "id": "builtin-adventures",
+      "type": "script-global",
+      "src": "./adventures.js",
+      "global": "RPG_KIDS_ADVENTURES",
+      "description": "Aventuras embutidas atuais; mantidas como fallback enquanto migramos para pacotes JSON."
+    }
+  ]
+}
