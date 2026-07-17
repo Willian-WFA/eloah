@@ -1,0 +1,26 @@
+{
+  "schema": "rpg-kids.adventure-package.v1",
+  "version": "1.0.0",
+  "mode": "reference",
+  "adventureId": "cidade-dos-sinos-claros",
+  "title": "A Cidade dos Sinos Claros",
+  "assetPack": "cidade-dos-sinos-v0",
+  "paths": {
+    "sceneImageBase": "assets/scenes/",
+    "audioBase": "assets/audio/cidade-dos-sinos-claros/",
+    "adventureAudioBase": "assets/audio/cidade-dos-sinos-claros/__adventure/"
+  },
+  "sceneImages": [
+    "assets/scenes/bell_city_gate.webp",
+    "assets/scenes/bell_clock_square.webp",
+    "assets/scenes/round_cookie_street.webp",
+    "assets/scenes/umbrella_library.webp",
+    "assets/scenes/short_giraffe_garden.webp",
+    "assets/scenes/cloth_bridge.webp",
+    "assets/scenes/soft_hammer_workshop.webp",
+    "assets/scenes/small_steps_forest.webp",
+    "assets/scenes/slow_wind_hill.webp",
+    "assets/scenes/soft_silence_tower.webp"
+  ],
+  "notes": "Campanha principal. Este pacote deve ser o primeiro a migrar para manifest JSON completo."
+}

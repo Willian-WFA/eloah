@@ -511,6 +511,8 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - `npm run check` agora separa áudio obrigatório e complementar. Estado atual: 232 chaves totais, 223 obrigatórias, 9 complementares, 227 entradas no manifesto, 0 obrigatórias faltando e 5 complementares faltando.
 - Servidor convertido para Express para compatibilidade com preset/framework da Hostinger. `package.json` agora declara `main`, `build` e dependência `express`; `package-lock.json` foi gerado.
 - Validação local do servidor Express confirmou `/health`, `/` e `/assets/audio/manifest.json` respondendo `200`.
+- Criada a camada de pacotes de assets por aventura em `public/adventure-packages/` e `prototype/adventure-packages/`, ainda em modo `reference`, apontando para imagens globais e prefixos de áudio existentes.
+- Adicionado `docs/ADVENTURE_ASSET_PACKAGES.md` e `scripts/check-adventure-packages.js`; `npm run check` agora valida que cada aventura tem pacote, `assetPack` compatível e imagens existentes.
 
 ## O que falta fazer
 
@@ -544,6 +546,7 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - Trocar os placeholders CSS restantes das aventuras antigas por arquivos reais e evoluir sons/camadas de avatar quando o pacote de aventura for normalizado.
 - Transformar dados de `prototype/adventures.js` em manifest JSON real.
 - Revisar fluxo de checkpoint/continuar com a crianca.
+- Migrar pacotes de assets do modo `reference` para `bundled`, movendo arquivos por aventura quando a estrutura declarativa estiver pronta.
 
 ## Pendencias fora do commit
 

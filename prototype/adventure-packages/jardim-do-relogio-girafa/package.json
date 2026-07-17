@@ -1,0 +1,19 @@
+{
+  "schema": "rpg-kids.adventure-package.v1",
+  "version": "1.0.0",
+  "mode": "reference",
+  "adventureId": "jardim-do-relogio-girafa",
+  "title": "O Jardim do Relógio Girafa",
+  "assetPack": "clock-garden-v1",
+  "paths": {
+    "sceneImageBase": "assets/scenes/",
+    "audioBase": "assets/audio/jardim-do-relogio-girafa/",
+    "adventureAudioBase": "assets/audio/jardim-do-relogio-girafa/__adventure/"
+  },
+  "sceneImages": [
+    "assets/scenes/giraffe_clock_garden.webp",
+    "assets/scenes/seed_path_soft.webp",
+    "assets/scenes/clock_snail_gate.webp"
+  ],
+  "notes": "Pacote ainda referencia os assets globais atuais. A migracao fisica dos arquivos pode acontecer sem mudar o contrato."
+}

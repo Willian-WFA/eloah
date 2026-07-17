@@ -1,0 +1,21 @@
+{
+  "schema": "rpg-kids.adventure-package.v1",
+  "version": "1.0.0",
+  "mode": "reference",
+  "adventureId": "portal-das-estrelinhas",
+  "title": "O Portal das Estrelinhas",
+  "assetPack": "star-forest-v0",
+  "paths": {
+    "sceneImageBase": "assets/scenes/",
+    "audioBase": "assets/audio/portal-das-estrelinhas/",
+    "adventureAudioBase": "assets/audio/portal-das-estrelinhas/__adventure/"
+  },
+  "sceneImages": [
+    "assets/scenes/forest_gate_soft.webp",
+    "assets/scenes/crystal_bridge_soft.webp",
+    "assets/scenes/tiny_bell_town.webp",
+    "assets/scenes/sleepy_star_portal.webp",
+    "assets/scenes/star_party_soft.webp"
+  ],
+  "notes": "Pacote ainda referencia os assets globais atuais. A migracao fisica dos arquivos pode acontecer sem mudar o contrato."
+}
