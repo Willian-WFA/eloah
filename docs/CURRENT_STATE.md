@@ -518,10 +518,18 @@ Documentos iniciais criados e atualizados com as primeiras decisoes de produto: 
 - A cena `Tico e a Ordem dos Biscoitos` agora e resolvida apenas pelo desafio visual, sem dado; a grade de objetos foi embaralhada de forma estavel e os simbolos ficaram em estilo visual uniforme.
 - Protocolo de uso de efeitos especiais: usar em viradas de cena, sucesso, conquista, selecao de rota ou recompensa. Evitar efeito persistente durante leitura normal para nao esconder/competir com heroina, progresso, diario e controles de ouvir novamente.
 - Validacao apos ajuste do Tico executada com `npm run check`: 232 chaves esperadas, 217 obrigatorias, 15 opcionais, 227 entradas no manifesto, 0 obrigatorias faltando e 11 opcionais faltando.
+- Auditoria narrativa/gamificacao da campanha encontrou furos de coerencia: cenas com `challenge` ainda abriam dado depois; o hub falava em cinco espacos mas varias rotas geravam Notas duplicadas; o desafio de memoria mostrava a resposta inteira; e algumas propostas boas estavam apenas dentro de texto de dado.
+- Motor ajustado: `challenge`/`visualChallenge` agora contam como mecanismo principal de resolucao. Ao concluir template challenge, o jogo aplica progresso/recompensa e libera a seta sem abrir dado.
+- Leitura completa dos pais passou a exibir desafios de template (`language_repeat`, `counting_sort`, `memory_echo`) junto da cena.
+- `memory_echo` agora mostra slots com `?` e preenche conforme a crianca acerta; opcoes de memoria e contagem sao embaralhadas de forma estavel.
+- `A Cidade dos Sinos Claros` ficou mais coerente: a Praca explica cinco espacos de Notas coloridas e diferencia Notas de Sino de itens auxiliares.
+- Biblioteca, Jardim, Oficina, Bosque e Torre final foram ajustados para usar `challenge template` em vez de misturar desafio com dado.
+- Bento deixou de entregar Nota Verde duplicada e passou a entregar `Selo de Carteiro`; Oficina virou rota de item (`Martelo Macio`), sem Nota duplicada.
+- Validação após auditoria narrativa executada com `npm run check`, `cmp` entre `public/` e `prototype/`, `node --check public/app.js public/adventures.js` e Chrome headless em `http://127.0.0.1:3133/`. Resultado do check: 203 chaves esperadas, 184 obrigatórias, 19 opcionais, 227 entradas no manifesto e 0 obrigatórias faltando.
 
 ## O que falta fazer
 
-- Quando a quota Gemini liberar, completar os WAVs complementares pendentes: 4 falas de rota da Praca, `sinos_tico_biscoitos/visual-success` e os pares `challenge`/`challenge-success` dos novos mini-desafios.
+- Quando a quota Gemini liberar, completar os WAVs complementares pendentes: 4 falas de rota da Praca, `sinos_tico_biscoitos/visual-success` e os pares `challenge`/`challenge-success` dos mini-desafios de Biblioteca, Jardim, Oficina, Bosque e Torre.
 - Testar no celular a versão publicada após redeploy/atualização do service worker.
 - Testar no celular a nova proteção de áudio do dado, porque a duplicidade relatada pode depender de autoplay/latência do navegador mobile.
 - Fazer upload/configuração do app Node na Hostinger e testar URL pública em HTTPS.

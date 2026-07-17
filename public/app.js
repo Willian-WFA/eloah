@@ -662,6 +662,9 @@ function renderFullScene(scene, adventure) {
   const movement = scene.movement && !scene.dice
     ? `<p><strong>Desafio físico:</strong> ${scene.movement.instruction} Alternativa: ${scene.movement.fallback}</p>`
     : "";
+  const templateChallenge = scene.challenge?.templateId
+    ? renderTemplateChallengeReview(scene.challenge)
+    : "";
   const language = scene.language
     ? `<p><strong>Idioma:</strong> ${scene.language.phrase || scene.language.word || scene.language.original} = ${scene.language.meaning || scene.language.meaning_pt}</p>`
     : "";
@@ -690,6 +693,7 @@ function renderFullScene(scene, adventure) {
       <p><strong>Pergunta:</strong> ${scene.prompt || "O que você faz?"}</p>
       ${choices}
       ${movement}
+      ${templateChallenge}
       ${language}
       ${learningCriteria}
       ${media}
@@ -698,6 +702,17 @@ function renderFullScene(scene, adventure) {
       ${progress}
     </li>
   `;
+}
+
+function renderTemplateChallengeReview(challenge) {
+  const typeLabel = TEMPLATE_CHALLENGE_LABELS[challenge.templateId] || "Desafio da cena";
+  const details = [
+    challenge.instruction,
+    challenge.word ? `Palavra: ${challenge.word}${challenge.translation ? ` = ${challenge.translation}` : ""}` : "",
+    challenge.targetCount ? `Quantidade: ${challenge.targetCount}` : "",
+    challenge.sequence?.length ? `Sequência: ${challenge.sequence.join(" → ")}` : "",
+  ].filter(Boolean).join(" ");
+  return `<p><strong>${typeLabel}:</strong> ${details}</p>`;
 }
 
 function renderOutcomeReview(label, outcome, scene, adventure) {
@@ -1509,7 +1524,7 @@ function handlePlayerAction(actionText, source) {
         ? " Agora resolva o desafio que o mestre pediu."
       : scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)
         ? " Agora resolva o desafio da cena para abrir o caminho."
-      : scene.dice
+      : scene.dice && !sceneUsesChallengeResolution(scene)
         ? ` ${narratorStyleProfile().diceLead}`
       : " A cena escuta sua escolha, e o caminho abre para a próxima parte.";
   addNarratorEntry("action", `${origin}: "${action}".`);
@@ -1526,7 +1541,7 @@ function handlePlayerAction(actionText, source) {
     openTemplateChallengeModal(scene);
   } else if (scene.visualChallenge && !state.completedVisualChallenges.has(scene.id)) {
     openVisualChallengeModal(scene);
-  } else if (scene.dice) {
+  } else if (scene.dice && !sceneUsesChallengeResolution(scene)) {
     window.setTimeout(openDiceModal, 320);
   }
   renderSceneControls();
@@ -2242,6 +2257,10 @@ function sceneNeedsTemplateChallenge(scene = currentScene()) {
   return Boolean(challenge?.templateId && !state.completedVisualChallenges.has(scene.id));
 }
 
+function sceneUsesChallengeResolution(scene = currentScene()) {
+  return Boolean(scene?.challenge?.templateId || scene?.visualChallenge);
+}
+
 function openTemplateChallengeModal(scene = currentScene()) {
   const challenge = challengeForScene(scene);
   if (!challenge || !els.templateChallengeModal) return;
@@ -2295,10 +2314,14 @@ function renderLanguageChallenge(challenge) {
 
 function renderMemoryChallenge(challenge) {
   const sequence = challenge.sequence || [];
+  const picked = state.templateChallengeProgress;
+  const options = challenge.shuffle === false
+    ? challenge.options || []
+    : stableShuffledItems(challenge.options || [], `memory:${sequence.join("-")}`);
   els.templateChallengeStage.innerHTML = `
-    <div class="memory-sequence">${sequence.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}</div>
+    <div class="memory-sequence">${sequence.map((_, index) => `<span>${escapeHtml(picked[index] || "?")}</span>`).join("")}</div>
     <div class="template-choice-grid">
-      ${(challenge.options || []).map((option) => `
+      ${options.map((option) => `
         <button class="template-choice-button" type="button" data-memory-choice="${escapeHtml(option.id || option.label)}">
           ${escapeHtml(option.label || option.id)}
         </button>
@@ -2312,10 +2335,13 @@ function renderMemoryChallenge(challenge) {
 
 function renderCountingChallenge(challenge) {
   const picked = new Set(state.templateChallengeProgress);
+  const items = challenge.shuffle === false
+    ? challenge.items || []
+    : stableShuffledItems(challenge.items || [], `counting:${challenge.targetTag}:${challenge.targetCount}`);
   els.templateChallengeStage.innerHTML = `
     <div class="counting-target">${escapeHtml(String(challenge.targetCount || 1))}</div>
     <div class="template-choice-grid">
-      ${(challenge.items || []).map((item) => `
+      ${items.map((item) => `
         <button class="template-choice-button ${picked.has(item.id) ? "is-picked" : ""}" type="button" data-counting-choice="${escapeHtml(item.id)}">
           <span class="template-choice-symbol">${escapeHtml(item.symbol || "•")}</span>
           <span>${escapeHtml(item.label || item.id)}</span>
@@ -2336,8 +2362,8 @@ function chooseMemoryItem(optionId, button) {
     return;
   }
   state.templateChallengeProgress.push(optionId);
-  button.classList.add("is-picked");
   playCue("bright_chime");
+  renderTemplateChallenge(currentScene());
   els.templateChallengeFeedback.textContent = `${state.templateChallengeProgress.length}/${challenge.sequence.length}`;
   if (state.templateChallengeProgress.length >= (challenge.sequence || []).length) completeTemplateChallenge();
 }
@@ -2372,18 +2398,15 @@ function completeTemplateChallenge(scene = currentScene()) {
   addNarratorEntry("challenge", challenge.successText || `${scene.title}: desafio resolvido.`);
   els.templateChallengeFeedback.textContent = challenge.successText || "Muito bem. O desafio abriu o caminho.";
   playCue(scene.sound?.success || scene.sound?.reward || "bell_wave");
-  runSceneEffect(scene.effects?.reward || "item_pop_glow");
+  runSceneEffect(scene.effects?.success || scene.effects?.reward || "item_pop_glow");
+  applySceneProgress(scene, 1, { progressDelta: scene.progressDelta, rewardId: scene.reward, speakReward: false });
   speakNarration(challenge.successText || "Muito bem. O desafio abriu o caminho.", {
     interrupt: true,
     quality: "premium",
     audioKey: audioKeyForScene(scene, "challenge-success"),
     onComplete: () => {
       closeTemplateChallengeModal();
-      if (scene.dice && !state.rolledScenes.has(scene.id)) {
-        openDiceModal();
-      } else {
-        renderSceneControls();
-      }
+      renderSceneControls();
     },
   });
 }
@@ -2630,7 +2653,7 @@ function nextScene() {
     openVisualChallengeModal(scene);
     return;
   }
-  if (scene.dice && !state.rolledScenes.has(scene.id)) {
+  if (scene.dice && !state.rolledScenes.has(scene.id) && !sceneUsesChallengeResolution(scene)) {
     showFeedback("O mestre pediu um dado para descobrir o que acontece.");
     return;
   }
@@ -2965,7 +2988,7 @@ function renderSceneControls() {
   const pendingMovement = state.pendingMovementScenes.has(scene.id);
   const diceModalOpen = !els.diceModal.hidden || state.diceRolling;
   const waitingAction = !state.selectedChoice;
-  const needsDice = Boolean(scene.dice && !alreadyRolled);
+  const needsDice = Boolean(scene.dice && !alreadyRolled && !sceneUsesChallengeResolution(scene));
   const readyToAdvance = Boolean(!waitingAction && !needsDice && !pendingMovement && !diceModalOpen);
   els.roundHint.textContent = "";
   els.diceButton.hidden = true;
