@@ -9,7 +9,7 @@
     "sync:public": "cp prototype/index.html prototype/styles.css prototype/app.js prototype/adventures.js prototype/manifest.webmanifest prototype/sw.js public/ && mkdir -p public/assets/icons && cp -a prototype/assets/icons/. public/assets/icons/",
     "generate:audio": "node scripts/generate-audio.js",
     "generate:audio:missing": "node scripts/generate-audio.js --missing-only --continue-on-error --delay-ms=10000",
-    "check": "node --check server.js && node --check public/app.js && node --check public/adventures.js && node --check scripts/generate-audio.js && node --check scripts/check-audio-coverage.js && node scripts/check-audio-coverage.js"
+    "check": "node --check server.js && node --check public/app.js && node --check public/adventures.js && node --check scripts/generate-audio.js && node --check scripts/check-audio-coverage.js && node --check scripts/check-adventure-contracts.js && node scripts/check-audio-coverage.js && node scripts/check-adventure-contracts.js"
   },
   "dependencies": {
     "express": "^4.21.2"
