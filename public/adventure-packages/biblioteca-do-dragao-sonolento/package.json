@@ -1,0 +1,19 @@
+{
+  "schema": "rpg-kids.adventure-package.v1",
+  "version": "1.0.0",
+  "mode": "reference",
+  "adventureId": "biblioteca-do-dragao-sonolento",
+  "title": "A Biblioteca do Dragão Sonolento",
+  "assetPack": "dragon-library-v1",
+  "paths": {
+    "sceneImageBase": "assets/scenes/",
+    "audioBase": "assets/audio/biblioteca-do-dragao-sonolento/",
+    "adventureAudioBase": "assets/audio/biblioteca-do-dragao-sonolento/__adventure/"
+  },
+  "sceneImages": [
+    "assets/scenes/dragon_library_door.webp",
+    "assets/scenes/whisper_shelves.webp",
+    "assets/scenes/sneeze_book_boss.webp"
+  ],
+  "notes": "Pacote ainda referencia os assets globais atuais. A migracao fisica dos arquivos pode acontecer sem mudar o contrato."
+}

@@ -1,0 +1,15 @@
+{
+  "schema": "rpg-kids.adventure-package.v1",
+  "version": "1.0.0",
+  "mode": "reference",
+  "adventureId": "caverna-dos-bichinhos",
+  "title": "A Caverna dos Bichinhos",
+  "assetPack": "cave-friends-v0",
+  "paths": {
+    "sceneImageBase": "assets/scenes/",
+    "audioBase": "assets/audio/caverna-dos-bichinhos/",
+    "adventureAudioBase": "assets/audio/caverna-dos-bichinhos/__adventure/"
+  },
+  "sceneImages": [],
+  "notes": "Aventura ainda usa fallback visual; imagens reais devem entrar neste pacote quando forem aprovadas."
+}

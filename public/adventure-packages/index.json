@@ -1,0 +1,13 @@
+{
+  "schema": "rpg-kids.adventure-package-index.v1",
+  "version": "1.0.0",
+  "mode": "reference",
+  "packages": [
+    { "adventureId": "portal-das-estrelinhas", "manifest": "./portal-das-estrelinhas/package.json" },
+    { "adventureId": "caverna-dos-bichinhos", "manifest": "./caverna-dos-bichinhos/package.json" },
+    { "adventureId": "navio-do-cha-das-nuvens", "manifest": "./navio-do-cha-das-nuvens/package.json" },
+    { "adventureId": "jardim-do-relogio-girafa", "manifest": "./jardim-do-relogio-girafa/package.json" },
+    { "adventureId": "biblioteca-do-dragao-sonolento", "manifest": "./biblioteca-do-dragao-sonolento/package.json" },
+    { "adventureId": "cidade-dos-sinos-claros", "manifest": "./cidade-dos-sinos-claros/package.json" }
+  ]
+}

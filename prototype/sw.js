@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-16-hub-map-visual-challenge-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-17-adventure-asset-packages-pwa";
 
 const CORE_ASSETS = [
   "./",
@@ -6,6 +6,13 @@ const CORE_ASSETS = [
   "./styles.css",
   "./app.js",
   "./adventures.js",
+  "./adventure-packages/index.json",
+  "./adventure-packages/portal-das-estrelinhas/package.json",
+  "./adventure-packages/caverna-dos-bichinhos/package.json",
+  "./adventure-packages/navio-do-cha-das-nuvens/package.json",
+  "./adventure-packages/jardim-do-relogio-girafa/package.json",
+  "./adventure-packages/biblioteca-do-dragao-sonolento/package.json",
+  "./adventure-packages/cidade-dos-sinos-claros/package.json",
   "./manifest.webmanifest",
   "./assets/audio/manifest.json",
   "./assets/icons/icon.svg",
