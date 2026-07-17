@@ -88,6 +88,12 @@ async function loadAdventures() {
   return sandbox.window.RPG_KIDS_ADVENTURES || [];
 }
 
+function visualChallengeForScene(scene) {
+  const challenge = scene?.challenge || scene?.visualChallenge;
+  const templateId = challenge?.templateId || (challenge?.type === "sequence_pick" ? "visual_sequence_pick" : challenge?.type);
+  return templateId === "visual_sequence_pick" ? challenge : null;
+}
+
 function buildAudioJobs(adventures) {
   const jobs = [];
   for (const adventure of adventures) {
@@ -140,20 +146,21 @@ function buildAudioJobs(adventures) {
         }
       }
 
-      if (scene.visualChallenge) {
+      const visualChallenge = visualChallengeForScene(scene);
+      if (visualChallenge) {
         jobs.push({
           key: `${adventure.id}/${scene.id}/visual-challenge`,
           adventureId: adventure.id,
           sceneId: scene.id,
           kind: "visual",
-          text: `${scene.visualChallenge.title || "Desafio"}. ${scene.visualChallenge.instruction}`,
+          text: `${visualChallenge.title || "Desafio"}. ${visualChallenge.instruction}`,
         });
         jobs.push({
           key: `${adventure.id}/${scene.id}/visual-success`,
           adventureId: adventure.id,
           sceneId: scene.id,
           kind: "visual",
-          text: scene.visualChallenge.successText || "Muito bem. O desafio abriu o caminho.",
+          text: visualChallenge.successText || "Muito bem. O desafio abriu o caminho.",
         });
       }
 

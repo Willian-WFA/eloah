@@ -49,6 +49,12 @@ async function readJson(path) {
   }
 }
 
+function visualChallengeForScene(scene) {
+  const challenge = scene?.challenge || scene?.visualChallenge;
+  const templateId = challenge?.templateId || (challenge?.type === "sequence_pick" ? "visual_sequence_pick" : challenge?.type);
+  return templateId === "visual_sequence_pick" ? challenge : null;
+}
+
 function buildExpectedKeys(adventures) {
   const requiredKeys = [];
   const optionalKeys = [];
@@ -68,7 +74,7 @@ function buildExpectedKeys(adventures) {
         if (scene.movement.fallback) requiredKeys.push(`${adventure.id}/${scene.id}/movement-fallback`);
       }
 
-      if (scene.visualChallenge) {
+      if (visualChallengeForScene(scene)) {
         requiredKeys.push(`${adventure.id}/${scene.id}/visual-challenge`);
         optionalKeys.push(`${adventure.id}/${scene.id}/visual-success`);
       }

@@ -1345,8 +1345,8 @@ window.RPG_KIDS_ADVENTURES = [
           "A rua cheira a massa quente. Cada janela tem um paninho colorido, e cada paninho balança como se cumprimentasse. Tico, o padeiro baixinho, olha três bandejas: estrela, lua e sino. Ele diz que a ordem do festival escorregou do pensamento.",
         prompt: "Como você ajuda Tico?",
         choices: ["Eu pergunto qual vem primeiro", "Eu olho as marcas na mesa", "Eu monto a sequência estrela, lua, sino"],
-        visualChallenge: {
-          type: "sequence_pick",
+        challenge: {
+          templateId: "visual_sequence_pick",
           title: "Escolha",
           instruction: "Toque na estrela, depois na lua e depois no sino para montar a ordem do festival.",
           targets: ["estrela", "lua", "sino"],
