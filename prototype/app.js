@@ -3,7 +3,7 @@ const STORAGE_KEYS = {
   generatedDrafts: "rpgKidsGeneratedDrafts",
 };
 
-const adventures = [...(window.RPG_KIDS_ADVENTURES || []), ...loadGeneratedDrafts()];
+let adventures = [];
 
 const state = {
   adventure: null,
@@ -72,6 +72,50 @@ const state = {
   ambientCueTimers: [],
   wakeLock: null,
 };
+
+async function loadAdventureLibrary() {
+  const builtinAdventures = Array.isArray(window.RPG_KIDS_ADVENTURES) ? window.RPG_KIDS_ADVENTURES : [];
+  const generatedDrafts = loadGeneratedDrafts();
+
+  try {
+    const manifest = await fetchJson("./adventures.manifest.json");
+    const manifestAdventures = await loadAdventuresFromManifest(manifest);
+    adventures = [...dedupeAdventures(manifestAdventures.length ? manifestAdventures : builtinAdventures), ...generatedDrafts];
+  } catch (error) {
+    console.info("[RPG Kids] usando aventuras embutidas; manifest indisponível", error);
+    adventures = [...dedupeAdventures(builtinAdventures), ...generatedDrafts];
+  }
+}
+
+async function fetchJson(src) {
+  const response = await fetch(src, { cache: "no-cache" });
+  if (!response.ok) throw new Error(`Falha ao carregar ${src}: ${response.status}`);
+  return response.json();
+}
+
+async function loadAdventuresFromManifest(manifest = {}) {
+  if (Array.isArray(manifest.adventures)) return manifest.adventures;
+  const loaded = [];
+  for (const source of manifest.sources || []) {
+    if (source.type === "script-global") {
+      const globalName = source.global || "RPG_KIDS_ADVENTURES";
+      loaded.push(...(Array.isArray(window[globalName]) ? window[globalName] : []));
+    } else if (source.type === "json" && source.src) {
+      const payload = await fetchJson(source.src);
+      loaded.push(...(Array.isArray(payload) ? payload : payload.adventures || []));
+    }
+  }
+  return loaded;
+}
+
+function dedupeAdventures(items = []) {
+  const seen = new Set();
+  return items.filter((adventure) => {
+    if (!adventure?.id || seen.has(adventure.id)) return false;
+    seen.add(adventure.id);
+    return true;
+  });
+}
 
 const els = {
   libraryView: document.querySelector("#libraryView"),
@@ -3508,8 +3552,13 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-loadParentState();
-renderLibrary();
-renderParentReview();
-renderParentFlow();
-updateCreditUI();
+async function initApp() {
+  loadParentState();
+  await loadAdventureLibrary();
+  renderLibrary();
+  renderParentReview();
+  renderParentFlow();
+  updateCreditUI();
+}
+
+initApp();

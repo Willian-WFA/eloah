@@ -1,4 +1,4 @@
-const CACHE_NAME = "rpg-kids-v2026-07-16-hub-map-visual-challenge-pwa";
+const CACHE_NAME = "rpg-kids-v2026-07-17-adventure-manifest-loader-pwa";
 
 const CORE_ASSETS = [
   "./",
@@ -6,6 +6,7 @@ const CORE_ASSETS = [
   "./styles.css",
   "./app.js",
   "./adventures.js",
+  "./adventures.manifest.json",
   "./manifest.webmanifest",
   "./assets/audio/manifest.json",
   "./assets/icons/icon.svg",
